@@ -2656,6 +2656,15 @@
         const isForward = (views.indexOf(id) > views.indexOf(currentView));
         oldEl.classList.add(isForward ? 'exiting-left' : 'exiting-right');
         
+        // Orchestrate disappearance of children
+        const children = oldEl.querySelectorAll('.onboarding-title, .onboarding-subtitle, .onboarding-step, .onboarding-btn');
+        children.forEach((child, i) => {
+          child.style.transition = 'all 0.4s var(--ease-out-expo)';
+          child.style.opacity = '0';
+          child.style.transform = 'translateY(-10px)';
+          child.style.filter = 'blur(4px)';
+        });
+
         const onEnd = () => {
           oldEl.style.display = 'none';
           oldEl.classList.remove('exiting-left', 'exiting-right');
@@ -2663,8 +2672,18 @@
           
           newEl.style.display = '';
           newEl.style.animation = 'none';
+          
+          // Reset new children styles
+          const newChildren = newEl.querySelectorAll('.onboarding-title, .onboarding-subtitle, .onboarding-step, .onboarding-btn');
+          newChildren.forEach(child => {
+            child.style.opacity = '';
+            child.style.transform = '';
+            child.style.filter = '';
+            child.style.transition = '';
+          });
+
           newEl.offsetHeight;
-          newEl.style.animation = (isForward ? 'slideLeftIn' : 'slideRightIn') + ' 0.5s var(--ease-out-expo) both';
+          newEl.style.animation = (isForward ? 'slideLeftIn' : 'slideRightIn') + ' 0.7s var(--ease-out-expo) both';
         };
         oldEl.addEventListener('animationend', onEnd);
         setTimeout(onEnd, 450);

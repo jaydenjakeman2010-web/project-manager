@@ -21,9 +21,20 @@ async function getTransport() {
         pass: process.env.SMTP_PASS,
       },
     });
-    await transport.verify();
-    console.log('SMTP configured: ' + process.env.SMTP_USER);
+    try {
+      await transport.verify();
+      console.log('SMTP configured: ' + process.env.SMTP_USER);
+    } catch (err) {
+      console.error('SMTP verify failed — emails may not send: ' + err.message);
+      console.error('Check SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS in Railway variables.');
+    }
   } else {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('WARNING: No SMTP configured in production. Verification emails will NOT be delivered.');
+      console.error('Set SMTP_HOST, SMTP_USER, SMTP_PASS in Railway Variables.');
+      console.error('Free options: Gmail App Password, SendGrid (100/day), Mailgun, Mailtrap.');
+      return null;
+    }
     var testAccount = await _nodemailer.createTestAccount();
     transport = _nodemailer.createTransport({
       host: 'smtp.ethereal.email',
@@ -46,8 +57,8 @@ async function getTransport() {
 async function sendEmail(to, subject, html) {
   var t = await getTransport();
   if (!t) {
-    console.log('Email not sent — no transport available.');
-    console.log('To send emails, set SMTP_HOST, SMTP_USER, SMTP_PASS or install nodemailer.');
+    console.log('Email not sent to ' + to + ' — no transport available.');
+    console.log('To send emails, set SMTP_HOST, SMTP_USER, SMTP_PASS in Railway Variables.');
     return null;
   }
   var fromName = process.env.EMAIL_FROM_NAME || 'Project Manager';
@@ -60,13 +71,14 @@ async function sendEmail(to, subject, html) {
     html: html,
   });
 
-  if (info.messageId && !process.env.SMTP_HOST && _nodemailer) {
+  if (info.messageId && !process.env.SMTP_HOST && process.env.NODE_ENV !== 'production' && _nodemailer) {
     var previewUrl = _nodemailer.getTestMessageUrl(info);
     if (previewUrl) {
       console.log('Preview email: ' + previewUrl);
     }
   }
 
+  console.log('Email sent to ' + to + ' — ' + subject);
   return info;
 }
 

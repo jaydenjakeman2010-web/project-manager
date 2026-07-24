@@ -65,7 +65,7 @@ router.post('/signup', validate(signupSchema), async function (req, res) {
       'Verify your Project Manager account',
       email.buildVerifyEmail(verifyLink)
     ).catch(function (err) {
-      console.error('Failed to send verification email:', err.message);
+      console.error('Failed to send verification email to ' + emailAddr + ': ' + err.message);
     });
 
     res.status(201).json({
@@ -171,7 +171,7 @@ router.post('/forgot', validate(forgotSchema), async function (req, res) {
       'Reset your Project Manager password',
       email.buildResetEmail(resetLink)
     ).catch(function (err) {
-      console.error('Failed to send reset email:', err.message);
+      console.error('Failed to send reset email to ' + emailAddr + ': ' + err.message);
     });
 
     res.json({ message: 'If that email is registered, you will receive a password reset link.' });
