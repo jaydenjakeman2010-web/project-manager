@@ -1,18 +1,18 @@
 var transport = null;
+var _nodemailer = null;
 
 async function getTransport() {
   if (transport) return transport;
 
-  var nodemailer;
   try {
-    nodemailer = (await import('nodemailer')).default;
+    _nodemailer = (await import('nodemailer')).default;
   } catch {
     console.log('nodemailer not available. Emails disabled.');
     return null;
   }
 
   if (process.env.SMTP_HOST && process.env.SMTP_USER) {
-    transport = nodemailer.createTransport({
+    transport = _nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '587', 10),
       secure: process.env.SMTP_SECURE === 'true',
@@ -24,8 +24,8 @@ async function getTransport() {
     await transport.verify();
     console.log('SMTP configured: ' + process.env.SMTP_USER);
   } else {
-    var testAccount = await nodemailer.createTestAccount();
-    transport = nodemailer.createTransport({
+    var testAccount = await _nodemailer.createTestAccount();
+    transport = _nodemailer.createTransport({
       host: 'smtp.ethereal.email',
       port: 587,
       secure: false,
@@ -60,8 +60,8 @@ async function sendEmail(to, subject, html) {
     html: html,
   });
 
-  if (info.messageId && !process.env.SMTP_HOST) {
-    var previewUrl = nodemailer.getTestMessageUrl(info);
+  if (info.messageId && !process.env.SMTP_HOST && _nodemailer) {
+    var previewUrl = _nodemailer.getTestMessageUrl(info);
     if (previewUrl) {
       console.log('Preview email: ' + previewUrl);
     }
