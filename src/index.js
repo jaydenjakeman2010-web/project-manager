@@ -16,6 +16,7 @@ import teamRoutes from './routes/team.js';
 import eventRoutes from './routes/events.js';
 import uploadRoutes from './routes/upload.js';
 import activityRoutes from './routes/activity.js';
+import settingsRoutes from './routes/settings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -74,6 +75,7 @@ app.use('/api/team', teamRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/activity', activityRoutes);
+app.use('/api/settings', settingsRoutes);
 
 app.use(express.static(ROOT, {
   maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,

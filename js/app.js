@@ -2263,6 +2263,8 @@
       if (sel) sel.value = savedFormat;
     }
 
+    initSmtpSettings();
+
     document.getElementById('export-data-btn')?.addEventListener('click', exportData);
     document.getElementById('import-data-btn')?.addEventListener('click', () => {
       document.getElementById('import-data-input')?.click();
@@ -2271,6 +2273,74 @@
       if (e.target.files[0]) importData(e.target.files[0]);
     });
     document.getElementById('clear-data-btn')?.addEventListener('click', clearAllData);
+  }
+
+  function initSmtpSettings() {
+    var statusEl = document.getElementById('smtp-status');
+    function setStatus(msg, type) {
+      statusEl.textContent = msg;
+      statusEl.style.color = type === 'error' ? 'var(--danger)' : type === 'success' ? 'var(--success)' : 'var(--text-tertiary)';
+    }
+
+    function getForm() {
+      return {
+        host: document.getElementById('smtp-host').value.trim(),
+        port: parseInt(document.getElementById('smtp-port').value.trim()) || 587,
+        secure: document.getElementById('smtp-secure').classList.contains('active'),
+        user: document.getElementById('smtp-user').value.trim(),
+        pass: document.getElementById('smtp-pass').value.trim(),
+        fromName: document.getElementById('smtp-from-name').value.trim() || 'Project Manager',
+        fromAddr: document.getElementById('smtp-from-addr').value.trim(),
+      };
+    }
+
+    function fillForm(cfg) {
+      document.getElementById('smtp-host').value = cfg.host || '';
+      document.getElementById('smtp-port').value = cfg.port || '587';
+      var toggle = document.getElementById('smtp-secure');
+      if (cfg.secure) toggle.classList.add('active'); else toggle.classList.remove('active');
+      document.getElementById('smtp-user').value = cfg.user || '';
+      document.getElementById('smtp-pass').value = '';
+      document.getElementById('smtp-from-name').value = cfg.fromName || 'Project Manager';
+      document.getElementById('smtp-from-addr').value = cfg.fromAddr || '';
+    }
+
+    API.getSmtpConfig().then(function (res) {
+      if (res.configured) fillForm(res);
+    }).catch(function () {});
+
+    document.getElementById('smtp-save-btn').addEventListener('click', function () {
+      var cfg = getForm();
+      if (!cfg.host || !cfg.user) {
+        setStatus('Host and Username are required.', 'error');
+        return;
+      }
+      if (!cfg.pass && !document.getElementById('smtp-pass').dataset.saved) {
+        setStatus('Password is required.', 'error');
+        return;
+      }
+      setStatus('Saving...', '');
+      API.saveSmtpConfig(cfg).then(function () {
+        document.getElementById('smtp-pass').dataset.saved = '1';
+        setStatus('SMTP settings saved.', 'success');
+      }).catch(function (err) {
+        setStatus(err.body?.error || 'Failed to save.', 'error');
+      });
+    });
+
+    document.getElementById('smtp-test-btn').addEventListener('click', function () {
+      var cfg = getForm();
+      if (!cfg.host || !cfg.user || !cfg.pass) {
+        setStatus('Fill all required fields first.', 'error');
+        return;
+      }
+      setStatus('Sending test email...', '');
+      API.testSmtpConfig(cfg).then(function () {
+        setStatus('Test email sent! Check your inbox (or spam).', 'success');
+      }).catch(function (err) {
+        setStatus(err.body?.error || 'Test failed.', 'error');
+      });
+    });
   }
 
   function getNotifications() {

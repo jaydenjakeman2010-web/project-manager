@@ -120,6 +120,9 @@ var API = {
       headers: {},
     });
   },
+  getSmtpConfig: function () { return apiFetch('/settings/smtp', { method: 'GET' }); },
+  saveSmtpConfig: function (cfg) { return apiFetch('/settings/smtp', { method: 'PUT', body: JSON.stringify(cfg) }); },
+  testSmtpConfig: function (cfg) { return apiFetch('/settings/smtp/test', { method: 'POST', body: JSON.stringify(cfg) }); },
   setToken: setAuthToken,
   getToken: getAuthToken,
   setServer: setServerUrl,

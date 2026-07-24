@@ -381,6 +381,7 @@
             <div class="settings-nav">
               <button class="settings-nav-item active">Profile</button>
               <button class="settings-nav-item">Preferences</button>
+              <button class="settings-nav-item">Email</button>
               <button class="settings-nav-item">Data</button>
             </div>
             <div class="settings-content">
@@ -447,6 +448,60 @@
                       <option value="dd/mm/yyyy">DD/MM/YYYY</option>
                     </select>
                   </div>
+                </div>
+              </div>
+              <div class="settings-section" id="settings-email-section" style="display:none;">
+                <h2 class="settings-section-title">Email Settings</h2>
+                <p class="settings-list-item-desc" style="margin-bottom:20px;">Configure SMTP to send verification and password reset emails.</p>
+                <div class="settings-list" id="smtp-config-form">
+                  <div class="settings-list-item" style="flex-direction:column;align-items:stretch;gap:6px;">
+                    <label class="input-label">SMTP Host</label>
+                    <div class="input-wrapper">
+                      <input class="input" id="smtp-host" placeholder="smtp.gmail.com" autocomplete="off" spellcheck="false">
+                    </div>
+                  </div>
+                  <div class="settings-list-item" style="flex-direction:column;align-items:stretch;gap:6px;">
+                    <label class="input-label">Port</label>
+                    <div class="input-wrapper">
+                      <input class="input" id="smtp-port" placeholder="587" value="587" autocomplete="off" spellcheck="false">
+                    </div>
+                  </div>
+                  <div class="settings-list-item">
+                    <div>
+                      <div class="settings-list-item-title">Use SSL/TLS</div>
+                      <div class="settings-list-item-desc">Enable for port 465, disable for port 587</div>
+                    </div>
+                    <button class="toggle" id="smtp-secure"></button>
+                  </div>
+                  <div class="settings-list-item" style="flex-direction:column;align-items:stretch;gap:6px;">
+                    <label class="input-label">Username (email)</label>
+                    <div class="input-wrapper">
+                      <input class="input" id="smtp-user" placeholder="you@gmail.com" autocomplete="off" spellcheck="false">
+                    </div>
+                  </div>
+                  <div class="settings-list-item" style="flex-direction:column;align-items:stretch;gap:6px;">
+                    <label class="input-label">Password / App Password</label>
+                    <div class="input-wrapper">
+                      <input class="input" id="smtp-pass" type="password" placeholder="••••••••" autocomplete="off" spellcheck="false">
+                    </div>
+                  </div>
+                  <div class="settings-list-item" style="flex-direction:column;align-items:stretch;gap:6px;">
+                    <label class="input-label">From Name (optional)</label>
+                    <div class="input-wrapper">
+                      <input class="input" id="smtp-from-name" placeholder="Project Manager" autocomplete="off" spellcheck="false">
+                    </div>
+                  </div>
+                  <div class="settings-list-item" style="flex-direction:column;align-items:stretch;gap:6px;">
+                    <label class="input-label">From Address (optional)</label>
+                    <div class="input-wrapper">
+                      <input class="input" id="smtp-from-addr" placeholder="noreply@yourdomain.com" autocomplete="off" spellcheck="false">
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:10px;margin-top:8px;">
+                    <button class="btn btn-primary btn-sm" id="smtp-save-btn">Save</button>
+                    <button class="btn btn-outline btn-sm" id="smtp-test-btn">Send Test Email</button>
+                  </div>
+                  <div id="smtp-status" style="margin-top:10px;font-size:13px;"></div>
                 </div>
               </div>
               <div class="settings-section">
