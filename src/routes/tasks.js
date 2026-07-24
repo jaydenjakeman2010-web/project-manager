@@ -13,7 +13,7 @@ const createSchema = z.object({
   description: z.string().max(5000).optional(),
   status: z.enum(['backlog', 'todo', 'inprogress', 'review', 'done']).optional(),
   priority: z.enum(['low', 'medium', 'high']).optional(),
-  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/).optional().nullable(),
   assignee_id: z.string().uuid().optional().nullable(),
   recurrence: z.enum(['none', 'daily', 'weekly', 'monthly']).optional(),
 });
@@ -23,7 +23,7 @@ const updateSchema = z.object({
   description: z.string().max(5000).optional(),
   status: z.enum(['backlog', 'todo', 'inprogress', 'review', 'done']).optional(),
   priority: z.enum(['low', 'medium', 'high']).optional(),
-  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/).optional().nullable(),
   assignee_id: z.string().uuid().optional().nullable(),
   recurrence: z.enum(['none', 'daily', 'weekly', 'monthly']).optional(),
 });

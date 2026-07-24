@@ -5039,6 +5039,24 @@ button {
   line-height: 20px;
 }
 
+.task-drawer-meta-value[type="datetime-local"],
+.task-drawer-meta-value[type="date"] {
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  min-width: 160px;
+  cursor: pointer;
+  padding: 2px 0;
+  text-align: right;
+}
+
+.task-drawer-meta-value[type="datetime-local"]:focus,
+.task-drawer-meta-value[type="date"]:focus {
+  outline: none;
+  color: var(--primary);
+}
+
 .task-drawer-section {
   margin-bottom: var(--space-6);
   animation: slideInUp var(--duration-slow) var(--ease-luxury) both;

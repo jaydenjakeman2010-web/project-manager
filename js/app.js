@@ -21,6 +21,19 @@
     return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   }
 
+  function formatDueDate(dateStr) {
+    if (!dateStr) return '';
+    var d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    var opts = { month: 'short', day: 'numeric' };
+    if (dateStr.includes('T')) { opts.hour = '2-digit'; opts.minute = '2-digit'; }
+    return d.toLocaleDateString('en-US', opts);
+  }
+
+  function dueDatePart(dateStr) {
+    return dateStr ? dateStr.slice(0, 10) : '';
+  }
+
   function debounce(fn, delay) {
     let timer;
     return function () {
@@ -288,7 +301,6 @@
     }
 
     const today = new Date().toISOString().split('T')[0];
-    const now = new Date();
     var urgentTasks = [];
     var completedTasks = 0;
     var overdueCount = 0;
@@ -296,9 +308,10 @@
     data.tasks.forEach(function(t) {
       if (t.status === 'done') { completedTasks++; return; }
       if (!t.dueDate) return;
-      if (t.dueDate <= today) urgentTasks.push(t);
-      if (t.dueDate < today) overdueCount++;
-      if (t.dueDate === today) dueToday++;
+      var d = dueDatePart(t.dueDate);
+      if (d <= today) urgentTasks.push(t);
+      if (d < today) overdueCount++;
+      if (d === today) dueToday++;
     });
     const totalTasks = data.tasks.length;
     const rate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -306,7 +319,7 @@
     var bannerHtml = '';
     if (urgentTasks.length > 0) {
       var task = urgentTasks[0];
-      var isOverdue = task.dueDate < today;
+      var isOverdue = dueDatePart(task.dueDate) < today;
       bannerHtml = '<div class="dashboard-banner ' + (isOverdue ? 'overdue' : 'due-today') + '"><div class="dashboard-banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div><div class="dashboard-banner-content"><span class="dashboard-banner-title">' + (isOverdue ? 'Task Overdue' : 'Due Today') + '</span><span class="dashboard-banner-desc">' + task.name + '</span></div><button class="btn btn-sm btn-primary dashboard-banner-btn" data-task-id="' + task.id + '">View Task</button></div>';
     }
 
@@ -410,7 +423,7 @@
       html += `<div class="kanban-column"><div class="kanban-column-header"><div class="flex items-center gap-2"><div class="kanban-dot" style="background:${sColors[status]};"></div><span class="kanban-column-title">${sLabels[status]}</span></div><span class="kanban-count">${tasks.length}</span></div><div class="kanban-cards" data-status="${status}">`;
       tasks.forEach(task => {
         const assignee = task.assigneeId ? data.team.find(m => m.id === task.assigneeId) : null;
-        html += `<div class="kanban-card" draggable="true" data-task-id="${task.id}"><div class="kanban-card-title">${task.name}</div>${task.description ? `<p class="kanban-card-desc">${task.description}</p>` : ''}${task.dueDate || assignee ? `<div class="kanban-card-footer">${task.dueDate ? `<span class="kanban-card-due">${task.dueDate}</span>` : '<span></span>'}${assignee ? `<div class="avatar avatar-xs" style="background:${assignee.color || 'var(--primary)'};" title="${assignee.name}">${getInitials(assignee.name)}</div>` : ''}</div>` : ''}</div>`;
+            html += `<div class="kanban-card" draggable="true" data-task-id="${task.id}"><div class="kanban-card-title">${task.name}</div>${task.description ? `<p class="kanban-card-desc">${task.description}</p>` : ''}${task.dueDate || assignee ? `<div class="kanban-card-footer">${task.dueDate ? `<span class="kanban-card-due">${formatDueDate(task.dueDate)}</span>` : '<span></span>'}${assignee ? `<div class="avatar avatar-xs" style="background:${assignee.color || 'var(--primary)'};" title="${assignee.name}">${getInitials(assignee.name)}</div>` : ''}</div>` : ''}</div>`;
       });
       html += `</div><button class="kanban-add-btn" data-status="${status}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add task</button></div>`;
     });
@@ -492,7 +505,7 @@
         html += `<div class="task-item ${isDone ? 'completed' : ''}" data-task-id="${task.id}"><div class="task-select-checkbox" style="margin-right:var(--space-2);" title="Select task">
           <input type="checkbox" class="task-select-input" data-task-id="${task.id}" style="display:none;">
           <div class="task-select-box"></div>
-        </div><button class="task-checkbox ${isDone ? 'checked' : ''}"></button><div class="task-item-content"><span class="task-item-title">${task.name}</span>${task.priority ? `<span class="badge badge-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'success'}" style="margin-left:8px;font-size:10px;padding:2px 8px;">${task.priority}</span>` : ''}${task.description ? `<p class="task-item-desc">${task.description}</p>` : ''}</div><div class="task-item-right">${assignee ? `<div class="avatar avatar-xs" style="background:${assignee.color || 'var(--primary)'};margin-right:8px;" title="${assignee.name}">${getInitials(assignee.name)}</div>` : ''}${task.dueDate ? `<span class="task-item-due ${new Date(task.dueDate) < new Date() && !isDone ? 'overdue' : ''}">${task.dueDate}</span>` : ''}</div></div>`;
+        </div><button class="task-checkbox ${isDone ? 'checked' : ''}"></button><div class="task-item-content"><span class="task-item-title">${task.name}</span>${task.priority ? `<span class="badge badge-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'success'}" style="margin-left:8px;font-size:10px;padding:2px 8px;">${task.priority}</span>` : ''}${task.description ? `<p class="task-item-desc">${task.description}</p>` : ''}</div><div class="task-item-right">${assignee ? `<div class="avatar avatar-xs" style="background:${assignee.color || 'var(--primary)'};margin-right:8px;" title="${assignee.name}">${getInitials(assignee.name)}</div>` : ''}${task.dueDate ? `<span class="task-item-due ${new Date(task.dueDate) < new Date() && !isDone ? 'overdue' : ''}">${formatDueDate(task.dueDate)}</span>` : ''}</div></div>`;
       });
       html += '</div></div>';
     }
@@ -562,16 +575,18 @@
       const tasksByDate = {};
       data.tasks.forEach(t => {
         if (t.dueDate) {
-          if (!tasksByDate[t.dueDate]) tasksByDate[t.dueDate] = [];
-          tasksByDate[t.dueDate].push(t);
+          var key = dueDatePart(t.dueDate);
+          if (!tasksByDate[key]) tasksByDate[key] = [];
+          tasksByDate[key].push(t);
         }
       });
 
       const eventsByDate = {};
       data.events.forEach(e => {
-        if (e.date) {
-          if (!eventsByDate[e.date]) eventsByDate[e.date] = [];
-          eventsByDate[e.date].push(e);
+        var key = dueDatePart(e.date);
+        if (key) {
+          if (!eventsByDate[key]) eventsByDate[key] = [];
+          eventsByDate[key].push(e);
         }
       });
 
@@ -1473,9 +1488,15 @@
     const projects = data.projects;
     const status = initialStatus || 'todo';
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const defaultDue = startDate || tomorrow.toISOString().split('T')[0];
+    var defaultDue;
+    if (startDate) {
+      defaultDue = startDate.length > 10 ? startDate.slice(0, 16) : startDate + 'T17:00';
+    } else {
+      var d = new Date();
+      d.setDate(d.getDate() + 1);
+      d.setHours(17, 0, 0, 0);
+      defaultDue = d.toISOString().slice(0, 16);
+    }
 
     const badges = document.getElementById('drawer-badges');
     const content = document.getElementById('drawer-content');
@@ -1496,7 +1517,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             Due Date
           </span>
-          <input type="date" class="task-drawer-meta-value" id="new-task-due" value="${defaultDue}" style="border:none;background:transparent;font:inherit;color:inherit;width:auto;">
+           <input type="datetime-local" class="task-drawer-meta-value" id="new-task-due" value="${defaultDue}">
         </div>
         <div class="task-drawer-meta-row">
           <span class="task-drawer-meta-label">
@@ -1632,7 +1653,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             Due Date
           </span>
-          <input type="date" class="task-drawer-meta-value" id="edit-task-due" value="${task.dueDate || ''}" style="border:none;background:transparent;font:inherit;color:inherit;width:auto;">
+           <input type="datetime-local" class="task-drawer-meta-value" id="edit-task-due" value="${task.dueDate ? task.dueDate.slice(0, 16) : ''}">
         </div>
         <div class="task-drawer-meta-row">
           <span class="task-drawer-meta-label">
@@ -2405,10 +2426,11 @@
     const notifs = [];
     data.tasks.forEach(t => {
       if (t.status !== 'done' && t.dueDate) {
-        if (t.dueDate < today) {
-          notifs.push({ id: 'overdue-' + t.id, taskId: t.id, type: 'overdue', text: `"${t.name}" is overdue`, date: t.dueDate, icon: 'danger' });
-        } else if (t.dueDate === today) {
-          notifs.push({ id: 'due-' + t.id, taskId: t.id, type: 'due', text: `"${t.name}" is due today`, date: t.dueDate, icon: 'warning' });
+        var d = dueDatePart(t.dueDate);
+        if (d < today) {
+          notifs.push({ id: 'overdue-' + t.id, taskId: t.id, type: 'overdue', text: `"${t.name}" is overdue`, date: d, icon: 'danger' });
+        } else if (d === today) {
+          notifs.push({ id: 'due-' + t.id, taskId: t.id, type: 'due', text: `"${t.name}" is due today`, date: d, icon: 'warning' });
         } else {
           const dueDate = new Date(t.dueDate);
           const diffDays = Math.ceil((dueDate - new Date()) / (1000 * 60 * 60 * 24));
