@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import 'express-async-errors';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -96,7 +97,7 @@ app.use((err, _req, res, _next) => {
   if (err.name === 'MulterError') {
     return res.status(400).json({ error: err.message });
   }
-  console.error('Unhandled error:', process.env.NODE_ENV !== 'production' ? err : err.message);
+  console.error('ERROR:', err?.stack || err?.message || err);
   res.status(500).json({ error: 'Internal server error.' });
 });
 
