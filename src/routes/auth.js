@@ -93,14 +93,14 @@ router.post('/login', validate(loginSchema), async function (req, res) {
     );
 
     if (rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid email or password.' });
+      return res.status(400).json({ error: 'No account found with this email. Please sign up first.' });
     }
 
     var user = rows[0];
 
     var passwordMatch = await bcrypt.compare(password, user.password_hash);
     if (!passwordMatch) {
-      return res.status(401).json({ error: 'Invalid email or password.' });
+      return res.status(400).json({ error: 'Invalid email or password.' });
     }
 
     if (!user.email_verified && await isConfigured()) {
