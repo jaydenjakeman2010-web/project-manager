@@ -1,9 +1,15 @@
-import nodemailer from 'nodemailer';
-
 var transport = null;
 
 async function getTransport() {
   if (transport) return transport;
+
+  var nodemailer;
+  try {
+    nodemailer = (await import('nodemailer')).default;
+  } catch {
+    console.log('nodemailer not available. Emails disabled.');
+    return null;
+  }
 
   if (process.env.SMTP_HOST && process.env.SMTP_USER) {
     transport = nodemailer.createTransport({
@@ -39,6 +45,11 @@ async function getTransport() {
 
 async function sendEmail(to, subject, html) {
   var t = await getTransport();
+  if (!t) {
+    console.log('Email not sent — no transport available.');
+    console.log('To send emails, set SMTP_HOST, SMTP_USER, SMTP_PASS or install nodemailer.');
+    return null;
+  }
   var fromName = process.env.EMAIL_FROM_NAME || 'Project Manager';
   var fromAddr = process.env.EMAIL_FROM_ADDRESS || (t.options.auth ? t.options.auth.user : 'noreply@projectmanager.app');
 

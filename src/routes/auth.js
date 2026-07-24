@@ -73,8 +73,9 @@ router.post('/signup', validate(signupSchema), async function (req, res) {
       userId: rows[0].id,
     });
   } catch (err) {
-    console.error('Signup failed:', err.message);
-    res.status(500).json({ error: 'Internal server error.' });
+    console.error('Signup failed:', err);
+    console.error('Stack:', err.stack);
+    res.status(500).json({ error: 'Internal server error. Check server logs for details.' });
   }
 });
 
