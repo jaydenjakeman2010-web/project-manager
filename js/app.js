@@ -1653,7 +1653,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             Due Date
           </span>
-           <input type="datetime-local" class="task-drawer-meta-value" id="edit-task-due" value="${task.dueDate ? task.dueDate.slice(0, 16) : ''}">
+           <input type="datetime-local" class="task-drawer-meta-value" id="edit-task-due" value="${task.dueDate ? (task.dueDate.length > 10 ? task.dueDate.slice(0, 16) : task.dueDate + 'T00:00') : ''}">
         </div>
         <div class="task-drawer-meta-row">
           <span class="task-drawer-meta-label">
