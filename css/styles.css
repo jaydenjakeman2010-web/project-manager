@@ -509,12 +509,20 @@ button {
   background: var(--bg-hover);
   color: var(--text-primary);
   border-left-color: var(--border-strong);
-  transform: translateX(4px);
+}
+
+.sidebar-item:hover svg {
+  transform: scale(1.1);
+  color: var(--primary);
+}
+
+.sidebar-item svg {
+  transition: transform 0.2s var(--ease-spring), color 0.2s var(--ease-luxury);
 }
 
 .sidebar-item:active {
   background: var(--bg-active);
-  transform: translateX(1px) scale(0.98);
+  transform: scale(0.98);
 }
 
 .sidebar-item.active {
@@ -993,58 +1001,51 @@ button {
 }
 
 .page.active .reveal {
-  animation: revealIn 650ms var(--ease-out-back) forwards;
-  animation-delay: calc(var(--reveal-index, 0) * 45ms);
+  animation: revealIn 600ms var(--ease-out-back) forwards;
+  animation-delay: calc(var(--reveal-index, 0) * 40ms);
   will-change: transform, opacity;
 }
 
 @keyframes revealIn {
   from {
     opacity: 0;
-    transform: translateY(30px) rotateX(-15deg) scale(0.96);
-    filter: blur(8px);
+    transform: translateY(20px) scale(0.97);
   }
   to {
     opacity: 1;
-    transform: translateY(0) rotateX(0) scale(1);
-    filter: blur(0);
-  }
-}
-
-@keyframes pageFadeIn {
-  0% {
-    opacity: 0;
-    clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
-    transform: translateY(20px) scale(0.98);
-  }
-  100% {
-    opacity: 1;
-    clip-path: polygon(0 0, 100% 100%, 100% 100%, 0 100%);
     transform: translateY(0) scale(1);
   }
 }
 
-@keyframes pageFadeOut {
-  0% {
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
     opacity: 1;
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
     transform: translateY(0) scale(1);
   }
-  100% {
+}
+
+@keyframes pageExit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
     opacity: 0;
-    clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
-    transform: translateY(-20px) scale(1.02);
+    transform: translateY(-16px) scale(0.97);
   }
 }
 
 .page.exiting {
-  animation: pageFadeOut 0.5s var(--ease-out-expo) forwards;
+  animation: pageExit 0.35s var(--ease-out) forwards;
   pointer-events: none;
 }
 
-.page-container {
-  perspective: var(--perspective);
-  transform-style: preserve-3d;
+.page.entering {
+  animation: pageEnter 0.45s var(--ease-out) forwards;
 }
 
 .page-header {
