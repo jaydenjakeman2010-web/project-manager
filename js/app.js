@@ -9,7 +9,7 @@
   function loadAllData() {
     if (!API.isLoggedIn()) return Promise.resolve();
     return Promise.all([
-      API.get('/user').then(function (u) { state.user = u; }).catch(function () {}),
+      API.get('/user').then(function (u) { state.user = u; if (u.photoUrl && !u.photo) u.photo = u.photoUrl; }).catch(function () {}),
       API.get('/projects').then(function (d) { state.projects = d; }).catch(function () {}),
       API.get('/tasks').then(function (d) { state.tasks = d; }).catch(function () {}),
       API.get('/team').then(function (d) { state.team = d; }).catch(function () {}),
@@ -115,6 +115,7 @@
     data.user.photo = base64;
     saveData(data);
     updateUserInfo();
+    API.patch('/user', { photo_url: base64 }).catch(function () {});
   }
 
   function removeProfilePhoto() {
@@ -124,6 +125,7 @@
     saveData(data);
     updateUserInfo();
     showToast('Profile photo removed');
+    API.patch('/user', { photo_url: null }).catch(function () {});
   }
 
   function setPhotoFromFile(file) {
@@ -2256,7 +2258,11 @@
         data.user.name = settingsName.value.trim();
         saveData(data);
         updateUserInfo();
-        showToast('Profile updated', 'success');
+        API.patch('/user', { name: data.user.name }).then(function () {
+          showToast('Profile updated', 'success');
+        }).catch(function () {
+          showToast('Failed to save name', 'error');
+        });
       }
     });
 
