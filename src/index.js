@@ -121,6 +121,16 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'Internal server error.' });
 });
 
+async function ensureExtensions() {
+  try {
+    const { default: db } = await import('./db/index.js');
+    await db.query('CREATE EXTENSION IF NOT EXISTS pgcrypto');
+    console.log('Extensions ready.');
+  } catch (err) {
+    console.log('Extension setup skipped (non-fatal): ' + err.message);
+  }
+}
+
 async function tryConnectDb(retries, delayMs) {
   for (var i = 0; i < retries; i++) {
     try {
@@ -136,6 +146,7 @@ async function tryConnectDb(retries, delayMs) {
       return true;
     } catch (err) {
       console.log('DB attempt ' + (i + 1) + '/' + retries + ' failed: ' + err.message);
+      console.log('Full error:', err.stack || err);
       if (i < retries - 1) {
         await new Promise(function (r) { setTimeout(r, delayMs); });
       }
@@ -145,6 +156,7 @@ async function tryConnectDb(retries, delayMs) {
 }
 
 async function start() {
+  await ensureExtensions();
   dbConnected = await tryConnectDb(5, 3000);
 
   if (!dbConnected) {

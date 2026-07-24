@@ -1060,11 +1060,11 @@
       addRevealClasses(newPage);
 
       newPage.style.animation = 'none';
-      newPage.offsetHeight;
-      newPage.style.animation = 'pageFadeIn 0.4s ease-out forwards';
+    newPage.offsetHeight;
+    newPage.style.animation = 'pageFadeIn 0.8s var(--ease-out-expo) forwards';
 
-      newPage.addEventListener('animationend', finishTransition, { once: true });
-      setTimeout(finishTransition, 800);
+    newPage.addEventListener('animationend', finishTransition, { once: true });
+    setTimeout(finishTransition, 1000);
     } else if (newPage) {
       newPage.classList.add('active');
       switchPage(pageId);
@@ -2581,6 +2581,44 @@
       if (btn) { btn.disabled = loading; btn.textContent = loading ? 'Please wait...' : btn.dataset.originalText || btn.textContent; }
     }
 
+    function initPremiumInteractions() {
+      // Mouse Glow Tracking for cards
+      document.addEventListener('mousemove', function (e) {
+        var cards = document.querySelectorAll('.stat-card, .project-card, .widget, .chart-card, .task-item, .team-member-card');
+        for (var i = 0; i < cards.length; i++) {
+          var rect = cards[i].getBoundingClientRect();
+          if (e.clientX > rect.left - 100 && e.clientX < rect.right + 100 && e.clientY > rect.top - 100 && e.clientY < rect.bottom + 100) {
+            var x = ((e.clientX - rect.left) / rect.width) * 100;
+            var y = ((e.clientY - rect.top) / rect.height) * 100;
+            cards[i].style.setProperty('--mouse-x', x + '%');
+            cards[i].style.setProperty('--mouse-y', y + '%');
+          }
+        }
+      });
+
+      // Magnetic Elements
+      var magneticSelectors = '.btn-primary, .sidebar-item, .nav-item-mobile, .dashboard-banner-btn, .action-btn';
+      document.addEventListener('mousemove', function (e) {
+        var els = document.querySelectorAll(magneticSelectors);
+        for (var i = 0; i < els.length; i++) {
+          var rect = els[i].getBoundingClientRect();
+          var centerX = rect.left + rect.width / 2;
+          var centerY = rect.top + rect.height / 2;
+          var distance = Math.sqrt(Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2));
+          
+          if (distance < 60) {
+            var x = (e.clientX - centerX) * 0.2;
+            var y = (e.clientY - centerY) * 0.2;
+            els[i].style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+            els[i].style.transition = 'transform 0.1s var(--ease-out)';
+          } else {
+            els[i].style.transform = '';
+            els[i].style.transition = 'transform 0.4s var(--ease-spring)';
+          }
+        }
+      });
+    }
+
     function bootApp() {
       initNavigation();
       initSidebar();
@@ -2595,6 +2633,7 @@
       initKeyboardShortcuts();
       initResizeHandler();
       initScrollAnimations();
+      initPremiumInteractions();
       document.getElementById('notifications-btn')?.addEventListener('click', function (e) { e.stopPropagation(); toggleNotificationDropdown(); });
       document.getElementById('mark-all-read')?.addEventListener('click', function (e) {
         e.stopPropagation();
