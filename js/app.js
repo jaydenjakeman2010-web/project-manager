@@ -1041,6 +1041,7 @@
 
     function navigateTo(pageId, projectId) {
       if (pageTransitionActive) return;
+      if (clearPageTimer) { clearTimeout(clearPageTimer); clearPageTimer = null; }
       pageTransitionActive = true;
       if (projectId) currentProjectId = projectId;
 
@@ -1067,7 +1068,23 @@
       pageTransitionActive = false;
       if (newPage) triggerReveals(newPage, 50);
       document.querySelector('.page-content').scrollTo({ top: 0, behavior: 'instant' });
+      completeLoadingBar();
     }
+
+  function completeLoadingBar() {
+    var bar = document.getElementById('loading-bar');
+    if (!bar) return;
+    bar.classList.add('finishing');
+    bar.style.width = '100%';
+    setTimeout(function () {
+      bar.style.opacity = '0';
+      setTimeout(function () {
+        bar.classList.remove('active', 'finishing');
+        bar.style.width = '';
+        bar.style.opacity = '';
+      }, 300);
+    }, 200);
+  }
 
     if (oldPage && newPage && oldPage !== newPage) {
       oldPage.classList.add('exiting');
