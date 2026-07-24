@@ -1014,6 +1014,14 @@
     }
   }
 
+  function triggerReveals(container, delay) {
+    if (!container) return;
+    var els = container.querySelectorAll('.anim-fade-up, .anim-fade-in, .anim-stagger');
+    els.forEach(function (el, i) {
+      setTimeout(function () { el.classList.add('visible'); }, i * (delay || 50));
+    });
+  }
+
   function switchPage(pageId) {
     switch (pageId) {
       case 'dashboard': renderDashboard(); break;
@@ -2706,14 +2714,15 @@
     }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
     function watch(el) {
       if (!el) return;
+      if (el.closest && el.closest('.page.entering')) return;
       if (el.matches && (el.matches('.anim-fade-up') || el.matches('.anim-fade-in') || el.matches('.anim-stagger'))) {
         observer.observe(el);
       }
       el.querySelectorAll('.anim-fade-up, .anim-fade-in, .anim-stagger').forEach(function (child) {
+        if (child.closest && child.closest('.page.entering')) return;
         observer.observe(child);
       });
     }
-    watch(document.querySelector('.page-content'));
     var contentArea = document.querySelector('.page-content');
     if (contentArea) {
       var mutationObs = new MutationObserver(function () {
