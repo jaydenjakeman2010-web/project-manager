@@ -623,13 +623,13 @@ button {
   position: absolute;
   top: calc(100% + 4px);
   left: var(--space-3);
-  width: 220px;
+  width: 260px;
   background: var(--bg-elevated);
   border: 1px solid var(--hairline);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl), var(--shadow-glass);
   z-index: calc(var(--z-sidebar) + 10);
-  overflow: hidden;
+  overflow: visible;
   animation: cmdkSlideIn 0.2s var(--ease-luxury);
 }
 
@@ -650,6 +650,8 @@ button {
   font-size: var(--text-xs);
   color: var(--text-tertiary);
   margin-top: 2px;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .workspace-dropdown-divider {
@@ -686,6 +688,7 @@ button {
 
 .sidebar.collapsed .workspace-dropdown {
   left: var(--space-1);
+  width: 220px;
 }
 
 .sidebar-footer {
@@ -704,6 +707,7 @@ button {
   top: auto;
   bottom: calc(100% + 4px);
   left: var(--space-2);
+  width: 240px;
 }
 
 .sidebar.collapsed .sidebar-footer .workspace-switcher {
