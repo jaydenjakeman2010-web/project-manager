@@ -11,9 +11,9 @@ function getSecret() {
   return secret;
 }
 
-export function signToken(payload) {
+export function signToken(payload, opts) {
   const secret = getSecret();
-  const expiresIn = process.env.JWT_EXPIRES_IN || '7d';
+  const expiresIn = opts?.expiresIn || process.env.JWT_EXPIRES_IN || '7d';
   return jwt.sign(payload, secret, { algorithm: 'HS256', expiresIn });
 }
 

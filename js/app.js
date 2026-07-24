@@ -2919,10 +2919,11 @@
     document.getElementById('login-submit')?.addEventListener('click', function () {
       var email = document.getElementById('login-email')?.value?.trim();
       var password = document.getElementById('login-password')?.value;
+      var rememberMe = document.getElementById('login-remember')?.checked !== false;
       if (!email || !password) { showAuthError('login-error', 'Please enter your email and password.'); return; }
       hideAuthError('login-error');
       setAuthLoading('login-submit', true);
-      Auth.login(email, password).then(function () {
+      Auth.login(email, password, rememberMe).then(function () {
         loadAllData().then(function () {
           onboarding?.classList.add('hidden');
           bootApp();

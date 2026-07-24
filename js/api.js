@@ -3,7 +3,8 @@ var API_BASE = (function () {
   return server.replace(/\/+$/, '') + '/api';
 })();
 
-var authToken = localStorage.getItem('pm-token');
+var authToken = sessionStorage.getItem('pm-token') || localStorage.getItem('pm-token');
+var tokenStorage = localStorage.getItem('pm-token') ? 'local' : (sessionStorage.getItem('pm-token') ? 'session' : null);
 
 var pending = {};
 
@@ -83,12 +84,22 @@ function apiFetch(path, options) {
   return promise;
 }
 
-function setAuthToken(token) {
+function setAuthToken(token, rememberMe) {
   authToken = token;
   if (token) {
-    localStorage.setItem('pm-token', token);
+    if (rememberMe !== false) {
+      localStorage.setItem('pm-token', token);
+      sessionStorage.removeItem('pm-token');
+      tokenStorage = 'local';
+    } else {
+      sessionStorage.setItem('pm-token', token);
+      localStorage.removeItem('pm-token');
+      tokenStorage = 'session';
+    }
   } else {
     localStorage.removeItem('pm-token');
+    sessionStorage.removeItem('pm-token');
+    tokenStorage = null;
   }
 }
 

@@ -19,6 +19,7 @@ var signupSchema = z.object({
 var loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+  rememberMe: z.boolean().optional(),
 });
 
 var verifySchema = z.object({
@@ -106,7 +107,7 @@ router.post('/login', validate(loginSchema), async function (req, res) {
       return res.status(403).json({ error: 'Please verify your email before signing in.' });
     }
 
-    var token = signToken({ sub: user.id });
+    var token = signToken({ sub: user.id }, req.validatedBody.rememberMe === false ? { expiresIn: '1d' } : undefined);
     res.json({ token: token, userId: user.id });
   } catch (err) {
     console.error('Login failed:', err.message);

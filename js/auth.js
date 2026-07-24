@@ -23,9 +23,9 @@
     return API.post('/auth/signup', { name: name, email: email, password: password });
   }
 
-  function login(email, password) {
-    return API.post('/auth/login', { email: email, password: password }).then(function (res) {
-      API.setToken(res.token);
+  function login(email, password, rememberMe) {
+    return API.post('/auth/login', { email: email, password: password, rememberMe: rememberMe }).then(function (res) {
+      API.setToken(res.token, rememberMe);
       return fetchCurrentUser();
     });
   }
