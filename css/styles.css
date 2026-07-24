@@ -1173,7 +1173,12 @@ button {
 
 .stat-card:hover {
   border-color: var(--primary);
-  transform: translateY(-10px) scale(1.02);
+  transform: 
+    translateY(-10px) 
+    scale(1.02) 
+    perspective(var(--perspective)) 
+    rotateX(calc((var(--mouse-y, 50%) - 50%) * -0.1deg))
+    rotateY(calc((var(--mouse-x, 50%) - 50%) * 0.1deg));
   box-shadow: var(--shadow-xl), var(--accent-glow);
 }
 
@@ -4561,6 +4566,8 @@ button {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   animation: fadeIn var(--duration-fast) var(--ease-out);
 }
 
@@ -4568,26 +4575,28 @@ button {
   position: relative;
   width: 580px;
   max-width: 90vw;
-  background: var(--bg-elevated);
-  border: 1px solid var(--hairline);
+  background: var(--bg-elevated-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl), var(--shadow-glass);
   max-height: 60vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: cmdkSlideIn var(--duration-slow) var(--ease-luxury);
+  animation: cmdkSlideIn 0.5s var(--ease-out-back);
   transform: translateZ(0);
 }
 
 @keyframes cmdkSlideIn {
   from {
     opacity: 0;
-    transform: translateY(-12px) scale(0.96);
+    transform: translateY(-20px) scale(0.95) rotateX(-5deg);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) rotateX(0);
   }
 }
 
