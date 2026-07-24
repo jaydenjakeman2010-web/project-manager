@@ -6,7 +6,7 @@ import { signToken } from '../auth/jwt.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import db from '../db/index.js';
-import email from '../email.js';
+import email, { isConfigured } from '../email.js';
 
 var router = Router();
 
@@ -47,29 +47,31 @@ router.post('/signup', validate(signupSchema), async function (req, res) {
     }
 
     var passwordHash = await bcrypt.hash(password, 12);
-    var verificationToken = uuid();
-    var expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    var canEmail = await isConfigured();
+    var verificationToken = canEmail ? uuid() : null;
+    var expiresAt = canEmail ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null;
 
     var { rows } = await db.query(
-      `INSERT INTO users (id, name, email, password_hash, verification_token, verification_token_expires_at)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO users (id, name, email, password_hash, email_verified, verification_token, verification_token_expires_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, name, email`,
-      [uuid(), name, emailAddr.toLowerCase(), passwordHash, verificationToken, expiresAt]
+      [uuid(), name, emailAddr.toLowerCase(), passwordHash, !canEmail, verificationToken, expiresAt]
     );
 
-    var baseUrl = process.env.CORS_ORIGIN || 'http://localhost:3001';
-    var verifyLink = baseUrl + '/verify?token=' + verificationToken;
-
-    email.sendEmail(
-      emailAddr,
-      'Verify your Project Manager account',
-      email.buildVerifyEmail(verifyLink)
-    ).catch(function (err) {
-      console.error('Failed to send verification email to ' + emailAddr + ': ' + err.message);
-    });
+    if (canEmail) {
+      var baseUrl = process.env.CORS_ORIGIN || 'http://localhost:3001';
+      var verifyLink = baseUrl + '/verify?token=' + verificationToken;
+      email.sendEmail(
+        emailAddr,
+        'Verify your Project Manager account',
+        email.buildVerifyEmail(verifyLink)
+      ).catch(function (err) {
+        console.error('Failed to send verification email to ' + emailAddr + ': ' + err.message);
+      });
+    }
 
     res.status(201).json({
-      message: 'Account created. Check your email for a verification link.',
+      message: canEmail ? 'Account created. Check your email for a verification link.' : 'Account created. Welcome!',
       userId: rows[0].id,
     });
   } catch (err) {
@@ -100,7 +102,7 @@ router.post('/login', validate(loginSchema), async function (req, res) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    if (!user.email_verified) {
+    if (!user.email_verified && await isConfigured()) {
       return res.status(403).json({ error: 'Please verify your email before signing in.' });
     }
 

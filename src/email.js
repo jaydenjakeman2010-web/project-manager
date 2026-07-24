@@ -118,4 +118,10 @@ function buildResetEmail(link) {
   return '<div style="max-width:480px;margin:40px auto;font-family:Inter,system-ui,sans-serif;background:#181A23;border-radius:16px;padding:40px;color:#F5F0EB;"><div style="text-align:center;margin-bottom:32px;"><div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#3DAF6E,#4A8BC2);display:inline-flex;align-items:center;justify-content:center;color:white;font-size:24px;">🔑</div></div><h1 style="font-size:22px;font-weight:700;margin:0 0 8px;text-align:center;">Reset your password</h1><p style="color:#A19A92;font-size:15px;line-height:1.5;text-align:center;margin:0 0 28px;">Click the button below to reset your password. This link is valid for 1 hour.</p><div style="text-align:center;"><a href="' + link + '" style="display:inline-block;background:#3DAF6E;color:white;padding:12px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;">Reset Password</a></div><p style="color:#7A7370;font-size:13px;text-align:center;margin-top:28px;">If you did not request a password reset, ignore this email.</p></div>';
 }
 
-export default { sendEmail, buildVerifyEmail, buildResetEmail, refreshTransport };
+export async function isConfigured() {
+  if (process.env.SMTP_HOST && process.env.SMTP_USER) return true;
+  var cfg = await loadDbConfig();
+  return !!cfg;
+}
+
+export default { sendEmail, buildVerifyEmail, buildResetEmail, refreshTransport, isConfigured };
