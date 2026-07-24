@@ -27,11 +27,45 @@ This takes the code from your computer and uploads it to the internet.
 
 **Step 2.1 — Create a new repository on GitHub**
 
-1. In your browser, go to https://github.com/new
+1. Open your browser and go to https://github.com/new
 2. For "Repository name" type: `project-manager`
 3. Leave everything else as-is
 4. Click "Create repository"
-5. You'll see a page with commands. **Copy the first block titled "...or push an existing repository"**. It looks like:
+5. You'll see a page with commands. Look for the section titled **"...or push an existing repository from the command line"**. It shows three commands. **Do not copy them yet** — first follow the steps below.
+
+**Step 2.2 — Open PowerShell**
+
+1. Press the **Windows key** on your keyboard
+2. Type `PowerShell`
+3. Click "Windows PowerShell"
+4. A black window with a blinking cursor appears
+
+**Step 2.3 — Go to your project folder**
+
+1. In PowerShell, type this exact line then press Enter:
+
+```powershell
+cd "C:\Users\Jayde\Downloads\Project Manager Website"
+```
+
+**Step 2.4 — Save your code as a first commit**
+
+1. In PowerShell, type this line then press Enter:
+
+```powershell
+git add -A
+```
+
+2. Then type this line then press Enter:
+
+```powershell
+git commit -m "initial upload"
+```
+
+**Step 2.5 — Upload to GitHub**
+
+1. Go back to your browser (the GitHub page from Step 2.1)
+2. In the **"...or push an existing repository from the command line"** section, click the copy button (clipboard icon) next to the first command. The three lines should look like:
 
 ```
 git remote add origin https://github.com/jaydenjakeman2010-web/project-manager.git
@@ -39,34 +73,24 @@ git branch -M main
 git push -u origin main
 ```
 
-**Step 2.2 — Upload your code**
+3. Go back to PowerShell and **paste the three commands** (right-click in the black window to paste):
 
-1. Open **PowerShell** (search for it in your Start Menu)
-2. Type this command to go to your project folder:
+   The first command tells your computer where GitHub is.
+   The second renames your main branch.
+   The third uploads your code.
 
-```powershell
-cd "C:\Users\Jayde\Downloads\Project Manager Website"
-```
+4. If this is your first time using git, a sign-in window might pop up. Sign in with your GitHub username and password OR it may ask for a "personal access token":
 
-3. Press Enter
-4. Now paste the three commands you copied from GitHub. It should look like:
-
-```powershell
-git remote add origin https://github.com/YOUR_USERNAME/project-manager.git
-git branch -M main
-git push -u origin main
-```
-
-5. It will ask for your GitHub username and password. Your password is NOT your normal password — you need a "personal access token" instead:
+   **If it asks for a password, DO NOT type your normal password. Instead:**
    - Go to https://github.com/settings/tokens
    - Click "Generate new token (classic)"
-   - Give it a name like "push"
-   - Check the box next to **repo**
+   - Give it a name like "upload"
+   - Check the box next to **repo** (top checkbox)
    - Scroll down and click "Generate token"
-   - **Copy the token** (it looks like `ghp_xxxxxxxxxxxx`)
-   - When PowerShell asks for a password, paste this token instead
+   - **Copy the token** (it starts with `ghp_`)
+   - Go back to PowerShell and paste it when asked for password
 
-6. If it worked, you'll see "Success" or similar. Your code is now on the internet.
+5. If it worked, you'll see uploading progress bars and a success message. Your code is now on GitHub.
 
 ---
 
