@@ -1024,10 +1024,17 @@
     }
   }
 
-  function navigateTo(pageId, projectId) {
-    if (pageTransitionActive) return;
-    pageTransitionActive = true;
-    if (projectId) currentProjectId = projectId;
+    function navigateTo(pageId, projectId) {
+      if (pageTransitionActive) return;
+      pageTransitionActive = true;
+      if (projectId) currentProjectId = projectId;
+
+      var loadingBar = document.getElementById('loading-bar');
+      if (loadingBar) {
+        loadingBar.classList.remove('finishing');
+        loadingBar.classList.add('active');
+        setTimeout(() => { if (loadingBar.classList.contains('active')) loadingBar.style.width = '70%'; }, 200);
+      }
 
     document.querySelectorAll('.sidebar-item').forEach(function (i) { i.classList.remove('active'); });
     var sidebarTarget = document.querySelector('.sidebar-item[data-page="' + pageId + '"]');
@@ -1050,21 +1057,42 @@
       pageTransitionActive = false;
       if (newPage) triggerReveals(newPage, 50);
       document.querySelector('.page-content').scrollTo({ top: 0, behavior: 'instant' });
+      
+      var loadingBar = document.getElementById('loading-bar');
+      if (loadingBar) {
+        loadingBar.classList.remove('active');
+        loadingBar.classList.add('finishing');
+        setTimeout(() => {
+          loadingBar.classList.remove('finishing');
+          loadingBar.style.width = '';
+        }, 500);
+      }
     }
 
     if (oldPage && newPage && oldPage !== newPage) {
-      oldPage.classList.remove('active');
+      oldPage.classList.add('exiting');
+      
+      const onExitEnd = () => {
+        oldPage.classList.remove('active', 'exiting');
+        oldPage.removeEventListener('animationend', onExitEnd);
+        
+        newPage.classList.add('active');
+        switchPage(pageId);
+        addRevealClasses(newPage);
 
-      newPage.classList.add('active');
-      switchPage(pageId);
-      addRevealClasses(newPage);
+        newPage.style.animation = 'none';
+        newPage.offsetHeight;
+        newPage.style.animation = 'pageFadeIn 0.8s var(--ease-out-expo) forwards';
 
-      newPage.style.animation = 'none';
-    newPage.offsetHeight;
-    newPage.style.animation = 'pageFadeIn 0.8s var(--ease-out-expo) forwards';
+        newPage.addEventListener('animationend', finishTransition, { once: true });
+        setTimeout(finishTransition, 1000);
+      };
 
-    newPage.addEventListener('animationend', finishTransition, { once: true });
-    setTimeout(finishTransition, 1000);
+      oldPage.addEventListener('animationend', onExitEnd);
+      // Fallback if animation fails
+      setTimeout(() => {
+        if (oldPage.classList.contains('exiting')) onExitEnd();
+      }, 600);
     } else if (newPage) {
       newPage.classList.add('active');
       switchPage(pageId);
@@ -1153,7 +1181,16 @@
     setTheme(saved === 'dark' || !saved);
     themeToggle?.addEventListener('click', () => {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      setTheme(!isDark);
+      
+      // Animation
+      themeToggle.style.transform = 'scale(0.8) rotate(-45deg)';
+      setTimeout(() => {
+        setTheme(!isDark);
+        themeToggle.style.transform = 'scale(1.1) rotate(0deg)';
+        setTimeout(() => {
+          themeToggle.style.transform = '';
+        }, 200);
+      }, 100);
     });
     settingsToggle?.addEventListener('click', () => {
       settingsToggle.classList.toggle('active');
@@ -1171,7 +1208,35 @@
     const input = overlay?.querySelector('.command-palette-input');
     let focusedIndex = 0;
     function openCmdk() { overlay?.classList.add('active'); overlay.style.display = 'flex'; focusedIndex = 0; setTimeout(() => input?.focus(), 50); }
-    function closeCmdk() { overlay?.classList.remove('active'); overlay.style.display = 'none'; if (input) input.value = ''; }
+    function animateClose(el, callback) {
+      if (!el) return;
+      el.classList.add('exiting');
+      const onEnd = () => {
+        el.classList.remove('exiting');
+        if (callback) callback();
+        el.removeEventListener('animationend', onEnd);
+      };
+      el.addEventListener('animationend', onEnd);
+      // Fallback
+      setTimeout(onEnd, 500);
+    }
+
+    function closeCmdk() { 
+      var overlay = document.getElementById('command-palette');
+      if (!overlay) return;
+      var cmdk = overlay.querySelector('.command-palette');
+      if (cmdk) {
+        animateClose(cmdk, () => {
+          overlay.classList.remove('active');
+          overlay.style.display = 'none';
+          var input = overlay.querySelector('.command-palette-input');
+          if (input) input.value = '';
+        });
+      } else {
+        overlay.classList.remove('active');
+        overlay.style.display = 'none';
+      }
+    }
     trigger?.addEventListener('click', openCmdk);
     backdrop?.addEventListener('click', closeCmdk);
     document.addEventListener('keydown', (e) => {
@@ -1192,9 +1257,18 @@
       cmdQueue = requestAnimationFrame(function() {
         cmdQueue = null;
         var items = overlay.querySelectorAll('.command-item');
+        var visibleCount = 0;
         for (var i = 0; i < items.length; i++) {
           var text = items[i].querySelector('span')?.textContent.toLowerCase() || '';
-          items[i].style.display = text.includes(q) ? '' : 'none';
+          var isVisible = text.includes(q);
+          items[i].style.display = isVisible ? '' : 'none';
+          if (isVisible) {
+            items[i].style.animation = 'none';
+            items[i].offsetHeight;
+            items[i].style.animation = 'revealIn 0.3s var(--ease-out) both';
+            items[i].style.animationDelay = (visibleCount * 30) + 'ms';
+            visibleCount++;
+          }
         }
       });
     });
@@ -1237,8 +1311,15 @@
   function closeDrawer() {
     const overlay = document.getElementById('task-drawer-overlay');
     const drawer = document.getElementById('task-drawer');
-    overlay?.classList.remove('active');
-    drawer?.classList.remove('active');
+    if (!drawer) return;
+    drawer.classList.add('exiting');
+    const onEnd = () => {
+      drawer.classList.remove('active', 'exiting');
+      overlay?.classList.remove('active');
+      drawer.removeEventListener('animationend', onEnd);
+    };
+    drawer.addEventListener('animationend', onEnd);
+    setTimeout(onEnd, 500);
   }
 
   function openDrawer() {
@@ -2560,10 +2641,40 @@
 
     document.addEventListener('DOMContentLoaded', function () {
     function showAuth(id) {
-      ['auth-login','auth-signup','auth-forgot','auth-verify'].forEach(function (elId) {
-        var el = document.getElementById(elId);
-        if (el) el.style.display = elId === id ? '' : 'none';
+      const views = ['auth-login','auth-signup','auth-forgot','auth-verify'];
+      const currentView = views.find(v => {
+        const el = document.getElementById(v);
+        return el && el.style.display !== 'none';
       });
+
+      if (currentView === id) return;
+
+      const newEl = document.getElementById(id);
+      const oldEl = currentView ? document.getElementById(currentView) : null;
+
+      if (oldEl && newEl) {
+        const isForward = (views.indexOf(id) > views.indexOf(currentView));
+        oldEl.classList.add(isForward ? 'exiting-left' : 'exiting-right');
+        
+        const onEnd = () => {
+          oldEl.style.display = 'none';
+          oldEl.classList.remove('exiting-left', 'exiting-right');
+          oldEl.removeEventListener('animationend', onEnd);
+          
+          newEl.style.display = '';
+          newEl.style.animation = 'none';
+          newEl.offsetHeight;
+          newEl.style.animation = (isForward ? 'slideLeftIn' : 'slideRightIn') + ' 0.5s var(--ease-out-expo) both';
+        };
+        oldEl.addEventListener('animationend', onEnd);
+        setTimeout(onEnd, 450);
+      } else if (newEl) {
+        views.forEach(v => {
+          const el = document.getElementById(v);
+          if (el) el.style.display = 'none';
+        });
+        newEl.style.display = '';
+      }
     }
 
     function showAuthError(id, msg) {

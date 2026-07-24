@@ -289,6 +289,24 @@ button {
   font-size: inherit;
 }
 
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-subtle);
+  transform: scale(1.005);
+  transition: all 0.3s var(--ease-spring);
+}
+
+.input-wrapper {
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.input-wrapper:focus-within {
+  transform: translateY(-2px);
+}
+
 a {
   color: var(--primary);
   text-decoration: none;
@@ -1001,9 +1019,27 @@ button {
   }
   100% {
     opacity: 1;
+    clip-path: polygon(0 0, 100% 100%, 100% 100%, 0 100%);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pageFadeOut {
+  0% {
+    opacity: 1;
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
     transform: translateY(0) scale(1);
   }
+  100% {
+    opacity: 0;
+    clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
+    transform: translateY(-20px) scale(1.02);
+  }
+}
+
+.page.exiting {
+  animation: pageFadeOut 0.5s var(--ease-out-expo) forwards;
+  pointer-events: none;
 }
 
 .page-container {
@@ -4600,6 +4636,21 @@ button {
   }
 }
 
+@keyframes cmdkSlideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98) rotateX(-2deg);
+  }
+}
+
+.command-palette.exiting {
+  animation: cmdkSlideOut 0.25s var(--ease-out-expo) forwards;
+}
+
 .command-palette-input-area {
   display: flex;
   align-items: center;
@@ -4751,18 +4802,34 @@ button {
 .task-drawer.active {
   transform: translateX(0);
   opacity: 1;
-  animation: drawerSlideIn 280ms ease-out both;
+  animation: drawerSlideIn 0.5s var(--ease-out-expo) both;
 }
 
 @keyframes drawerSlideIn {
   from {
     opacity: 0;
-    transform: translateX(20px) translateZ(0);
+    transform: translateX(40px) translateZ(0);
   }
   to {
     opacity: 1;
     transform: translateX(0) translateZ(0);
   }
+}
+
+@keyframes drawerSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) translateZ(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(40px) translateZ(0);
+  }
+}
+
+.task-drawer.exiting {
+  animation: drawerSlideOut 0.4s var(--ease-luxury) forwards;
+  pointer-events: none;
 }
 
 .task-drawer-header {
@@ -5491,6 +5558,15 @@ button {
 .anim-stagger.visible > *:nth-child(8) { transition-delay: 420ms; }
 .anim-stagger.visible > * { opacity: 1; transform: translateY(0); }
 
+@keyframes skeletonFadeOut {
+  from { opacity: 1; filter: blur(0); }
+  to { opacity: 0; filter: blur(4px); }
+}
+
+.skeleton.exiting {
+  animation: skeletonFadeOut 0.35s var(--ease-out) forwards;
+}
+
 .skeleton {
   background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%);
   background-size: 200% 100%;
@@ -5578,6 +5654,31 @@ button {
   width: 100%;
 }
 
+.loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--accent));
+  z-index: 99999;
+  width: 0;
+  opacity: 0;
+  transition: width 0.4s var(--ease-out), opacity 0.3s var(--ease-out);
+  box-shadow: 0 0 10px var(--primary-light);
+  pointer-events: none;
+}
+
+.loading-bar.active {
+  opacity: 1;
+  width: 30%;
+}
+
+.loading-bar.finishing {
+  width: 100% !important;
+  opacity: 0;
+  transition: width 0.3s var(--ease-in), opacity 0.3s var(--ease-in) 0.2s;
+}
+
 .onboarding-overlay {
   position: fixed;
   inset: 0;
@@ -5599,6 +5700,38 @@ button {
   pointer-events: none;
 }
 
+@keyframes slideLeftIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideLeftOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-30px); }
+}
+
+@keyframes slideRightIn {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideRightOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(30px); }
+}
+
+.auth-view {
+  animation: slideLeftIn 0.5s var(--ease-out-expo) both;
+}
+
+.auth-view.exiting-left {
+  animation: slideLeftOut 0.4s var(--ease-out-expo) forwards;
+}
+
+.auth-view.exiting-right {
+  animation: slideRightOut 0.4s var(--ease-out-expo) forwards;
+}
+
 .onboarding-container {
   width: 100%;
   max-width: 460px;
@@ -5609,7 +5742,10 @@ button {
   box-shadow: var(--shadow-xl), var(--shadow-glass);
   position: relative;
   z-index: 1;
-  animation: fadeIn var(--duration-slower) var(--ease-out), slideInUp var(--duration-slower) var(--ease-luxury);
+  overflow: hidden;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
 }
 
 .onboarding-logo {

@@ -21,7 +21,7 @@
         </div>
       </div>
 
-      <div id="auth-login" style="display:none;">
+      <div id="auth-login" class="auth-view" style="display:none;">
         <h1 class="onboarding-title">Sign in</h1>
         <p class="onboarding-subtitle">Enter your email and password to continue.</p>
         <div class="onboarding-step">
@@ -48,7 +48,7 @@
         <div id="login-error" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--danger-bg);color:var(--danger);font-size:13px;text-align:center;"></div>
       </div>
 
-      <div id="auth-signup" style="display:none;">
+      <div id="auth-signup" class="auth-view" style="display:none;">
         <h1 class="onboarding-title">Create account</h1>
         <p class="onboarding-subtitle">Enter your details to get started.</p>
         <div class="onboarding-step">
@@ -79,7 +79,7 @@
         <div id="signup-error" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--danger-bg);color:var(--danger);font-size:13px;text-align:center;"></div>
       </div>
 
-      <div id="auth-forgot" style="display:none;">
+      <div id="auth-forgot" class="auth-view" style="display:none;">
         <h1 class="onboarding-title">Reset password</h1>
         <p class="onboarding-subtitle">Enter your email and we'll send you a reset link.</p>
         <div class="onboarding-step">
@@ -96,7 +96,7 @@
         <div id="forgot-success" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--success-bg);color:var(--success);font-size:13px;text-align:center;"></div>
       </div>
 
-      <div id="auth-verify" style="display:none;">
+      <div id="auth-verify" class="auth-view" style="display:none;">
         <h1 class="onboarding-title">Check your email</h1>
         <p class="onboarding-subtitle">We sent a verification link to your email. Click it to activate your account, then sign in.</p>
         <div style="text-align:center;margin-top:20px;font-size:13px;color:var(--text-tertiary);">
@@ -107,6 +107,7 @@
     </div>
   </div>
 
+  <div id="loading-bar" class="loading-bar"></div>
   <div class="app-layout">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
