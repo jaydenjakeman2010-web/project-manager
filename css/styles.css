@@ -982,18 +982,37 @@ button {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: var(--space-8) var(--space-7);
-  padding-bottom: 80px;
   position: relative;
+  background: var(--bg-primary);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   -webkit-overflow-scrolling: touch;
 }
 
 .page {
   display: none;
+  width: 100%;
+  min-height: 100%;
+  padding: var(--space-8) var(--space-7);
+  padding-bottom: 80px;
 }
 
 .page.active {
   display: block;
+}
+
+.page.entering,
+.page.exiting {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.page.entering {
+  z-index: 20;
 }
 
 .reveal {

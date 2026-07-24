@@ -884,7 +884,7 @@
     if (updates.description !== undefined) mapped.description = updates.description;
     if (updates.status !== undefined) mapped.status = updates.status;
     if (updates.priority !== undefined) mapped.priority = updates.priority;
-    if (updates.dueDate !== undefined) mapped.due_date = updates.dueDate;
+    if (updates.dueDate !== undefined) mapped.due_date = updates.dueDate || null;
     if (updates.assigneeId !== undefined) mapped.assignee_id = updates.assigneeId;
     if (updates.recurrence !== undefined) mapped.recurrence = updates.recurrence;
     if (updates.projectId !== undefined) mapped.project_id = updates.projectId;
@@ -1010,8 +1010,10 @@
     for (var s = 0; s < selectors.length; s++) {
       var els = container.querySelectorAll(selectors[s]);
       for (var e = 0; e < els.length; e++) {
-        els[e].classList.add('reveal');
-        els[e].style.setProperty('--reveal-index', e);
+        if (!els[e].classList.contains('anim-fade-up') && !els[e].classList.contains('anim-fade-in')) {
+          els[e].classList.add('reveal');
+          els[e].style.setProperty('--reveal-index', e);
+        }
       }
     }
   }
@@ -1096,9 +1098,13 @@
 
     function finishTransition() {
       if (!pageTransitionActive) return;
-      if (newPage) newPage.classList.remove('entering');
       pageTransitionActive = false;
-      if (newPage) triggerReveals(newPage, 50);
+      
+      // Delay reveals slightly to allow page entry to finish
+      setTimeout(function() {
+        if (newPage) triggerReveals(newPage, 50);
+      }, 50);
+      
       document.querySelector('.page-content').scrollTo({ top: 0, behavior: 'instant' });
       completeLoadingBar();
     }
@@ -1129,13 +1135,13 @@
       clearPageTimer = setTimeout(function () {
         oldPage.classList.remove('active', 'exiting');
         finishTransition();
-      }, 420);
+      }, 620);
     } else if (newPage) {
       newPage.classList.add('active');
       switchPage(pageId);
       addRevealClasses(newPage);
       newPage.classList.add('entering');
-      setTimeout(finishTransition, 450);
+      setTimeout(finishTransition, 650);
     } else {
       pageTransitionActive = false;
     }
@@ -1596,6 +1602,9 @@
     content.innerHTML = `
       <div class="task-drawer-title-area">
         <input type="text" class="task-drawer-title" id="edit-task-title" value="${task.name}" placeholder="Task name" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <div class="task-drawer-section">
+        <textarea class="task-drawer-description" id="edit-task-desc" placeholder="Add a description..." autocomplete="off" autocorrect="off" spellcheck="false">${task.description || ''}</textarea>
       </div>
        <div class="task-drawer-section">
          <div class="task-drawer-section-header">
