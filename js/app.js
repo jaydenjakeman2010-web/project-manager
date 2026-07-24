@@ -2759,7 +2759,7 @@
 
     document.addEventListener('DOMContentLoaded', function () {
     function showAuth(id) {
-      const views = ['auth-login','auth-signup','auth-forgot','auth-verify'];
+      const views = ['auth-loading','auth-login','auth-signup','auth-forgot','auth-verify'];
       const currentView = views.find(v => {
         const el = document.getElementById(v);
         return el && el.style.display !== 'none';
@@ -2925,11 +2925,11 @@
 
     var onboarding = document.getElementById('onboarding');
     if (Auth.isAuthenticated()) {
+      showAuth('auth-loading');
       loadAllData().then(function () {
         onboarding?.classList.add('hidden');
         bootApp();
       }).catch(function () {
-        onboarding?.classList.remove('hidden');
         showAuth('auth-login');
       });
     } else {
@@ -2964,6 +2964,7 @@
       hideAuthError('login-error');
       setAuthLoading('login-submit', true);
       Auth.login(email, password, rememberMe).then(function () {
+        showAuth('auth-loading');
         loadAllData().then(function () {
           onboarding?.classList.add('hidden');
           bootApp();
