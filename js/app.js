@@ -1072,7 +1072,14 @@
   }
 
     function navigateTo(pageId, projectId) {
-      if (pageTransitionActive) return;
+      if (pageTransitionActive) {
+        if (clearPageTimer) { clearTimeout(clearPageTimer); clearPageTimer = null; }
+        var currentActive = document.querySelector('.page.active');
+        if (currentActive) currentActive.classList.remove('active', 'entering', 'exiting');
+        var bar = document.getElementById('loading-bar');
+        if (bar) { bar.classList.remove('active', 'finishing'); bar.style.width = ''; bar.style.opacity = ''; }
+        pageTransitionActive = false;
+      }
       if (clearPageTimer) { clearTimeout(clearPageTimer); clearPageTimer = null; }
       pageTransitionActive = true;
       if (projectId) currentProjectId = projectId;
