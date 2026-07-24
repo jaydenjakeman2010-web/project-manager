@@ -90,21 +90,38 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'Internal server error.' });
 });
 
-async function start() {
-  try {
-    const { default: db } = await import('./db/index.js');
-    await db.query('SELECT 1');
-    console.log('Database connected.');
+async function tryConnectDb(retries, delayMs) {
+  for (var i = 0; i < retries; i++) {
+    try {
+      const { default: db } = await import('./db/index.js');
+      await db.query('SELECT 1');
+      console.log('Database connected.');
 
-    var fs = await import('fs');
-    var schemaPath = path.join(__dirname, 'db', 'schema.sql');
-    var schema = fs.readFileSync(schemaPath, 'utf-8');
-    await db.query(schema);
-    console.log('Schema up to date.');
-  } catch (err) {
-    console.error('Database setup failed:', err.message);
-    console.error('Make sure DATABASE_URL is set and the database is running.');
-    process.exit(1);
+      var fs = await import('fs');
+      var schemaPath = path.join(__dirname, 'db', 'schema.sql');
+      var schema = fs.readFileSync(schemaPath, 'utf-8');
+      await db.query(schema);
+      console.log('Schema up to date.');
+      return true;
+    } catch (err) {
+      console.log('DB attempt ' + (i + 1) + '/' + retries + ' failed: ' + err.message);
+      if (i < retries - 1) {
+        await new Promise(function (r) { setTimeout(r, delayMs); });
+      }
+    }
+  }
+  return false;
+}
+
+async function start() {
+  var dbOk = await tryConnectDb(5, 3000);
+
+  if (!dbOk) {
+    console.log('WARNING: No database connection. App will start but API calls will fail.');
+    console.log('Set DATABASE_URL or add PostgreSQL plugin in Railway.');
+    app.get('/api/*', function (_req, res) {
+      res.status(503).json({ error: 'Database not connected. Add PostgreSQL in Railway.' });
+    });
   }
 
   app.listen(PORT, function () {
