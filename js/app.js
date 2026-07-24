@@ -12,7 +12,7 @@
       API.get('/user').then(function (u) { state.user = u; if (u.photoUrl && !u.photo) u.photo = u.photoUrl; }).catch(function () {}),
       API.get('/projects').then(function (d) { state.projects = d; }).catch(function () {}),
       API.get('/tasks').then(function (d) { state.tasks = d; }).catch(function () {}),
-      API.get('/team').then(function (d) { state.team = d; }).catch(function () {}),
+      API.get('/team').then(function (d) { d.forEach(function(m) { if (m.photoUrl && !m.photo) m.photo = m.photoUrl; }); state.team = d; }).catch(function () {}),
       API.get('/events').then(function (d) { state.events = d; }).catch(function () {}),
     ]);
   }
@@ -912,6 +912,7 @@
 
   function createTeamMember(name, role, photo) {
     API.post('/team', { name: name, role: role || 'Member', photo_url: photo || null }).then(function (m) {
+      if (m.photoUrl && !m.photo) m.photo = m.photoUrl;
       state.team.push(m);
       showToast('Team member added');
       refreshCurrentView();
@@ -926,6 +927,7 @@
     if (updates.photo !== undefined) mapped.photo_url = updates.photo;
 
     API.patch('/team/' + memberId, mapped).then(function (m) {
+      if (m.photoUrl && !m.photo) m.photo = m.photoUrl;
       var idx = state.team.findIndex(function (x) { return x.id === memberId; });
       if (idx !== -1) state.team[idx] = m;
       showToast('Team member updated');
