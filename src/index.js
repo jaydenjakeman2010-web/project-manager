@@ -75,6 +75,16 @@ app.use(express.static(ROOT, {
 
 app.get('/health', (_req, res) => { res.json({ status: 'ok' }); });
 
+app.get('/_debug', async (_req, res) => {
+  try {
+    var db = (await import('./db/index.js')).default;
+    var { rows } = await db.query("SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = 'users' ORDER BY ordinal_position");
+    res.json({ columns: rows });
+  } catch (err) {
+    res.json({ error: err.message, stack: err.stack });
+  }
+});
+
 app.get('*', (_req, res) => {
   res.sendFile(path.join(ROOT, 'index.html'));
 });
