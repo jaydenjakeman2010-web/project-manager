@@ -308,7 +308,7 @@
       bannerHtml = '<div class="dashboard-banner ' + (isOverdue ? 'overdue' : 'due-today') + '"><div class="dashboard-banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div><div class="dashboard-banner-content"><span class="dashboard-banner-title">' + (isOverdue ? 'Task Overdue' : 'Due Today') + '</span><span class="dashboard-banner-desc">' + task.name + '</span></div><button class="btn btn-sm btn-primary dashboard-banner-btn" data-task-id="' + task.id + '">View Task</button></div>';
     }
 
-    var html = bannerHtml + '<div class="stats-row"><div class="stat-card"><div class="stat-card-header"><span class="stat-card-label">Total Projects</span></div><div class="stat-card-value">' + data.projects.length + '</div></div><div class="stat-card"><div class="stat-card-header"><span class="stat-card-label">Total Tasks</span></div><div class="stat-card-value">' + totalTasks + '</div></div><div class="stat-card"><div class="stat-card-header"><span class="stat-card-label">Completion Rate</span></div><div class="stat-card-value">' + rate + '%</div></div><div class="stat-card"><div class="stat-card-header"><span class="stat-card-label">Team Members</span></div><div class="stat-card-value">' + data.team.length + '</div></div></div>';
+    var html = bannerHtml + '<div class="stats-row anim-stagger"><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Total Projects</span></div><div class="stat-card-value">' + data.projects.length + '</div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Total Tasks</span></div><div class="stat-card-value">' + totalTasks + '</div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Completion Rate</span></div><div class="stat-card-value">' + rate + '%</div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Team Members</span></div><div class="stat-card-value">' + data.team.length + '</div></div></div>';
 
     if (overdueCount > 0 || dueToday > 0) {
       html += '<div class="quick-actions"><div class="section-header"><h2 class="section-title">Quick Actions</h2></div><div class="quick-actions-grid">';
@@ -2529,6 +2529,35 @@
     });
   }
 
+  function initScrollAnimations() {
+    if (typeof IntersectionObserver === 'undefined') return;
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    function watch(el) {
+      if (!el) return;
+      if (el.matches && (el.matches('.anim-fade-up') || el.matches('.anim-fade-in') || el.matches('.anim-stagger'))) {
+        observer.observe(el);
+      }
+      el.querySelectorAll('.anim-fade-up, .anim-fade-in, .anim-stagger').forEach(function (child) {
+        observer.observe(child);
+      });
+    }
+    watch(document.querySelector('.page-content'));
+    var contentArea = document.querySelector('.page-content');
+    if (contentArea) {
+      var mutationObs = new MutationObserver(function () {
+        watch(contentArea);
+      });
+      mutationObs.observe(contentArea, { childList: true, subtree: true });
+    }
+  }
+
     document.addEventListener('DOMContentLoaded', function () {
     function showAuth(id) {
       ['auth-login','auth-signup','auth-forgot','auth-verify'].forEach(function (elId) {
@@ -2565,6 +2594,20 @@
       initProfilePicture();
       initKeyboardShortcuts();
       initResizeHandler();
+      initScrollAnimations();
+      document.querySelectorAll('.password-toggle').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var id = this.dataset.target;
+          var input = document.getElementById(id);
+          if (!input) return;
+          var isHidden = input.type === 'password';
+          input.type = isHidden ? 'text' : 'password';
+          this.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+          this.innerHTML = isHidden
+            ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+            : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+        });
+      });
       document.getElementById('notifications-btn')?.addEventListener('click', function (e) { e.stopPropagation(); toggleNotificationDropdown(); });
       document.getElementById('mark-all-read')?.addEventListener('click', function (e) {
         e.stopPropagation();
