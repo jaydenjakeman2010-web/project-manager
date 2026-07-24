@@ -73,9 +73,10 @@ router.post('/signup', validate(signupSchema), async function (req, res) {
       userId: rows[0].id,
     });
   } catch (err) {
-    console.error('Signup failed:', err);
+    console.error('Signup failed:', err.message);
     console.error('Stack:', err.stack);
-    res.status(500).json({ error: 'Internal server error. Check server logs for details.' });
+    console.error('Body:', req.validatedBody ? { name: req.validatedBody.name, email: req.validatedBody.email } : 'no body');
+    res.status(500).json({ error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error. Check server logs for details.' });
   }
 });
 

@@ -40,6 +40,15 @@ app.use(helmet({
 app.use(express.json({ limit: '2mb' }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
+var dbConnected = false;
+
+app.use('/api', function (req, res, next) {
+  if (!dbConnected) {
+    return res.status(503).json({ error: 'Database not connected. Add PostgreSQL in Railway.' });
+  }
+  next();
+});
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -136,14 +145,11 @@ async function tryConnectDb(retries, delayMs) {
 }
 
 async function start() {
-  var dbOk = await tryConnectDb(5, 3000);
+  dbConnected = await tryConnectDb(5, 3000);
 
-  if (!dbOk) {
-    console.log('WARNING: No database connection. App will start but API calls will fail.');
+  if (!dbConnected) {
+    console.log('WARNING: No database connection. API calls will return 503.');
     console.log('Set DATABASE_URL or add PostgreSQL plugin in Railway.');
-    app.get('/api/*', function (_req, res) {
-      res.status(503).json({ error: 'Database not connected. Add PostgreSQL in Railway.' });
-    });
   }
 
   app.listen(PORT, function () {
