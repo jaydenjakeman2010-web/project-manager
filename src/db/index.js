@@ -9,11 +9,14 @@ let pool;
 
 function getPool() {
   if (!pool) {
+    var dbUrl = process.env.DATABASE_URL || '';
+    var needsSsl = !dbUrl.includes('localhost') && !dbUrl.includes('127.0.0.1');
     pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
+      connectionString: dbUrl,
       max: 20,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
+      connectionTimeoutMillis: 10000,
+      ssl: needsSsl ? { rejectUnauthorized: false } : false,
     });
 
     pool.on('error', (err) => {
