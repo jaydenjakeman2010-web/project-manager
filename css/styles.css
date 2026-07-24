@@ -387,10 +387,6 @@ button {
   margin: 0;
 }
 
-.sidebar.collapsed .sidebar-collapse-btn {
-  display: none;
-}
-
 .sidebar.collapsed .sidebar-item {
   justify-content: center;
   padding: 10px;
@@ -405,6 +401,10 @@ button {
 
 .sidebar.collapsed .workspace-name {
   display: none;
+}
+
+.sidebar.collapsed .sidebar-collapse-btn {
+  transform: translateX(2px);
 }
 
 .sidebar.collapsed .sidebar-collapse-btn svg {
@@ -6479,7 +6479,7 @@ button {
   }
   
   .sidebar .sidebar-collapse-btn {
-    display: none;
+    opacity: 0.6;
   }
   
   .sidebar .sidebar-footer {
