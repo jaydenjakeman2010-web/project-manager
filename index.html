@@ -13,28 +13,91 @@
 </head>
 <body>
   <div class="onboarding-overlay" id="onboarding">
-    <div class="onboarding-container">
+    <div class="onboarding-container" id="auth-container">
+
       <div class="onboarding-logo">
         <div class="onboarding-logo-icon">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
         </div>
       </div>
-      <h1 class="onboarding-title">Welcome to Project Manager</h1>
-      <p class="onboarding-subtitle">Let's get you set up. Tell us your name and create your first project to get started.</p>
-      <div class="onboarding-step">
-        <label class="onboarding-step-label">Your Name</label>
-        <div class="input-wrapper">
-          <input type="text" class="onboarding-input" id="onboarding-name" placeholder="Enter your name" autocomplete="off" autocorrect="off" spellcheck="false">
+
+      <div id="auth-login" style="display:none;">
+        <h1 class="onboarding-title">Sign in</h1>
+        <p class="onboarding-subtitle">Enter your email and password to continue.</p>
+        <div class="onboarding-step">
+          <label class="onboarding-step-label">Email</label>
+          <div class="input-wrapper">
+            <input type="email" class="onboarding-input" id="login-email" placeholder="you@email.com" autocomplete="email" spellcheck="false">
+          </div>
+        </div>
+        <div class="onboarding-step">
+          <label class="onboarding-step-label">Password</label>
+          <div class="input-wrapper">
+            <input type="password" class="onboarding-input" id="login-password" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" autocomplete="current-password">
+          </div>
+        </div>
+        <button class="onboarding-btn" id="login-submit">Sign In</button>
+        <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-tertiary);">
+          <a href="#" id="auth-show-forgot" style="color:var(--primary);text-decoration:none;">Forgot password?</a>
+          <span style="margin:0 10px;">&#183;</span>
+          <a href="#" id="auth-show-signup" style="color:var(--primary);text-decoration:none;">Create account</a>
+        </div>
+        <div id="login-error" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--danger-bg);color:var(--danger);font-size:13px;text-align:center;"></div>
+      </div>
+
+      <div id="auth-signup" style="display:none;">
+        <h1 class="onboarding-title">Create account</h1>
+        <p class="onboarding-subtitle">Enter your details to get started.</p>
+        <div class="onboarding-step">
+          <label class="onboarding-step-label">Your Name</label>
+          <div class="input-wrapper">
+            <input type="text" class="onboarding-input" id="signup-name" placeholder="Jane Doe" autocomplete="name" spellcheck="false">
+          </div>
+        </div>
+        <div class="onboarding-step">
+          <label class="onboarding-step-label">Email</label>
+          <div class="input-wrapper">
+            <input type="email" class="onboarding-input" id="signup-email" placeholder="you@email.com" autocomplete="email" spellcheck="false">
+          </div>
+        </div>
+        <div class="onboarding-step">
+          <label class="onboarding-step-label">Password</label>
+          <div class="input-wrapper">
+            <input type="password" class="onboarding-input" id="signup-password" placeholder="Min 8 characters" autocomplete="new-password">
+          </div>
+        </div>
+        <button class="onboarding-btn" id="signup-submit">Create Account</button>
+        <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-tertiary);">
+          Already have an account? <a href="#" id="auth-show-login-from-signup" style="color:var(--primary);text-decoration:none;">Sign in</a>
+        </div>
+        <div id="signup-error" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--danger-bg);color:var(--danger);font-size:13px;text-align:center;"></div>
+      </div>
+
+      <div id="auth-forgot" style="display:none;">
+        <h1 class="onboarding-title">Reset password</h1>
+        <p class="onboarding-subtitle">Enter your email and we'll send you a reset link.</p>
+        <div class="onboarding-step">
+          <label class="onboarding-step-label">Email</label>
+          <div class="input-wrapper">
+            <input type="email" class="onboarding-input" id="forgot-email" placeholder="you@email.com" autocomplete="email" spellcheck="false">
+          </div>
+        </div>
+        <button class="onboarding-btn" id="forgot-submit">Send Reset Link</button>
+        <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-tertiary);">
+          <a href="#" id="auth-show-login-from-forgot" style="color:var(--primary);text-decoration:none;">Back to sign in</a>
+        </div>
+        <div id="forgot-error" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--danger-bg);color:var(--danger);font-size:13px;text-align:center;"></div>
+        <div id="forgot-success" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--success-bg);color:var(--success);font-size:13px;text-align:center;"></div>
+      </div>
+
+      <div id="auth-verify" style="display:none;">
+        <h1 class="onboarding-title">Check your email</h1>
+        <p class="onboarding-subtitle">We sent a verification link to your email. Click it to activate your account, then sign in.</p>
+        <div style="text-align:center;margin-top:20px;font-size:13px;color:var(--text-tertiary);">
+          <a href="#" id="auth-show-login-from-verify" style="color:var(--primary);text-decoration:none;">Back to sign in</a>
         </div>
       </div>
-      <div class="onboarding-step">
-        <label class="onboarding-step-label">First Project Name</label>
-        <div class="input-wrapper">
-          <input type="text" class="onboarding-input" id="onboarding-project" placeholder="e.g., My First Project" autocomplete="off" autocorrect="off" spellcheck="false">
-        </div>
-      </div>
-      <button class="onboarding-btn" id="onboarding-submit" disabled>Get Started</button>
-      <button class="onboarding-skip" id="onboarding-skip">Skip for now</button>
+
     </div>
   </div>
 

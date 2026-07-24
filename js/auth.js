@@ -1,4 +1,5 @@
 (function () {
+  var userData = null;
 
   function getQueryParam(name) {
     var match = window.location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));
@@ -11,8 +12,6 @@
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
-  var userData = null;
-
   function fetchCurrentUser() {
     return API.get('/auth/me').then(function (user) {
       userData = user;
@@ -20,14 +19,27 @@
     });
   }
 
-  function loginWithGoogle() {
-    var base = API_BASE || (window.location.origin + '/api');
-    window.location.href = base + '/auth/google';
+  function signup(name, email, password) {
+    return API.post('/auth/signup', { name: name, email: email, password: password });
   }
 
-  function loginWithGithub() {
-    var base = API_BASE || (window.location.origin + '/api');
-    window.location.href = base + '/auth/github';
+  function login(email, password) {
+    return API.post('/auth/login', { email: email, password: password }).then(function (res) {
+      API.setToken(res.token);
+      return fetchCurrentUser();
+    });
+  }
+
+  function verifyEmail(token) {
+    return API.post('/auth/verify', { token: token });
+  }
+
+  function forgotPassword(email) {
+    return API.post('/auth/forgot', { email: email });
+  }
+
+  function resetPassword(token, password) {
+    return API.post('/auth/reset', { token: token, password: password });
   }
 
   function logout() {
@@ -45,8 +57,11 @@
   }
 
   window.Auth = {
-    loginWithGoogle: loginWithGoogle,
-    loginWithGithub: loginWithGithub,
+    signup: signup,
+    login: login,
+    verifyEmail: verifyEmail,
+    forgotPassword: forgotPassword,
+    resetPassword: resetPassword,
     logout: logout,
     fetchCurrentUser: fetchCurrentUser,
     getUser: getUser,

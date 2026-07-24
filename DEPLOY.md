@@ -258,7 +258,7 @@ Railway will automatically rebuild and redeploy.
 
 ## Your Railway URL / Custom Domain
 
-Your site is at `https://PROJECT-NAME.up.railway.app`. To use a custom domain like `mytasks.com`:
+Your site is at `https://project-manager.up.railway.app`. To use a custom domain like `mytasks.com`:
 
 1. In Railway, click your project
 2. Go to "Settings" tab → "Domains"

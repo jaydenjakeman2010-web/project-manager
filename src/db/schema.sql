@@ -1,10 +1,14 @@
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
-  email TEXT,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
   photo_url TEXT DEFAULT NULL,
-  google_id TEXT UNIQUE,
-  github_id TEXT UNIQUE,
+  email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+  verification_token TEXT,
+  verification_token_expires_at TIMESTAMPTZ,
+  reset_token TEXT,
+  reset_token_expires_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -81,3 +85,4 @@ CREATE INDEX IF NOT EXISTS idx_events_user ON events(user_id);
 CREATE INDEX IF NOT EXISTS idx_activity_logs_user ON activity_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_subtasks_task ON subtasks(task_id);
 CREATE INDEX IF NOT EXISTS idx_comments_task ON comments(task_id);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);

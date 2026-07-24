@@ -2530,6 +2530,28 @@
   }
 
     document.addEventListener('DOMContentLoaded', function () {
+    function showAuth(id) {
+      ['auth-login','auth-signup','auth-forgot','auth-verify'].forEach(function (elId) {
+        var el = document.getElementById(elId);
+        if (el) el.style.display = elId === id ? '' : 'none';
+      });
+    }
+
+    function showAuthError(id, msg) {
+      var el = document.getElementById(id);
+      if (el) { el.style.display = ''; el.textContent = msg; }
+    }
+
+    function hideAuthError(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    }
+
+    function setAuthLoading(btnId, loading) {
+      var btn = document.getElementById(btnId);
+      if (btn) { btn.disabled = loading; btn.textContent = loading ? 'Please wait...' : btn.dataset.originalText || btn.textContent; }
+    }
+
     function bootApp() {
       initNavigation();
       initSidebar();
@@ -2591,32 +2613,72 @@
         bootApp();
       }).catch(function () {
         onboarding?.classList.remove('hidden');
-        document.getElementById('onboarding-title').textContent = 'Sign In';
-        document.getElementById('onboarding-subtitle').textContent = 'Sign in with Google or GitHub to continue.';
-        document.getElementById('onboarding-name')?.closest('.onboarding-step')?.remove();
-        document.getElementById('onboarding-project')?.closest('.onboarding-step')?.remove();
-        document.getElementById('onboarding-submit')?.remove();
-        document.getElementById('onboarding-skip')?.remove();
-        var authBtns = document.createElement('div');
-        authBtns.style.cssText = 'display:flex;flex-direction:column;gap:12px;margin-top:16px;';
-        authBtns.innerHTML = '<button class="onboarding-btn" id="login-google" style="margin-top:0;">Sign in with Google</button><button class="onboarding-btn" id="login-github" style="margin-top:0;background:var(--text-primary);">Sign in with GitHub</button>';
-        document.querySelector('.onboarding-container')?.appendChild(authBtns);
-        document.getElementById('login-google')?.addEventListener('click', Auth.loginWithGoogle);
-        document.getElementById('login-github')?.addEventListener('click', Auth.loginWithGithub);
+        showAuth('auth-login');
       });
     } else {
-      document.getElementById('onboarding-title').textContent = 'Sign In';
-      document.getElementById('onboarding-subtitle').textContent = 'Sign in with Google or GitHub to continue.';
-      document.getElementById('onboarding-name')?.closest('.onboarding-step')?.remove();
-      document.getElementById('onboarding-project')?.closest('.onboarding-step')?.remove();
-      document.getElementById('onboarding-submit')?.remove();
-      document.getElementById('onboarding-skip')?.remove();
-      var authBtns = document.createElement('div');
-      authBtns.style.cssText = 'display:flex;flex-direction:column;gap:12px;margin-top:16px;';
-      authBtns.innerHTML = '<button class="onboarding-btn" id="login-google" style="margin-top:0;">Sign in with Google</button><button class="onboarding-btn" id="login-github" style="margin-top:0;background:var(--text-primary);">Sign in with GitHub</button>';
-      document.querySelector('.onboarding-container')?.appendChild(authBtns);
-      document.getElementById('login-google')?.addEventListener('click', Auth.loginWithGoogle);
-      document.getElementById('login-github')?.addEventListener('click', Auth.loginWithGithub);
+      showAuth('auth-login');
     }
+
+    document.getElementById('auth-show-signup')?.addEventListener('click', function (e) { e.preventDefault(); showAuth('auth-signup'); });
+    document.getElementById('auth-show-login-from-signup')?.addEventListener('click', function (e) { e.preventDefault(); showAuth('auth-login'); });
+    document.getElementById('auth-show-forgot')?.addEventListener('click', function (e) { e.preventDefault(); showAuth('auth-forgot'); });
+    document.getElementById('auth-show-login-from-forgot')?.addEventListener('click', function (e) { e.preventDefault(); showAuth('auth-login'); });
+    document.getElementById('auth-show-login-from-verify')?.addEventListener('click', function (e) { e.preventDefault(); showAuth('auth-login'); });
+
+    document.getElementById('login-submit')?.addEventListener('click', function () {
+      var email = document.getElementById('login-email')?.value?.trim();
+      var password = document.getElementById('login-password')?.value;
+      if (!email || !password) { showAuthError('login-error', 'Please enter your email and password.'); return; }
+      hideAuthError('login-error');
+      setAuthLoading('login-submit', true);
+      Auth.login(email, password).then(function () {
+        loadAllData().then(function () {
+          onboarding?.classList.add('hidden');
+          bootApp();
+        });
+      }).catch(function (err) {
+        showAuthError('login-error', err.body?.error || err.message || 'Sign in failed.');
+        setAuthLoading('login-submit', false);
+      });
+    });
+
+    document.getElementById('login-password')?.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('login-submit')?.click(); });
+
+    document.getElementById('signup-submit')?.addEventListener('click', function () {
+      var name = document.getElementById('signup-name')?.value?.trim();
+      var email = document.getElementById('signup-email')?.value?.trim();
+      var password = document.getElementById('signup-password')?.value;
+      if (!name || !email || !password) { showAuthError('signup-error', 'Please fill in all fields.'); return; }
+      if (password.length < 8) { showAuthError('signup-error', 'Password must be at least 8 characters.'); return; }
+      hideAuthError('signup-error');
+      setAuthLoading('signup-submit', true);
+      Auth.signup(name, email, password).then(function () {
+        setAuthLoading('signup-submit', false);
+        showAuth('auth-verify');
+      }).catch(function (err) {
+        showAuthError('signup-error', err.body?.error || err.message || 'Sign up failed.');
+        setAuthLoading('signup-submit', false);
+      });
+    });
+
+    document.getElementById('signup-password')?.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('signup-submit')?.click(); });
+
+    document.getElementById('forgot-submit')?.addEventListener('click', function () {
+      var email = document.getElementById('forgot-email')?.value?.trim();
+      if (!email) { showAuthError('forgot-error', 'Please enter your email.'); return; }
+      hideAuthError('forgot-error');
+      document.getElementById('forgot-success').style.display = 'none';
+      setAuthLoading('forgot-submit', true);
+      Auth.forgotPassword(email).then(function () {
+        setAuthLoading('forgot-submit', false);
+        document.getElementById('forgot-success').textContent = 'If that email is registered, a reset link has been sent.';
+        document.getElementById('forgot-success').style.display = '';
+      }).catch(function (err) {
+        showAuthError('forgot-error', err.body?.error || err.message || 'Request failed.');
+        setAuthLoading('forgot-submit', false);
+      });
+    });
+
+    document.getElementById('forgot-email')?.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('forgot-submit')?.click(); });
   });
 })();
