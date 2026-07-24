@@ -310,7 +310,7 @@
       bannerHtml = '<div class="dashboard-banner ' + (isOverdue ? 'overdue' : 'due-today') + '"><div class="dashboard-banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div><div class="dashboard-banner-content"><span class="dashboard-banner-title">' + (isOverdue ? 'Task Overdue' : 'Due Today') + '</span><span class="dashboard-banner-desc">' + task.name + '</span></div><button class="btn btn-sm btn-primary dashboard-banner-btn" data-task-id="' + task.id + '">View Task</button></div>';
     }
 
-    var html = bannerHtml + '<div class="stats-row anim-stagger"><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Total Projects</span></div><div class="stat-card-value">' + data.projects.length + '</div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Total Tasks</span></div><div class="stat-card-value">' + totalTasks + '</div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Completion Rate</span></div><div class="stat-card-value">' + rate + '%</div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Team Members</span></div><div class="stat-card-value">' + data.team.length + '</div></div></div>';
+    var html = bannerHtml + '<div class="stats-row anim-stagger"><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Total Projects</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + data.projects.length + '">0</span></div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Total Tasks</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + totalTasks + '">0</span></div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Completion Rate</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + rate + '">0</span>%</div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Team Members</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + data.team.length + '">0</span></div></div></div>';
 
     if (overdueCount > 0 || dueToday > 0) {
       html += '<div class="quick-actions"><div class="section-header"><h2 class="section-title">Quick Actions</h2></div><div class="quick-actions-grid">';
@@ -329,7 +329,7 @@
       var sIcon = stats.overdue > 0 ? '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>' : (prog === 100 ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>' : '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>');
       html += '<article class="project-card" data-project-id="' + p.id + '" style="animation-delay:' + (i * 50) + 'ms;"><div class="project-card-color" style="background:' + p.color + ';"></div><div class="project-card-body"><div class="project-card-header"><h3 class="project-card-title">' + p.name + '</h3><span class="badge ' + sClass + ' project-status-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;">' + sIcon + '</svg>' + sLabel + '</span></div>' + (stats.total > 0 ? '<div class="progress-bar" role="progressbar" aria-valuenow="' + prog + '" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar-fill" style="width:' + prog + '%;background:' + p.color + ';" aria-hidden="true"></div></div>' : '') + '<div class="project-card-meta"><span class="project-card-task-count"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>' + stats.total + ' task' + (stats.total !== 1 ? 's' : '') + '</span>' + (data.team.length > 0 && stats.total > 0 ? '<span class="project-card-members"><div class="avatar-stack" style="display:inline-flex;vertical-align:middle;">' + data.team.slice(0, 3).map(function(m, j) { return '<div class="avatar avatar-xs" style="background:' + (m.color || 'var(--primary)') + ';margin-left:' + (j === 0 ? 0 : '-8px') + ';border:' + (j === 0 ? 'none' : '2px solid var(--bg-primary)') + ';" title="' + m.name + '">' + m.name.split(' ').map(function(w2) { return w2[0]; }).join('').toUpperCase().slice(0, 2) + '</div>'; }).join('') + (data.team.length > 3 ? '<div class="avatar avatar-xs" style="background:var(--bg-tertiary);color:var(--text-secondary);margin-left:-8px;border:2px solid var(--bg-primary);font-size:9px;">+' + (data.team.length - 3) + '</div>' : '') + '</div></span>' : '') + '</div></div></article>';
     });
-    html += '</div></div></div><div class="dashboard-side"><div class="widget"><div class="widget-header"><h3 class="widget-title">Recent Activity</h3></div><div id="dashboard-activity"></div></div></div></div>';
+        html += '</div></div></div><div class="dashboard-side"><div class="widget"><div class="widget-header"><h3 class="widget-title">Recent Activity <span class="live-dot"></span></h3></div><div id="dashboard-activity"></div></div></div></div>';
     container.innerHTML = html;
     renderActivityFeed(document.getElementById('dashboard-activity'));
     container.querySelectorAll('.project-card').forEach(card => {
@@ -1020,7 +1020,27 @@
     if (!container) return;
     var els = container.querySelectorAll('.anim-fade-up, .anim-fade-in, .anim-stagger');
     els.forEach(function (el, i) {
-      setTimeout(function () { el.classList.add('visible'); }, i * (delay || 50));
+      setTimeout(function () {
+        el.classList.add('visible');
+        if (el.classList.contains('stat-card')) animateCounters(el);
+      }, i * (delay || 50));
+    });
+  }
+
+  function animateCounters(container) {
+    var els = container.querySelectorAll ? container.querySelectorAll('.stat-counter') : [container].filter(function (e) { return e && e.matches('.stat-counter'); });
+    els.forEach(function (el) {
+      var target = parseInt(el.dataset.target, 10);
+      if (isNaN(target) || target === 0) { el.textContent = '0'; return; }
+      var duration = Math.min(1200, Math.max(400, target * 10));
+      var start = performance.now();
+      function step(now) {
+        var p = Math.min(1, (now - start) / duration);
+        var eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(eased * target);
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
     });
   }
 
