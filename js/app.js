@@ -1010,10 +1010,8 @@
     for (var s = 0; s < selectors.length; s++) {
       var els = container.querySelectorAll(selectors[s]);
       for (var e = 0; e < els.length; e++) {
-        if (!els[e].classList.contains('anim-fade-up') && !els[e].classList.contains('anim-fade-in')) {
-          els[e].classList.add('reveal');
-          els[e].style.setProperty('--reveal-index', e);
-        }
+        els[e].classList.add('reveal');
+        els[e].style.setProperty('--reveal-index', e);
       }
     }
   }
@@ -1099,12 +1097,10 @@
     function finishTransition() {
       if (!pageTransitionActive) return;
       pageTransitionActive = false;
-      
-      // Delay reveals slightly to allow page entry to finish
-      setTimeout(function() {
-        if (newPage) triggerReveals(newPage, 50);
-      }, 50);
-      
+      if (newPage) {
+        newPage.classList.remove('entering');
+        triggerReveals(newPage, 50);
+      }
       document.querySelector('.page-content').scrollTo({ top: 0, behavior: 'instant' });
       completeLoadingBar();
     }
@@ -2745,12 +2741,10 @@
     }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
     function watch(el) {
       if (!el) return;
-      if (el.closest && el.closest('.page.entering')) return;
       if (el.matches && (el.matches('.anim-fade-up') || el.matches('.anim-fade-in') || el.matches('.anim-stagger'))) {
         observer.observe(el);
       }
       el.querySelectorAll('.anim-fade-up, .anim-fade-in, .anim-stagger').forEach(function (child) {
-        if (child.closest && child.closest('.page.entering')) return;
         observer.observe(child);
       });
     }
