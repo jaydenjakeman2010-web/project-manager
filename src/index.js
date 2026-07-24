@@ -34,6 +34,7 @@ app.use(cors({
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
   contentSecurityPolicy: false,
+  permissionsPolicy: false,
 }));
 
 app.use(express.json({ limit: '2mb' }));
@@ -77,13 +78,23 @@ app.use(express.static(ROOT, {
 app.get('/health', (_req, res) => { res.json({ status: 'ok' }); });
 
 app.get('/_debug', async (_req, res) => {
+  var info = {
+    nodeEnv: process.env.NODE_ENV,
+    hasDbUrl: !!process.env.DATABASE_URL,
+    dbUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 30) + '...' : 'NOT SET',
+    port: process.env.PORT,
+    corsOrigin: process.env.CORS_ORIGIN,
+    hasJwtSecret: !!process.env.JWT_SECRET,
+  };
   try {
     var db = (await import('./db/index.js')).default;
     var { rows } = await db.query("SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = 'users' ORDER BY ordinal_position");
-    res.json({ columns: rows });
+    info.columns = rows;
   } catch (err) {
-    res.json({ error: err.message, stack: err.stack });
+    info.dbError = err.message;
+    info.dbStack = (err.stack || '').split('\n').slice(0, 5).join('\n');
   }
+  res.json(info);
 });
 
 app.get('*', (_req, res) => {
