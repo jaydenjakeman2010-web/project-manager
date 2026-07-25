@@ -1859,7 +1859,7 @@
             Color
           </span>
           <div class="project-color-options">
-            ${COLORS.map((c, i) => `<button type="button" class="project-color-option ${i === 0 ? 'active' : ''}" data-color="${c}" style="background:${c}"></button>`).join('')}
+            <input type="color" id="project-color-picker" class="project-color-picker" value="${COLORS[0]}">
           </div>
         </div>
       </div>
@@ -1873,14 +1873,9 @@
 
     openDrawer();
 
-    let selectedColor = COLORS[0];
-    document.querySelectorAll('.project-color-option').forEach((btn, i) => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.project-color-option').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        selectedColor = COLORS[i];
-      });
-    });
+    const picker = document.getElementById('project-color-picker');
+    let selectedColor = picker.value;
+    picker.addEventListener('input', () => { selectedColor = picker.value; });
 
     setTimeout(() => document.getElementById('new-project-title')?.focus(), 100);
     document.getElementById('create-project-cancel')?.addEventListener('click', closeDrawer);
@@ -1903,7 +1898,6 @@
     const badges = document.getElementById('drawer-badges');
     if (!content) return;
     badges.innerHTML = '';
-    const currentColorIdx = COLORS.indexOf(project.color);
     content.innerHTML = `
       <div class="task-drawer-title-area">
         <input type="text" class="task-drawer-title" id="edit-project-title" value="${project.name}" placeholder="Project name" autocomplete="off" autocorrect="off" spellcheck="false">
@@ -1915,7 +1909,7 @@
             Color
           </span>
           <div class="project-color-options">
-            ${COLORS.map((c, i) => `<button type="button" class="project-color-option ${i === currentColorIdx ? 'active' : ''}" data-color="${c}" style="background:${c}"></button>`).join('')}
+            <input type="color" id="project-color-picker" class="project-color-picker" value="${project.color}">
           </div>
         </div>
       </div>
@@ -1924,14 +1918,9 @@
         <button class="btn btn-primary" id="edit-project-submit">Save Changes</button>
       </div>`;
     openDrawer();
-    let selectedColor = project.color;
-    document.querySelectorAll('.project-color-option').forEach((btn, i) => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.project-color-option').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        selectedColor = COLORS[i];
-      });
-    });
+    const picker = document.getElementById('project-color-picker');
+    let selectedColor = picker.value;
+    picker.addEventListener('input', () => { selectedColor = picker.value; });
     setTimeout(() => document.getElementById('edit-project-title')?.focus(), 100);
     document.getElementById('edit-project-cancel')?.addEventListener('click', closeDrawer);
     document.getElementById('edit-project-submit')?.addEventListener('click', () => {
