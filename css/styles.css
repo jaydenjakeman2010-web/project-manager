@@ -5802,14 +5802,161 @@ button {
   transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .anim-stagger.visible > *:nth-child(1) { transition-delay: 0ms; }
-.anim-stagger.visible > *:nth-child(2) { transition-delay: 60ms; }
-.anim-stagger.visible > *:nth-child(3) { transition-delay: 120ms; }
-.anim-stagger.visible > *:nth-child(4) { transition-delay: 180ms; }
-.anim-stagger.visible > *:nth-child(5) { transition-delay: 240ms; }
-.anim-stagger.visible > *:nth-child(6) { transition-delay: 300ms; }
-.anim-stagger.visible > *:nth-child(7) { transition-delay: 360ms; }
-.anim-stagger.visible > *:nth-child(8) { transition-delay: 420ms; }
+.anim-stagger.visible > *:nth-child(2) { transition-delay: 50ms; }
+.anim-stagger.visible > *:nth-child(3) { transition-delay: 100ms; }
+.anim-stagger.visible > *:nth-child(4) { transition-delay: 150ms; }
+.anim-stagger.visible > *:nth-child(5) { transition-delay: 200ms; }
+.anim-stagger.visible > *:nth-child(6) { transition-delay: 250ms; }
+.anim-stagger.visible > *:nth-child(7) { transition-delay: 300ms; }
+.anim-stagger.visible > *:nth-child(8) { transition-delay: 350ms; }
+.anim-stagger.visible > *:nth-child(9) { transition-delay: 400ms; }
+.anim-stagger.visible > *:nth-child(10) { transition-delay: 450ms; }
+.anim-stagger.visible > *:nth-child(11) { transition-delay: 500ms; }
+.anim-stagger.visible > *:nth-child(12) { transition-delay: 550ms; }
+.anim-stagger.visible > *:nth-child(13) { transition-delay: 600ms; }
+.anim-stagger.visible > *:nth-child(14) { transition-delay: 650ms; }
+.anim-stagger.visible > *:nth-child(15) { transition-delay: 700ms; }
+.anim-stagger.visible > *:nth-child(16) { transition-delay: 750ms; }
+.anim-stagger.visible > *:nth-child(17) { transition-delay: 800ms; }
+.anim-stagger.visible > *:nth-child(18) { transition-delay: 850ms; }
+.anim-stagger.visible > *:nth-child(19) { transition-delay: 900ms; }
+.anim-stagger.visible > *:nth-child(20) { transition-delay: 950ms; }
 .anim-stagger.visible > * { opacity: 1; transform: translateY(0); }
+
+/* ── Page Transition Overlay ── */
+.page-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: var(--bg-primary);
+  opacity: 0;
+  transition: opacity 0.25s var(--ease-out-expo);
+}
+
+.page-transition-overlay.active {
+  opacity: 1;
+}
+
+.page-transition-overlay.flash {
+  opacity: 0.6;
+  transition: opacity 0.08s var(--ease-out);
+}
+
+/* ── Scroll Entrance Observer ── */
+.scroll-entrance {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+}
+
+.scroll-entrance.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-entrance-left {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+}
+
+.scroll-entrance-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scroll-entrance-right {
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+}
+
+.scroll-entrance-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.scroll-entrance-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+}
+
+.scroll-entrance-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ── Counter Entrance ── */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.counter-entrance {
+  animation: countUp 0.5s var(--ease-out-expo) both;
+}
+
+/* ── Micro-interaction Utilities ── */
+.hover-lift {
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s var(--ease-spring);
+}
+
+.hover-lift:hover {
+  transform: translateY(-3px);
+}
+
+.press-bounce {
+  transition: transform 0.15s var(--ease-spring);
+}
+
+.press-bounce:active {
+  transform: scale(0.95);
+}
+
+.hover-glow {
+  transition: box-shadow 0.3s var(--ease-luxury);
+}
+
+.hover-glow:hover {
+  box-shadow: var(--shadow-accent-strong);
+}
+
+/* ── Content Fade Sequence ── */
+.content-fade > *:nth-child(1) { animation: fadeIn 0.4s var(--ease-out) 0ms both; }
+.content-fade > *:nth-child(2) { animation: fadeIn 0.4s var(--ease-out) 80ms both; }
+.content-fade > *:nth-child(3) { animation: fadeIn 0.4s var(--ease-out) 160ms both; }
+.content-fade > *:nth-child(4) { animation: fadeIn 0.4s var(--ease-out) 240ms both; }
+.content-fade > *:nth-child(5) { animation: fadeIn 0.4s var(--ease-out) 320ms both; }
+.content-fade > *:nth-child(6) { animation: fadeIn 0.4s var(--ease-out) 400ms both; }
+.content-fade > *:nth-child(7) { animation: fadeIn 0.4s var(--ease-out) 480ms both; }
+.content-fade > *:nth-child(8) { animation: fadeIn 0.4s var(--ease-out) 560ms both; }
+
+/* ── Page Enter Enhancement ── */
+@keyframes pageContentEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page.active .page-header {
+  animation: pageContentEnter 0.5s var(--ease-out-expo) 0.1s both;
+}
+
+.page.active .stats-row {
+  animation: pageContentEnter 0.5s var(--ease-out-expo) 0.15s both;
+}
+
+.page.active .dashboard-grid,
+.page.active .project-cards-grid,
+.page.active .projects-grid,
+.page.active .task-groups,
+.page.active .task-toolbar,
+.page.active .analytics-grid,
+.page.active .calendar-layout,
+.page.active .settings-layout {
+  animation: pageContentEnter 0.5s var(--ease-out-expo) 0.2s both;
+}
 
 @keyframes skeletonFadeOut {
   from { opacity: 1; filter: blur(0); }
@@ -5912,13 +6059,20 @@ button {
   top: 0;
   left: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--accent));
+  background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--accent), var(--primary));
+  background-size: 200% 100%;
   z-index: 99999;
   width: 0;
   opacity: 0;
   transition: width 0.4s var(--ease-out), opacity 0.3s var(--ease-out);
-  box-shadow: 0 0 10px var(--primary-light);
+  box-shadow: 0 0 10px var(--primary-light), 0 0 20px rgba(27, 94, 59, 0.2);
   pointer-events: none;
+  animation: loadingBarShimmer 1.5s linear infinite;
+}
+
+@keyframes loadingBarShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .loading-bar.active {
@@ -5929,7 +6083,8 @@ button {
 .loading-bar.finishing {
   width: 100% !important;
   opacity: 0;
-  transition: width 0.3s var(--ease-in), opacity 0.3s var(--ease-in) 0.2s;
+  transition: width 0.4s var(--ease-out-expo), opacity 0.35s var(--ease-out) 0.15s;
+  animation: none;
 }
 
 .onboarding-overlay {

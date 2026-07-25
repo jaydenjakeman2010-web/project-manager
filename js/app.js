@@ -1042,6 +1042,23 @@
     });
   }
 
+  var scrollObserver = null;
+  function observeScrollEntrances(container) {
+    if (!container) return;
+    if (scrollObserver) scrollObserver.disconnect();
+    scrollObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          scrollObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    container.querySelectorAll('.scroll-entrance, .scroll-entrance-left, .scroll-entrance-right, .scroll-entrance-scale').forEach(function (el) {
+      scrollObserver.observe(el);
+    });
+  }
+
   function animateCounters(container) {
     var els = container.querySelectorAll ? container.querySelectorAll('.stat-counter') : [container].filter(function (e) { return e && e.matches('.stat-counter'); });
     els.forEach(function (el) {
@@ -1086,6 +1103,20 @@
     });
   }
 
+    function flashTransitionOverlay() {
+      var overlay = document.getElementById('page-transition-overlay');
+      if (!overlay) return;
+      overlay.classList.remove('active', 'flash');
+      overlay.style.display = 'block';
+      requestAnimationFrame(function () {
+        overlay.classList.add('flash');
+        setTimeout(function () {
+          overlay.classList.remove('flash');
+          overlay.style.display = '';
+        }, 100);
+      });
+    }
+
     function navigateTo(pageId, projectId) {
       if (pageTransitionActive) {
         if (clearPageTimer) { clearTimeout(clearPageTimer); clearPageTimer = null; }
@@ -1099,6 +1130,7 @@
       pageTransitionActive = true;
       if (projectId) currentProjectId = projectId;
 
+      flashTransitionOverlay();
       flashLoadingBar();
 
     document.querySelectorAll('.sidebar-item').forEach(function (i) { i.classList.remove('active'); });
@@ -1121,7 +1153,8 @@
       pageTransitionActive = false;
       if (newPage) {
         newPage.classList.remove('entering');
-        triggerReveals(newPage, 50);
+        triggerReveals(newPage, 60);
+        observeScrollEntrances(newPage);
       }
       document.querySelector('.page-content').scrollTo({ top: 0, behavior: 'instant' });
       completeLoadingBar();
@@ -1153,13 +1186,13 @@
       clearPageTimer = setTimeout(function () {
         oldPage.classList.remove('active', 'exiting');
         finishTransition();
-      }, 620);
+      }, 450);
     } else if (newPage) {
       newPage.classList.add('active');
       switchPage(pageId);
       addRevealClasses(newPage);
       newPage.classList.add('entering');
-      setTimeout(finishTransition, 650);
+      setTimeout(finishTransition, 450);
     } else {
       pageTransitionActive = false;
     }
