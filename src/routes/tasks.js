@@ -188,7 +188,7 @@ router.patch('/:id', validate(updateSchema), async (req, res) => {
     const { rows } = await db.query(
       `UPDATE tasks t SET ${setClauses.join(', ')} FROM projects p WHERE t.project_id = p.id AND t.id = $${tidx} AND ${accessCheck}
        RETURNING t.id, t.name, t.description, t.status, t.priority, t.due_date, t.assignee_id, t.recurrence, t.time_spent, t.tags, t.attachments, t.created_at, t.project_id`,
-      allParams.concat([id])
+      params
     );
 
     if (rows.length === 0) {

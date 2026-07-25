@@ -3908,7 +3908,10 @@
     }
 
     function initSSE() {
-      var es = new EventSource('/api/events/subscribe');
+      var token = API.getToken();
+      var url = '/api/events/subscribe';
+      if (token) url += '?token=' + encodeURIComponent(token);
+      var es = new EventSource(url);
       es.onmessage = function (e) {
         try {
           var data = JSON.parse(e.data);

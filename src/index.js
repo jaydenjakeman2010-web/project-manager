@@ -80,13 +80,13 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/subtasks', subtaskRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/team', teamRoutes);
+app.get('/api/events/subscribe', sseHandler);
 app.use('/api/events', eventRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/goals', goalRoutes);
-app.get('/api/events/subscribe', sseHandler);
 
 app.use(express.static(ROOT, {
   maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,

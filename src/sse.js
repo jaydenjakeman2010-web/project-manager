@@ -1,6 +1,13 @@
+import jwt from 'jsonwebtoken';
 var clients = new Set();
 
 export function sseHandler(req, res) {
+  var token = req.query.token || req.headers.authorization?.slice(7);
+  if (!token) { res.status(401).json({ error: 'Unauthorized' }); return; }
+  try {
+    var decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-dev-secret');
+    req.userId = decoded.sub;
+  } catch (e) { res.status(401).json({ error: 'Invalid token' }); return; }
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
