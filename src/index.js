@@ -19,6 +19,9 @@ import eventRoutes from './routes/events.js';
 import uploadRoutes from './routes/upload.js';
 import activityRoutes from './routes/activity.js';
 import settingsRoutes from './routes/settings.js';
+import notificationRoutes from './routes/notifications.js';
+import { sseHandler } from './sse.js';
+import { broadcast } from './sse.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -80,6 +83,8 @@ app.use('/api/events', eventRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.get('/api/events/subscribe', sseHandler);
 
 app.use(express.static(ROOT, {
   maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0,

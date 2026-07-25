@@ -17,6 +17,7 @@ export function requireAuth(req, res, next) {
   try {
     const payload = verifyToken(token);
     req.userId = payload.sub;
+    req.userEmail = payload.email;
     next();
   } catch (err) {
     if (err.name === 'TokenExpiredError') {

@@ -4,12 +4,17 @@ import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import db from '../db/index.js';
 import { v4 as uuid } from 'uuid';
+import { broadcast } from '../sse.js';
 
 const router = Router();
 
 const createSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200, 'Name too long'),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Invalid hex color').optional(),
+});
+
+var shareSchema = z.object({
+  email: z.string().email(),
 });
 
 const updateSchema = z.object({
@@ -22,12 +27,15 @@ router.use(requireAuth);
 
 router.get('/', async (req, res) => {
   try {
-    var archivedFilter = req.query.archived === 'true' ? 'AND archived = TRUE' : 'AND archived = FALSE';
+    var email = req.userEmail || '';
+    var archivedFilter = req.query.archived === 'true' ? 'AND p.archived = TRUE' : 'AND (p.archived = FALSE OR p.user_id != $1)';
     const { rows } = await db.query(
-      'SELECT id, name, color, archived, created_at FROM projects WHERE user_id = $1 ' + archivedFilter + ' ORDER BY created_at DESC',
-      [req.userId]
+      `SELECT p.id, p.name, p.color, p.archived, p.shared_with, p.created_at, p.user_id AS owner_id
+       FROM projects p WHERE (p.user_id = $1` + (email ? ` OR p.shared_with @> ARRAY[$2])` : `)`) + ` ${archivedFilter} ORDER BY p.created_at DESC`,
+      email ? [req.userId, email] : [req.userId]
     );
-    res.json(rows);
+    var mapped = rows.map(function (r) { return { ...r, is_owner: r.owner_id === req.userId }; });
+    res.json(mapped);
   } catch (err) {
     console.error('Failed to fetch projects:', err.message);
     res.status(500).json({ error: 'Internal server error.' });
@@ -42,9 +50,10 @@ router.post('/', validate(createSchema), async (req, res) => {
       [uuid(), req.userId, name, color || '#1B5E3B']
     );
     await db.query(
-      'INSERT INTO activity_logs (id, user_id, type, description) VALUES ($1, $2, $3, $4)',
-      [uuid(), req.userId, 'project-created', `Created project "${name}"`]
+      'INSERT INTO activity_logs (id, user_id, type, description, project_id) VALUES ($1, $2, $3, $4, $5)',
+      [uuid(), req.userId, 'project-created', `Created project "${name}"`, rows[0].id]
     );
+    broadcast({ type: 'project-created', userId: req.userId });
     res.status(201).json(rows[0]);
   } catch (err) {
     console.error('Failed to create project:', err.message);
@@ -79,6 +88,7 @@ router.patch('/:id', validate(updateSchema), async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Project not found.' });
     }
+    broadcast({ type: 'project-updated', userId: req.userId });
     res.json(rows[0]);
   } catch (err) {
     console.error('Failed to update project:', err.message);
@@ -96,9 +106,35 @@ router.delete('/:id', async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Project not found.' });
     }
+    broadcast({ type: 'project-deleted', userId: req.userId });
     res.json({ deleted: rows[0].id });
   } catch (err) {
     console.error('Failed to delete project:', err.message);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+router.post('/:id/share', validate(shareSchema), async (req, res) => {
+  var { id } = req.params;
+  var { email } = req.validatedBody;
+  try {
+    await db.query('UPDATE projects SET shared_with = array_append(shared_with, $1) WHERE id = $2 AND user_id = $3', [email, id, req.userId]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Failed to share project:', err.message);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+router.post('/:id/unshare', async (req, res) => {
+  var { id } = req.params;
+  var { email } = req.body;
+  if (!email) return res.status(422).json({ error: 'Email required.' });
+  try {
+    await db.query('UPDATE projects SET shared_with = array_remove(shared_with, $1) WHERE id = $2 AND user_id = $3', [email, id, req.userId]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Failed to unshare project:', err.message);
     res.status(500).json({ error: 'Internal server error.' });
   }
 });

@@ -36,6 +36,23 @@ ALTER TABLE tasks ADD COLUMN IF NOT EXISTS time_spent INTEGER NOT NULL DEFAULT 0
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS tags TEXT NOT NULL DEFAULT '';
 ALTER TABLE tasks ADD COLUMN IF NOT EXISTS attachments TEXT NOT NULL DEFAULT '[]';
 
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS shared_with TEXT[] NOT NULL DEFAULT '{}';
+CREATE INDEX IF NOT EXISTS idx_projects_shared ON projects USING GIN(shared_with);
+
+ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES projects(id) ON DELETE CASCADE;
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  message TEXT NOT NULL,
+  task_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
+  read BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
+
 CREATE TABLE IF NOT EXISTS team_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

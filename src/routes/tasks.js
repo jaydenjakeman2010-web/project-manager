@@ -4,6 +4,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import db from '../db/index.js';
 import { v4 as uuid } from 'uuid';
+import { broadcast } from '../sse.js';
 
 const router = Router();
 
@@ -120,8 +121,8 @@ router.post('/', validate(createSchema), async (req, res) => {
 
   try {
     const { rows: [project] } = await db.query(
-      'SELECT id FROM projects WHERE id = $1 AND user_id = $2 LIMIT 1',
-      [project_id, req.userId]
+      'SELECT id FROM projects WHERE id = $1 AND (user_id = $2' + (req.userEmail ? ' OR $3 = ANY(shared_with))' : ')') + ' LIMIT 1',
+      req.userEmail ? [project_id, req.userId, req.userEmail] : [project_id, req.userId]
     );
     if (!project) {
       return res.status(404).json({ error: 'Project not found.' });
@@ -135,10 +136,11 @@ router.post('/', validate(createSchema), async (req, res) => {
     );
 
     await db.query(
-      'INSERT INTO activity_logs (id, user_id, type, description) VALUES ($1, $2, $3, $4)',
-      [uuid(), req.userId, 'task-created', `Created task "${name}"`]
+      'INSERT INTO activity_logs (id, user_id, type, description, project_id) VALUES ($1, $2, $3, $4, $5)',
+      [uuid(), req.userId, 'task-created', `Created task "${name}"`, project_id]
     );
 
+    broadcast({ type: 'task-created', userId: req.userId });
     res.status(201).json({ ...rows[0], subtasks: [], comments: [] });
   } catch (err) {
     console.error('Failed to create task:', err.message);
@@ -171,17 +173,28 @@ router.patch('/:id', validate(updateSchema), async (req, res) => {
       return res.status(422).json({ error: 'No valid fields to update.' });
     }
 
-    params.push(id, req.userId);
+    params.push(id);
+    var email = req.userEmail || '';
+    var accessCheck;
+    if (email) {
+      params.push(req.userId, email);
+      accessCheck = '(t.user_id = $' + (params.length - 1) + ' OR EXISTS (SELECT 1 FROM projects WHERE id = t.project_id AND $' + params.length + ' = ANY(shared_with)))';
+    } else {
+      params.push(req.userId);
+      accessCheck = 't.user_id = $' + params.length;
+    }
+    var tidx = params.length + 1;
 
     const { rows } = await db.query(
-      `UPDATE tasks SET ${setClauses.join(', ')} WHERE id = $${idx++} AND user_id = $${idx}
-       RETURNING id, name, description, status, priority, due_date, assignee_id, recurrence, time_spent, tags, attachments, created_at, project_id`,
-      params
+      `UPDATE tasks t SET ${setClauses.join(', ')} FROM projects p WHERE t.project_id = p.id AND t.id = $${tidx} AND ${accessCheck}
+       RETURNING t.id, t.name, t.description, t.status, t.priority, t.due_date, t.assignee_id, t.recurrence, t.time_spent, t.tags, t.attachments, t.created_at, t.project_id`,
+      allParams.concat([id])
     );
 
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Task not found.' });
     }
+    broadcast({ type: 'task-updated', userId: req.userId });
     res.json(rows[0]);
   } catch (err) {
     console.error('Failed to update task:', err.message);
@@ -192,9 +205,13 @@ router.patch('/:id', validate(updateSchema), async (req, res) => {
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
+    var email = req.userEmail || '';
+    var accessCheck = email ? '(t.user_id = $2 OR EXISTS (SELECT 1 FROM projects WHERE id = t.project_id AND $3 = ANY(shared_with)))' : 't.user_id = $2';
+    var params = [id, req.userId];
+    if (email) params.push(email);
     const { rows } = await db.query(
-      'DELETE FROM tasks WHERE id = $1 AND user_id = $2 RETURNING id, name',
-      [id, req.userId]
+      'DELETE FROM tasks t USING projects p WHERE t.project_id = p.id AND t.id = $1 AND ' + accessCheck + ' RETURNING t.id, t.name, t.project_id',
+      params
     );
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Task not found.' });
@@ -203,7 +220,8 @@ router.delete('/:id', async (req, res) => {
       'INSERT INTO activity_logs (id, user_id, type, description) VALUES ($1, $2, $3, $4)',
       [uuid(), req.userId, 'task-deleted', `Deleted task "${rows[0].name}"`]
     );
-    res.json({ deleted: rows[0].id });
+    broadcast({ type: 'task-deleted', userId: req.userId });
+    res.json({ deleted: rows[0].id, project_id: rows[0].project_id });
   } catch (err) {
     console.error('Failed to delete task:', err.message);
     res.status(500).json({ error: 'Internal server error.' });
@@ -213,21 +231,26 @@ router.delete('/:id', async (req, res) => {
 router.patch('/:id/toggle', async (req, res) => {
   const { id } = req.params;
   try {
+    var email = req.userEmail || '';
+    var accessCheck = email ? '(t.user_id = $2 OR EXISTS (SELECT 1 FROM projects WHERE id = t.project_id AND $3 = ANY(shared_with)))' : 't.user_id = $2';
+    var params = [id, req.userId];
+    if (email) params.push(email);
     const { rows } = await db.query(
-      `UPDATE tasks SET status = CASE WHEN status = 'done' THEN 'todo' ELSE 'done' END
-       WHERE id = $1 AND user_id = $2
-       RETURNING id, status, name`,
-      [id, req.userId]
+      `UPDATE tasks t SET status = CASE WHEN status = 'done' THEN 'todo' ELSE 'done' END
+       FROM projects p WHERE t.project_id = p.id AND t.id = $1 AND ` + accessCheck + `
+       RETURNING t.id, t.status, t.name, t.project_id`,
+      params
     );
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Task not found.' });
     }
     if (rows[0].status === 'done') {
       await db.query(
-        'INSERT INTO activity_logs (id, user_id, type, description) VALUES ($1, $2, $3, $4)',
-        [uuid(), req.userId, 'task-completed', `Completed task "${rows[0].name}"`]
+        'INSERT INTO activity_logs (id, user_id, type, description, project_id) VALUES ($1, $2, $3, $4, $5)',
+        [uuid(), req.userId, 'task-completed', `Completed task "${rows[0].name}"`, rows[0].project_id]
       );
     }
+    broadcast({ type: 'task-toggled', userId: req.userId });
     res.json({ id: rows[0].id, status: rows[0].status });
   } catch (err) {
     console.error('Failed to toggle task:', err.message);

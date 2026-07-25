@@ -60,6 +60,7 @@
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
       .replace(/`(.+?)`/g, '<code>$1</code>')
+      .replace(/@(\w+)/g, '<span class="mention">@$1</span>')
       .replace(/^- (.+)$/gm, '<li>$1</li>')
       .replace(/(<li>.*<\/li>\n?)/g, '<ul>$1</ul>')
       .replace(/<\/ul>\n?<ul>/g, '')
@@ -464,12 +465,22 @@
       html += `</div><button class="kanban-add-btn" data-status="${status}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add task</button></div>`;
     });
     html += '</div>';
+    html += '<div class="section" style="margin-top:var(--space-8);"><div class="section-header"><h2 class="section-title">Project Activity</h2></div><div id="project-activity-feed"></div></div>';
     container.innerHTML = html;
     container.querySelectorAll('.kanban-add-btn').forEach(btn => {
       btn.addEventListener('click', () => openTaskDrawerCreate(projectId, btn.dataset.status));
     });
     initKanbanDrag();
     initTaskItemListeners();
+    API.get('/activity?project_id=' + projectId + '&limit=10').then(function (logs) {
+      var feed = document.getElementById('project-activity-feed');
+      if (!feed) return;
+      if (!logs || logs.length === 0) { feed.innerHTML = '<p style="font-size:var(--text-sm);color:var(--text-tertiary);padding:var(--space-3) 0;text-align:center;">No activity yet</p>'; return; }
+      feed.innerHTML = '<div class="activity-feed">' + logs.map(function (a) {
+        var d = new Date(a.createdAt);
+        return '<div class="activity-item"><div class="activity-icon" style="background:var(--bg-tertiary);color:var(--text-secondary);font-size:12px;">' + (a.type === 'task-completed' ? '✓' : a.type === 'task-created' ? '+' : a.type === 'task-deleted' ? '✕' : '•') + '</div><div class="activity-content"><div class="activity-text">' + a.description + '</div><div class="activity-time">' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</div></div></div>';
+      }).join('') + '</div>';
+    }).catch(function () {});
   }
 
   function renderTasks() {
@@ -2212,22 +2223,53 @@
           </div>
         </div>
       </div>
+      <div class="task-drawer-section">
+        <div class="task-drawer-section-header">
+          <span class="task-drawer-section-title">Share</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="email" class="input input-sm" id="share-email-input" placeholder="user@email.com" style="flex:1;" autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="btn btn-primary btn-sm" id="share-project-btn">Share</button>
+        </div>
+        <div id="shared-with-list" style="margin-top:8px;font-size:var(--text-sm);color:var(--text-tertiary);"></div>
+      </div>
       <div class="task-drawer-actions">
         <button class="btn btn-ghost" id="edit-project-cancel">Cancel</button>
         <button class="btn btn-primary" id="edit-project-submit">Save Changes</button>
       </div>`;
     openDrawer();
-    const picker = document.getElementById('project-color-picker');
-    let selectedColor = picker.value;
-    picker.addEventListener('input', () => { selectedColor = picker.value; });
-    setTimeout(() => document.getElementById('edit-project-title')?.focus(), 100);
+    var picker = document.getElementById('project-color-picker');
+    var selectedColor = picker ? picker.value : project.color;
+    if (picker) picker.addEventListener('input', function () { selectedColor = picker.value; });
+    setTimeout(function () { document.getElementById('edit-project-title')?.focus(); }, 100);
     document.getElementById('edit-project-cancel')?.addEventListener('click', closeDrawer);
-    document.getElementById('edit-project-submit')?.addEventListener('click', () => {
-      const title = document.getElementById('edit-project-title')?.value?.trim();
+    document.getElementById('edit-project-submit')?.addEventListener('click', function () {
+      var title = document.getElementById('edit-project-title')?.value?.trim();
       if (!title) { showToast('Please enter a project name', 'warning'); return; }
       updateProject(projectId, { name: title, color: selectedColor });
       closeDrawer();
     });
+    document.getElementById('share-project-btn')?.addEventListener('click', function () {
+      var email = document.getElementById('share-email-input')?.value?.trim();
+      if (!email) { showToast('Enter an email address', 'warning'); return; }
+      API.post('/projects/' + projectId + '/share', { email: email }).then(function () {
+        showToast('Shared with ' + email, 'success');
+        document.getElementById('share-email-input').value = '';
+        renderSharedWith(projectId);
+      }).catch(function (err) { showToast(err.message || 'Failed to share', 'error'); });
+    });
+    renderSharedWith(projectId);
+    function renderSharedWith(pid) {
+      var list = document.getElementById('shared-with-list');
+      if (!list) return;
+      API.get('/projects').then(function (allProjects) {
+        var p = allProjects.find(function (x) { return x.id === pid; });
+        if (!p || !p.shared_with || p.shared_with.length === 0) { list.textContent = 'Not shared with anyone'; return; }
+        list.innerHTML = p.shared_with.map(function (email) {
+          return '<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 4px;padding:2px 8px;background:var(--primary-bg);border-radius:var(--radius-sm);font-size:var(--text-xs);color:var(--primary);">' + email + '</span>';
+        }).join(' ');
+      }).catch(function () { list.textContent = ''; });
+    }
   }
 
   // --- Event Drawer ---
@@ -3282,6 +3324,27 @@
       });
     }
 
+    function initSSE() {
+      var es = new EventSource('/api/events/subscribe');
+      es.onmessage = function (e) {
+        try {
+          var data = JSON.parse(e.data);
+          if (data.type !== 'connected') {
+            setTimeout(function () { loadAllData().then(function () { refreshCurrentView(); }); }, 300);
+          }
+        } catch (err) {}
+      };
+      es.onerror = function () { setTimeout(initSSE, 5000); };
+    }
+
+    function initNotificationsFromAPI() {
+      API.get('/notifications').then(function (notifs) {
+        state.notifications = notifs || [];
+        updateNotificationBadge();
+        renderNotificationDropdown();
+      }).catch(function () {});
+    }
+
     function bootApp() {
       initNavigation();
       initSidebar();
@@ -3297,6 +3360,8 @@
       initResizeHandler();
       initScrollAnimations();
       initPremiumInteractions();
+      initSSE();
+      initNotificationsFromAPI();
       document.getElementById('notifications-btn')?.addEventListener('click', function (e) { e.stopPropagation(); toggleNotificationDropdown(); });
       document.getElementById('mark-all-read')?.addEventListener('click', function (e) {
         e.stopPropagation();

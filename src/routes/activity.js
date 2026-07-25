@@ -8,9 +8,13 @@ router.use(requireAuth);
 
 router.get('/', async (req, res) => {
   try {
+    var projectFilter = req.query.project_id ? 'AND project_id = $2' : '';
+    var params = [req.userId];
+    if (req.query.project_id) params.push(req.query.project_id);
+    var limit = parseInt(req.query.limit, 10) || 50;
     const { rows } = await db.query(
-      'SELECT id, type, description, created_at FROM activity_logs WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50',
-      [req.userId]
+      'SELECT id, type, description, project_id, created_at FROM activity_logs WHERE user_id = $1 ' + projectFilter + ' ORDER BY created_at DESC LIMIT $' + (params.length + 1),
+      params.concat([limit])
     );
     res.json(rows);
   } catch (err) {

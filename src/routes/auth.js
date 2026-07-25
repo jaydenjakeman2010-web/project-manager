@@ -107,7 +107,7 @@ router.post('/login', validate(loginSchema), async function (req, res) {
       return res.status(403).json({ error: 'Please verify your email before signing in.' });
     }
 
-    var token = signToken({ sub: user.id }, req.validatedBody.rememberMe === false ? { expiresIn: '1d' } : undefined);
+    var token = signToken({ sub: user.id, email: user.email }, req.validatedBody.rememberMe === false ? { expiresIn: '1d' } : undefined);
     res.json({ token: token, userId: user.id });
   } catch (err) {
     console.error('Login failed:', err.message);

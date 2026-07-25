@@ -7516,6 +7516,14 @@ button {
   100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
 
+.mention {
+  color: var(--primary);
+  font-weight: var(--weight-semibold);
+  background: var(--primary-bg);
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
+}
+
 .quick-actions {
   margin-bottom: var(--space-6);
 }
