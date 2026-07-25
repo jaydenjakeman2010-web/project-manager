@@ -424,8 +424,22 @@
     }
   }
 
-  function renderEmptyState(title, desc, btnText, btnId) {
-    return `<div class="empty-state"><div class="empty-state-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></div><h3 class="empty-state-title">${title}</h3><p class="empty-state-desc">${desc}</p><button class="empty-state-btn" id="${btnId}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>${btnText}</button></div>`;
+  var EMPTY_ICONS = {
+    folder: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+    task: '<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+    team: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    calendar: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+    chart: '<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
+    search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+    rocket: '<path d="M17.42 10.28A7.5 7.5 0 0 1 22 14.5v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4a7.5 7.5 0 0 1 4.58-4.22"/><circle cx="12" cy="10" r="3"/><path d="M12 2v4"/><path d="M12 16v2"/>',
+  };
+
+  function renderEmptyState(title, desc, btnText, btnId, iconType, secondaryBtn) {
+    var icon = EMPTY_ICONS[iconType] || EMPTY_ICONS.folder;
+    var secondaryHtml = secondaryBtn ? `<button class="empty-state-btn-secondary" id="${secondaryBtn.id}">${secondaryBtn.text}</button>` : '';
+    var btnHtml = btnText ? `<button class="empty-state-btn" id="${btnId}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>${btnText}</button>` : '';
+    var actionsHtml = (btnHtml || secondaryHtml) ? `<div class="empty-state-actions">${btnHtml}${secondaryHtml}</div>` : '';
+    return `<div class="empty-state"><div class="empty-state-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${icon}</svg></div><h3 class="empty-state-title">${title}</h3><p class="empty-state-desc">${desc}</p>${actionsHtml}</div>`;
   }
 
   function renderDashboard() {
@@ -433,7 +447,7 @@
     const container = document.getElementById('dashboard-content');
     if (!container) return;
     if (data.projects.length === 0) {
-      container.innerHTML = renderEmptyState('No projects yet', 'Create your first project to start organizing your work.', 'Create Project', 'empty-create-project');
+      container.innerHTML = renderEmptyState('Welcome to Project Manager', 'Create your first project to start organizing your work. Track tasks, collaborate with your team, and meet deadlines.', 'Create Project', 'empty-create-project', 'rocket');
       document.getElementById('empty-create-project')?.addEventListener('click', () => openProjectDrawerCreate());
       return;
     }
@@ -468,6 +482,8 @@
       if (overdueCount > 0) html += '<div class="quick-action-card danger"><div class="quick-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div><div><strong>' + overdueCount + ' overdue</strong> tasks need attention</div></div>';
       if (dueToday > 0) html += '<div class="quick-action-card warning"><div class="quick-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div><div><strong>' + dueToday + ' tasks</strong> due today</div></div>';
       html += '</div></div>';
+    } else if (data.projects.length === 1 && totalTasks === 0 && data.team.length === 0) {
+      html += '<div class="welcome-guide"><div class="welcome-guide-content"><div class="welcome-guide-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><div><h3 class="welcome-guide-title">Your project is ready</h3><p class="welcome-guide-desc">Add tasks, invite team members, and set deadlines to bring your project to life.</p></div></div><div class="welcome-guide-steps"><div class="welcome-guide-step" id="wg-add-task"><div class="welcome-guide-step-number">1</div><div><strong>Add a task</strong><p>Create your first task with a due date and priority.</p></div></div><div class="welcome-guide-step" id="wg-invite"><div class="welcome-guide-step-number">2</div><div><strong>Invite your team</strong><p>Add team members and assign them tasks.</p></div></div></div></div>';
     }
 
     html += '<div class="dashboard-grid"><div class="dashboard-main"><div class="section"><div class="section-header"><h2 class="section-title">Your Projects</h2></div><div class="project-cards-grid">';
@@ -490,6 +506,12 @@
     container.querySelector('.dashboard-banner-btn')?.addEventListener('click', (e) => {
       openTaskDrawerEdit(e.target.dataset.taskId);
     });
+    document.getElementById('wg-add-task')?.addEventListener('click', function () {
+      if (data.projects.length > 0) openTaskDrawerCreate(data.projects[0].id);
+    });
+    document.getElementById('wg-invite')?.addEventListener('click', function () {
+      navigateTo('team'); openTeamDrawerCreate();
+    });
   }
 
   function renderProjects() {
@@ -500,12 +522,12 @@
     var projects = data.projects;
     if (searchQuery) projects = projects.filter(function (p) { return p.name.toLowerCase().includes(searchQuery); });
     if (projects.length === 0 && !searchQuery) {
-      container.innerHTML = renderEmptyState('No projects yet', 'Create your first project to start organizing your work.', 'Create Project', 'empty-create-project-2');
+      container.innerHTML = renderEmptyState('No projects yet', 'Projects help you organize tasks, set deadlines, and track progress.', 'Create Project', 'empty-create-project-2', 'folder');
       document.getElementById('empty-create-project-2') && document.getElementById('empty-create-project-2').addEventListener('click', function () { openProjectDrawerCreate(); });
       return;
     }
     if (projects.length === 0) {
-      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div><h3 class="empty-state-title">No matches</h3><p class="empty-state-desc">Try a different search term.</p></div>';
+      container.innerHTML = renderEmptyState('No matches', 'Try a different search term.', '', '', 'search');
       return;
     }
     var taskStats = getProjectTaskStats(data);
@@ -544,7 +566,7 @@
     if (!project) {
       if (titleEl) titleEl.textContent = 'Project not found';
       if (subtitleEl) subtitleEl.textContent = '';
-      if (container) container.innerHTML = renderEmptyState('Project not found', "This project doesn't exist or was deleted.", 'Back to Projects', 'empty-back-projects');
+      if (container) container.innerHTML = renderEmptyState('Project not found', "This project doesn't exist or was deleted.", 'Back to Projects', 'empty-back-projects', 'search');
       document.getElementById('empty-back-projects')?.addEventListener('click', () => navigateTo('projects'));
       return;
     }
@@ -562,7 +584,7 @@
     }
     if (!container) return;
     if (projectTasks.length === 0) {
-      container.innerHTML = renderEmptyState('No tasks yet', 'Add your first task to this project.', 'Add Task', 'empty-add-task');
+      container.innerHTML = renderEmptyState('No tasks yet', 'This project is empty. Add your first task to get started.', 'Add Task', 'empty-add-task', 'task');
       document.getElementById('empty-add-task')?.addEventListener('click', () => openTaskDrawerCreate(projectId));
       return;
     }
@@ -625,16 +647,16 @@
 
     if (data.tasks.length === 0) {
       if (subtitle) subtitle.textContent = 'No tasks yet';
-      container.innerHTML = renderEmptyState('No tasks yet', 'Create tasks to track your work across projects.', 'New Task', 'empty-new-task');
+      container.innerHTML = renderEmptyState('No tasks yet', 'Create tasks to track your work across projects. Assign due dates, set priorities, and never miss a deadline.', 'New Task', 'empty-new-task', 'task');
       document.getElementById('empty-new-task')?.addEventListener('click', () => {
         if (data.projects.length > 0) openTaskDrawerCreate(data.projects[0].id);
-        else { showToast('Create a project first'); navigateTo('projects'); }
+        else { navigateTo('projects'); }
       });
       return;
     }
     if (subtitle) subtitle.textContent = `${filteredTasks.length} of ${data.tasks.length} tasks`;
     if (filteredTasks.length === 0 && data.tasks.length > 0) {
-      container.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div><h3 class="empty-state-title">No matches</h3><p class="empty-state-desc">Try adjusting your search or filters.</p></div>`;
+      container.innerHTML = renderEmptyState('No matches', 'Try adjusting your search or filters.', '', '', 'search');
       return;
     }
 
@@ -716,7 +738,14 @@
   function renderCalendar() {
     const container = document.getElementById('calendar-content');
     if (!container) return;
-    
+
+    const data = getData();
+    if (data.tasks.filter(t => t.dueDate).length === 0 && data.events.length === 0) {
+      container.innerHTML = renderEmptyState('Nothing scheduled', 'Add tasks with due dates or create events to populate your calendar.', 'New Event', 'empty-calendar-event', 'calendar');
+      document.getElementById('empty-calendar-event')?.addEventListener('click', () => openEventDrawerCreate());
+      return;
+    }
+
     let calMonth = parseInt(localStorage.getItem('pm-cal-month') || new Date().getMonth());
     let calYear = parseInt(localStorage.getItem('pm-cal-year') || new Date().getFullYear());
     let calView = localStorage.getItem('pm-cal-view') || 'month';
@@ -952,7 +981,7 @@
     if (!container) return;
     if (subtitle) subtitle.textContent = `${data.team.length} member${data.team.length !== 1 ? 's' : ''}`;
     if (data.team.length === 0) {
-      container.innerHTML = renderEmptyState('No team members yet', 'Add team members to collaborate on projects.', 'Add Member', 'empty-add-member');
+      container.innerHTML = renderEmptyState('No team members yet', 'Invite team members to collaborate on projects and share the workload.', 'Add Member', 'empty-add-member', 'team');
       document.getElementById('empty-add-member')?.addEventListener('click', () => openTeamDrawerCreate());
       return;
     }
@@ -997,6 +1026,11 @@
     const data = getData();
     const container = document.getElementById('analytics-content');
     if (!container) return;
+    if (data.tasks.length === 0 && data.projects.length === 0) {
+      container.innerHTML = renderEmptyState('No data yet', 'Create projects and tasks to see analytics and track your progress.', 'Create Project', 'empty-analytics-create', 'chart');
+      document.getElementById('empty-analytics-create')?.addEventListener('click', () => openProjectDrawerCreate());
+      return;
+    }
     const totalTasks = data.tasks.length;
     const completedTasks = data.tasks.filter(t => t.status === 'done').length;
     const rate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -2768,13 +2802,50 @@
   }
 
   function initFAB() {
-    const handler = () => {
-      const data = getData();
-      if (data.projects.length === 0) { navigateTo('projects'); showToast('Create a project first'); }
-      else openTaskDrawerCreate(data.projects[0].id);
-    };
-    document.getElementById('fab')?.addEventListener('click', handler);
-    document.getElementById('quick-create')?.addEventListener('click', handler);
+    function toggleQuickMenu(btn) {
+      var existing = document.getElementById('quick-create-menu');
+      if (existing) { existing.remove(); return; }
+      var data = getData();
+      var menu = document.createElement('div');
+      menu.id = 'quick-create-menu';
+      menu.className = 'quick-create-menu';
+      var items = [];
+      items.push({ label: 'New Project', icon: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>', action: function () { openProjectDrawerCreate(); }, hint: '' });
+      if (data.projects.length > 0) {
+        items.push({ label: 'New Task', icon: '<polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>', action: function () { openTaskDrawerCreate(data.projects[0].id); }, hint: 'T' });
+      }
+      items.push({ label: 'New Event', icon: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', action: function () { openEventDrawerCreate(); }, hint: '' });
+      menu.innerHTML = items.map(function (it) {
+        return '<div class="quick-create-item" tabindex="0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + it.icon + '</svg><span>' + it.label + '</span>' + (it.hint ? '<kbd class="kbd-small">' + it.hint + '</kbd>' : '') + '</div>';
+      }).join('');
+      document.body.appendChild(menu);
+      var rect = btn.getBoundingClientRect();
+      menu.style.top = (rect.bottom + 6) + 'px';
+      menu.style.right = (window.innerWidth - rect.right) + 'px';
+      requestAnimationFrame(function () { menu.classList.add('active'); });
+      menu.addEventListener('click', function (e) {
+        var item = e.target.closest('.quick-create-item');
+        if (!item) return;
+        var idx = Array.from(menu.children).indexOf(item);
+        if (items[idx]) { items[idx].action(); }
+        menu.remove();
+      });
+      var close = function (e) { if (!menu.contains(e.target) && e.target !== btn) { menu.remove(); document.removeEventListener('click', close); } };
+      setTimeout(function () { document.addEventListener('click', close); }, 0);
+    }
+
+    var qcBtn = document.getElementById('quick-create');
+    if (qcBtn) {
+      qcBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleQuickMenu(qcBtn); });
+    }
+    var fabBtn = document.getElementById('fab');
+    if (fabBtn) {
+      fabBtn.addEventListener('click', function () {
+        var data = getData();
+        if (data.projects.length === 0) { navigateTo('projects'); showToast('Create a project first'); }
+        else openTaskDrawerCreate(data.projects[0].id);
+      });
+    }
   }
 
   function initNewProjectButtons() {

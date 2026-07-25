@@ -6517,6 +6517,207 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
   transform: translateY(0) scale(0.98);
 }
 
+.empty-state-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.empty-state-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 9px 18px;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s var(--ease-spring);
+  line-height: 1;
+}
+
+.empty-state-btn-secondary:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.empty-state-btn-secondary:active {
+  transform: translateY(0);
+}
+
+.welcome-guide {
+  background: var(--bg-elevated);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-7);
+  box-shadow: var(--shadow-sm);
+}
+
+.welcome-guide-content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.welcome-guide-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background: var(--primary-bg);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.welcome-guide-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-1);
+}
+
+.welcome-guide-desc {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.welcome-guide-steps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.welcome-guide-step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background 0.15s var(--ease-luxury), transform 0.2s var(--ease-spring);
+}
+
+.welcome-guide-step:hover {
+  background: var(--bg-hover);
+  transform: translateY(-2px);
+}
+
+.welcome-guide-step:active {
+  transform: translateY(0);
+}
+
+.welcome-guide-step-number {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: white;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.welcome-guide-step strong {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.welcome-guide-step p {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .welcome-guide-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+.quick-create-menu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 220px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl), var(--shadow-glass);
+  padding: var(--space-1);
+  opacity: 0;
+  transform: translateY(-6px) scale(0.96);
+  transition: opacity 0.15s var(--ease-out), transform 0.2s var(--ease-spring);
+  transform-origin: top right;
+  pointer-events: none;
+}
+
+.quick-create-menu.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.quick-create-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: background 0.12s var(--ease-luxury);
+  outline: none;
+}
+
+.quick-create-item:hover,
+.quick-create-item:focus-visible {
+  background: var(--bg-hover);
+}
+
+.quick-create-item svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.quick-create-item span {
+  flex: 1;
+}
+
+.quick-create-item .kbd-small {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  background: var(--bg-tertiary);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--font-sans);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+}
+
 .sidebar-item[data-page] .sidebar-badge:empty,
 .sidebar-item[data-page] .sidebar-badge-new:empty {
   display: none;
