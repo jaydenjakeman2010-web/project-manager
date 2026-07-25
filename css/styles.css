@@ -1150,7 +1150,7 @@ button {
 }
 
 .page-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: var(--text-3xl);
   font-weight: var(--weight-bold);
   color: var(--text-primary);
