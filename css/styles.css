@@ -1901,18 +1901,19 @@ button {
 }
 
 .task-checkbox {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: var(--radius-sm);
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color var(--duration-normal) var(--ease-spring), border-color var(--duration-normal) var(--ease-spring), transform var(--duration-normal) var(--ease-spring);
+  transition: background-color 0.2s var(--ease-spring), border-color 0.2s var(--ease-spring), transform 0.15s var(--ease-spring);
   background: transparent;
   border: 2px solid var(--border);
   padding: 0;
+  position: relative;
 }
 
 .task-checkbox:focus-visible {
@@ -1921,27 +1922,67 @@ button {
   border-color: var(--primary);
 }
 
+.task-checkbox:hover:not(.checked) {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+  transform: scale(1.1);
+}
+
+.task-checkbox:active {
+  transform: scale(0.85);
+}
+
 .task-checkbox.checked {
   background: var(--primary);
   border-color: var(--primary);
-  animation: checkPop var(--duration-fast) var(--ease-spring);
+  animation: checkPop 0.35s var(--ease-spring);
+}
+
+.task-checkbox.checked svg {
+  display: block;
+}
+
+.task-checkbox-check {
+  width: 12px;
+  height: 12px;
+  display: none;
+}
+
+.task-checkbox.checked .task-checkbox-check {
+  display: block;
+  animation: checkDraw 0.35s var(--ease-out-expo) both;
 }
 
 @keyframes checkPop {
   0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
+  40% { transform: scale(1.25); }
+  70% { transform: scale(0.92); }
   100% { transform: scale(1); }
+}
+
+@keyframes checkDraw {
+  from { stroke-dashoffset: 20; }
+  to { stroke-dashoffset: 0; }
 }
 
 .task-checkbox.checked::after {
   content: '';
+  display: none;
+}
+
+/* SVG checkmark stroke animation */
+.checkmark-svg {
   display: block;
-  width: 5px;
-  height: 9px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-  margin-top: -1px;
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: white;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  animation: checkDraw 0.35s var(--ease-out-expo) forwards;
 }
 
 .task-body {
@@ -2082,7 +2123,25 @@ button {
 }
 
 .btn:active {
+  transform: scale(0.97) !important;
+  transition-duration: 75ms !important;
+}
+
+/* Global active press for all clickable elements */
+.btn:active,
+.btn-icon-small:active,
+.filter-chip:active,
+.segmented-control-item:active,
+.empty-state-btn:active,
+.top-nav-quick-create:active,
+.sidebar-item:active {
   transform: scale(0.97);
+  transition-duration: 75ms;
+}
+
+.btn-primary:active,
+.top-nav-quick-create:active {
+  transform: scale(0.96) !important;
 }
 
 .btn:disabled,
@@ -2289,6 +2348,15 @@ button {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-slow {
+  animation: spinSlow 1.5s linear infinite;
 }
 
 .avatar {
@@ -3047,6 +3115,23 @@ button {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+/* Smooth layout transitions for task/project items */
+.projects-grid,
+.project-cards-grid,
+.task-groups,
+.task-list,
+.team-grid {
+  transition: opacity 0.2s ease;
+}
+
+.project-card,
+.project-card-large,
+.task-item,
+.task-group,
+.team-member-row {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .task-group {
@@ -4821,9 +4906,18 @@ button {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  animation: fadeIn var(--duration-fast) var(--ease-out);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fadeIn 0.25s var(--ease-out);
+}
+
+.command-palette-overlay.active .command-palette-backdrop {
+  animation: backdropFadeIn 0.3s var(--ease-out) both;
+}
+
+@keyframes backdropFadeIn {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(6px); }
 }
 
 .command-palette {
@@ -4861,11 +4955,13 @@ button {
 @keyframes cmdkSlideIn {
   from {
     opacity: 0;
-    transform: translateY(-20px) scale(0.95) rotateX(-5deg);
+    transform: translateY(-16px) scale(0.93) rotateX(-3deg);
+    filter: blur(2px);
   }
   to {
     opacity: 1;
     transform: translateY(0) scale(1) rotateX(0);
+    filter: blur(0);
   }
 }
 
@@ -5013,7 +5109,9 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
   z-index: var(--z-overlay);
   display: none;
   background: rgba(0, 0, 0, 0.4);
-  animation: fadeIn var(--duration-fast) var(--ease-out);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  transition: backdrop-filter 0.35s var(--ease-out), opacity 0.35s var(--ease-out);
 }
 
 .task-drawer-overlay.active {
@@ -5045,6 +5143,15 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
   opacity: 1;
   animation: drawerSlideIn 0.5s var(--ease-out-expo) both;
   box-shadow: var(--shadow-xl), var(--shadow-glass), var(--shadow-glow);
+}
+
+.task-drawer-overlay.active {
+  animation: drawerOverlayIn 0.35s var(--ease-out) both;
+}
+
+@keyframes drawerOverlayIn {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(4px); }
 }
 
 @keyframes drawerSlideIn {
@@ -5569,6 +5676,88 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
 
 .toast-container:hover .toast + .toast {
   margin-top: 4px !important;
+}
+
+/* ── Status Dock ── */
+.status-dock {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  z-index: calc(var(--z-toast) - 1);
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+}
+
+.status-dock.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.status-dock-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 8px 12px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-lg), var(--shadow-glass);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  min-height: 36px;
+}
+
+.status-dock-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: var(--primary-bg);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.status-dock-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.status-dock-text {
+  font-weight: 500;
+}
+
+.status-dock-progress {
+  position: absolute;
+  bottom: -1px;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  border-radius: 0 0 4px 4px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+  opacity: 0;
+}
+
+.status-dock-progress.active {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+@media (max-width: 768px) {
+  .status-dock {
+    bottom: calc(var(--bottom-nav-height) + 12px);
+  }
 }
 
 .toast.toast-success {

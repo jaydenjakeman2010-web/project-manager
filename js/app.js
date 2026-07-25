@@ -204,6 +204,7 @@
       indicator.classList.add('visible');
       setTimeout(function () { indicator.classList.remove('visible'); }, 2000);
     }
+    showDockCheck('Saved to cloud');
   }
 
   function getGreeting() {
@@ -711,7 +712,7 @@
         html += `<div class="task-item ${isDone ? 'completed' : ''}" data-task-id="${task.id}"><div class="task-select-checkbox" style="margin-right:var(--space-2);" title="Select task">
           <input type="checkbox" class="task-select-input" data-task-id="${task.id}" style="display:none;">
           <div class="task-select-box"></div>
-        </div><button class="task-checkbox ${isDone ? 'checked' : ''}"></button><div class="task-item-content"><span class="task-item-title">${task.name}</span>${richTags ? `<div class="task-item-tags">${richTags}</div>` : ''}${task.description ? `<p class="task-item-desc">${renderMarkdown(task.description).replace(/<br>/g, ' ').replace(/<[^>]+>/g, '')}</p>` : ''}</div><div class="task-item-right">${subProgress ? subProgress + ' ' : ''}${attCount ? attCount + ' ' : ''}${task.time_spent > 0 ? `<span style="font-size:var(--text-xs);color:var(--text-tertiary);margin-right:8px;">${formatTime(task.time_spent)}</span>` : ''}${assignee ? `<div class="avatar avatar-xs" style="background:${assignee.color || 'var(--primary)'};margin-right:8px;" title="${assignee.name}">${getInitials(assignee.name)}</div>` : ''}${task.dueDate ? `<span class="task-item-due ${new Date(task.dueDate) < new Date() && !isDone ? 'overdue' : ''}">${formatDueDate(task.dueDate)}</span>` : ''}</div></div>`;
+        </div><button class="task-checkbox ${isDone ? 'checked' : ''}" id="cb-${task.id}"><svg class="checkmark-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button><div class="task-item-content"><span class="task-item-title">${task.name}</span>${richTags ? `<div class="task-item-tags">${richTags}</div>` : ''}${task.description ? `<p class="task-item-desc">${renderMarkdown(task.description).replace(/<br>/g, ' ').replace(/<[^>]+>/g, '')}</p>` : ''}</div><div class="task-item-right">${subProgress ? subProgress + ' ' : ''}${attCount ? attCount + ' ' : ''}${task.time_spent > 0 ? `<span style="font-size:var(--text-xs);color:var(--text-tertiary);margin-right:8px;">${formatTime(task.time_spent)}</span>` : ''}${assignee ? `<div class="avatar avatar-xs" style="background:${assignee.color || 'var(--primary)'};margin-right:8px;" title="${assignee.name}">${getInitials(assignee.name)}</div>` : ''}${task.dueDate ? `<span class="task-item-due ${new Date(task.dueDate) < new Date() && !isDone ? 'overdue' : ''}">${formatDueDate(task.dueDate)}</span>` : ''}</div></div>`;
       });
       html += '</div></div>';
     }
@@ -1330,6 +1331,7 @@
     optimisticCompleteTask(taskId);
     playSound(newIsDone ? 'complete' : 'default');
     refreshCurrentView();
+    showDock(newIsDone ? 'Marked as done' : 'Reopened', 'check', 1200);
     API.patch('/tasks/' + taskId + '/toggle').then(function (res) {
       task.status = res.status;
       if (task.status === 'done') {
@@ -3398,30 +3400,83 @@
     }
   }
 
+  var dockTimer = null;
+
+  function showDock(message, iconType, duration) {
+    var dock = document.getElementById('status-dock');
+    var text = document.getElementById('dock-text');
+    var icon = document.getElementById('dock-icon');
+    if (!dock || !text) return;
+    clearTimeout(dockTimer);
+    var icons = {
+      check: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+      sync: '<svg class="spin-slow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>',
+      save: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>',
+      bell: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>',
+    };
+    if (icon && icons[iconType]) icon.innerHTML = icons[iconType];
+    text.textContent = message;
+    dock.classList.add('visible');
+    duration = duration || 2000;
+    dockTimer = setTimeout(function () { dock.classList.remove('visible'); }, duration);
+  }
+
+  function showDockSync(message) {
+    showDock(message, 'sync', 3000);
+  }
+
+  function showDockSaved(message) {
+    showDock(message, 'save', 1500);
+  }
+
+  function showDockCheck(message) {
+    showDock(message, 'check', 1500);
+  }
+
   function showToast(message, type, duration) {
     type = type || 'default';
     duration = duration || 3000;
     const container = document.getElementById('toast-container');
     if (!container) return;
     const toast = document.createElement('div');
-    toast.className = 'toast toast-' + type;
+    toast.className = 'toast toast-' + type + ' entering';
     const icons = {
-      success: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
-      error: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
-      warning: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
-      info: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>',
+      success: '<svg class="toast-icon toast-icon-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+      error: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
+      warning: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+      info: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>',
       default: ''
     };
-    toast.innerHTML = (icons[type] || '') + '<span class="toast-message">' + message + '</span><button class="toast-close" aria-label="Dismiss"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>';
+    toast.innerHTML = (icons[type] || '') + '<span class="toast-message">' + message + '</span><button class="toast-close" aria-label="Dismiss"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>';
     container.appendChild(toast);
-    toast.querySelector('.toast-close')?.addEventListener('click', () => removeToast(toast));
-    setTimeout(() => removeToast(toast), duration);
+    requestAnimationFrame(function () {
+      toast.classList.remove('entering');
+    });
+    toast.querySelector('.toast-close')?.addEventListener('click', function (e) {
+      e.stopPropagation();
+      removeToast(toast);
+    });
+    var timer = setTimeout(function () { removeToast(toast); }, duration);
+    toast._timer = timer;
+    toast.addEventListener('mouseenter', function () { clearTimeout(timer); });
+    toast.addEventListener('mouseleave', function () {
+      var t = setTimeout(function () { removeToast(toast); }, 1500);
+      toast._timer = t;
+    });
     announceToScreenReader(message);
   }
 
   function removeToast(toast) {
+    if (toast._removing) return;
+    toast._removing = true;
+    clearTimeout(toast._timer);
     toast.classList.add('removing');
-    setTimeout(() => toast.remove(), 200);
+    setTimeout(function () {
+      if (toast.parentNode) toast.remove();
+      document.querySelectorAll('.toast').forEach(function (t, i) {
+        t.style.transitionDelay = (i * 0.03) + 's';
+      });
+    }, 250);
   }
 
   function showUndoToast(message, undoAction, duration) {
