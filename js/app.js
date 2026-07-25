@@ -597,7 +597,26 @@
       html += `<div class="kanban-column"><div class="kanban-column-header"><div class="flex items-center gap-2"><div class="kanban-dot" style="background:${sColors[status]};"></div><span class="kanban-column-title">${sLabels[status]}</span></div><span class="kanban-count">${tasks.length}</span></div><div class="kanban-cards" data-status="${status}">`;
       tasks.forEach(task => {
         const assignee = task.assigneeId ? data.team.find(m => m.id === task.assigneeId) : null;
-            html += `<div class="kanban-card" draggable="true" data-task-id="${task.id}"><div class="kanban-card-title">${task.name}</div>${task.description ? `<p class="kanban-card-desc">${task.description}</p>` : ''}${task.dueDate || assignee ? `<div class="kanban-card-footer">${task.dueDate ? `<span class="kanban-card-due">${formatDueDate(task.dueDate)}</span>` : '<span></span>'}${assignee ? `<div class="avatar avatar-xs" style="background:${assignee.color || 'var(--primary)'};" title="${assignee.name}">${getInitials(assignee.name)}</div>` : ''}</div>` : ''}</div>`;
+        const tags = task.tags ? renderRichTags(task.tags) : '';
+        const subProgress = renderSubtaskProgress(task.subtasks);
+        const attCount = renderAttachmentCount(task.attachments);
+        const hasMeta = task.dueDate || assignee;
+        html += `<div class="kanban-card" draggable="true" data-task-id="${task.id}">`;
+        html += `<div class="kanban-card-title">${task.name}</div>`;
+        if (task.description) html += `<p class="kanban-card-desc">${task.description}</p>`;
+        if (tags) html += `<div class="kanban-card-tags">${tags}</div>`;
+        if (subProgress || attCount) html += `<div class="kanban-card-meta-row">${subProgress}${attCount ? '<span style="flex:1"></span>' + attCount : ''}</div>`;
+        if (hasMeta || tags || subProgress || attCount) {
+          html += `<div class="kanban-card-footer">`;
+          html += `<div class="kanban-card-footer-left">`;
+          if (task.dueDate) html += `<span class="kanban-card-due">${formatDueDate(task.dueDate)}</span>`;
+          html += `</div>`;
+          if (assignee) {
+            html += `<div class="avatar avatar-xs" style="background:${assignee.color || 'var(--primary)'};flex-shrink:0;" title="${assignee.name}">${getInitials(assignee.name)}</div>`;
+          }
+          html += `</div>`;
+        }
+        html += `</div>`;
       });
       html += `</div><button class="kanban-add-btn" data-status="${status}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add task</button></div>`;
     });
@@ -686,10 +705,13 @@
       tasks.forEach(task => {
         const isDone = task.status === 'done';
         const assignee = task.assigneeId ? data.team.find(m => m.id === task.assigneeId) : null;
+        var richTags = task.tags ? renderRichTags(task.tags) : '';
+        var subProgress = renderSubtaskProgress(task.subtasks);
+        var attCount = renderAttachmentCount(task.attachments);
         html += `<div class="task-item ${isDone ? 'completed' : ''}" data-task-id="${task.id}"><div class="task-select-checkbox" style="margin-right:var(--space-2);" title="Select task">
           <input type="checkbox" class="task-select-input" data-task-id="${task.id}" style="display:none;">
           <div class="task-select-box"></div>
-        </div><button class="task-checkbox ${isDone ? 'checked' : ''}"></button><div class="task-item-content"><span class="task-item-title">${task.name}</span>${task.tags ? renderTaskTags(task.tags) : ''}${task.description ? `<p class="task-item-desc">${renderMarkdown(task.description).replace(/<br>/g, ' ').replace(/<[^>]+>/g, '')}</p>` : ''}</div><div class="task-item-right">${task.time_spent > 0 ? `<span style="font-size:var(--text-xs);color:var(--text-tertiary);margin-right:8px;">${formatTime(task.time_spent)}</span>` : ''}${assignee ? `<div class="avatar avatar-xs" style="background:${assignee.color || 'var(--primary)'};margin-right:8px;" title="${assignee.name}">${getInitials(assignee.name)}</div>` : ''}${task.dueDate ? `<span class="task-item-due ${new Date(task.dueDate) < new Date() && !isDone ? 'overdue' : ''}">${formatDueDate(task.dueDate)}</span>` : ''}</div></div>`;
+        </div><button class="task-checkbox ${isDone ? 'checked' : ''}"></button><div class="task-item-content"><span class="task-item-title">${task.name}</span>${richTags ? `<div class="task-item-tags">${richTags}</div>` : ''}${task.description ? `<p class="task-item-desc">${renderMarkdown(task.description).replace(/<br>/g, ' ').replace(/<[^>]+>/g, '')}</p>` : ''}</div><div class="task-item-right">${subProgress ? subProgress + ' ' : ''}${attCount ? attCount + ' ' : ''}${task.time_spent > 0 ? `<span style="font-size:var(--text-xs);color:var(--text-tertiary);margin-right:8px;">${formatTime(task.time_spent)}</span>` : ''}${assignee ? `<div class="avatar avatar-xs" style="background:${assignee.color || 'var(--primary)'};margin-right:8px;" title="${assignee.name}">${getInitials(assignee.name)}</div>` : ''}${task.dueDate ? `<span class="task-item-due ${new Date(task.dueDate) < new Date() && !isDone ? 'overdue' : ''}">${formatDueDate(task.dueDate)}</span>` : ''}</div></div>`;
       });
       html += '</div></div>';
     }
@@ -1098,29 +1120,73 @@
   }
 
   function deleteProject(projectId) {
-    API.del('/projects/' + projectId).then(function () {
-      state.tasks = state.tasks.filter(function (t) { return t.projectId !== projectId; });
-      state.projects = state.projects.filter(function (p) { return p.id !== projectId; });
-      state.archivedProjects = (state.archivedProjects || []).filter(function (p) { return p.id !== projectId; });
-      showToast('Project deleted');
-      if (currentProjectId === projectId) { currentProjectId = null; navigateTo('projects'); }
-      else refreshCurrentView();
-    }).catch(function (err) { showToast(err.message || 'Failed to delete project', 'error'); });
+    var projects = state.projects;
+    var archived = state.archivedProjects || [];
+    var project = projects.find(function (p) { return p.id === projectId; }) || archived.find(function (p) { return p.id === projectId; });
+    if (!project) {
+      API.del('/projects/' + projectId).then(function () {
+        state.tasks = state.tasks.filter(function (t) { return t.projectId !== projectId; });
+        state.projects = state.projects.filter(function (p) { return p.id !== projectId; });
+        state.archivedProjects = (state.archivedProjects || []).filter(function (p) { return p.id !== projectId; });
+        showToast('Project deleted');
+        if (currentProjectId === projectId) { currentProjectId = null; navigateTo('projects'); }
+        else refreshCurrentView();
+      }).catch(function (err) { showToast(err.message || 'Failed to delete project', 'error'); });
+      return;
+    }
+    var savedTasks = state.tasks.filter(function (t) { return t.projectId === projectId; });
+    state.tasks = state.tasks.filter(function (t) { return t.projectId !== projectId; });
+    state.projects = state.projects.filter(function (p) { return p.id !== projectId; });
+    state.archivedProjects = (state.archivedProjects || []).filter(function (p) { return p.id !== projectId; });
+    showUndoToast('Project deleted', function () {
+      state.projects.push(project);
+      savedTasks.forEach(function (t) { state.tasks.push(t); });
+      refreshCurrentView();
+      showToast('Project restored', 'success');
+    }, 5000);
+    if (currentProjectId === projectId) { currentProjectId = null; navigateTo('projects'); }
+    else refreshCurrentView();
+    API.del('/projects/' + projectId).catch(function (err) {
+      state.projects.push(project);
+      savedTasks.forEach(function (t) { state.tasks.push(t); });
+      refreshCurrentView();
+      showToast(err.message || 'Failed to delete project', 'error');
+    });
   }
 
   function archiveProject(projectId) {
-    API.patch('/projects/' + projectId, { archived: true }).then(function () {
-      var idx = state.projects.findIndex(function (p) { return p.id === projectId; });
-      if (idx !== -1) {
-        var p = state.projects.splice(idx, 1)[0];
-        p.archived = true;
-        if (!state.archivedProjects) state.archivedProjects = [];
-        state.archivedProjects.push(p);
-      }
-      showToast('Project archived');
-      if (currentProjectId === projectId) { currentProjectId = null; navigateTo('projects'); }
-      else refreshCurrentView();
-    }).catch(function (err) { showToast(err.message || 'Failed to archive project', 'error'); });
+    var p = state.projects.find(function (x) { return x.id === projectId; });
+    if (!p) {
+      API.patch('/projects/' + projectId, { archived: true }).then(function () {
+        showToast('Project archived');
+        if (currentProjectId === projectId) { currentProjectId = null; navigateTo('projects'); }
+        else refreshCurrentView();
+      }).catch(function (err) { showToast(err.message || 'Failed to archive project', 'error'); });
+      return;
+    }
+    var idx = state.projects.findIndex(function (x) { return x.id === projectId; });
+    state.projects.splice(idx, 1);
+    p.archived = true;
+    if (!state.archivedProjects) state.archivedProjects = [];
+    state.archivedProjects.push(p);
+    showUndoToast('Project archived', function () {
+      var ai = state.archivedProjects.findIndex(function (x) { return x.id === projectId; });
+      if (ai !== -1) state.archivedProjects.splice(ai, 1);
+      p.archived = false;
+      state.projects.push(p);
+      refreshCurrentView();
+      showToast('Project restored', 'success');
+    }, 5000);
+    if (currentProjectId === projectId) { currentProjectId = null; navigateTo('projects'); }
+    else refreshCurrentView();
+    API.patch('/projects/' + projectId, { archived: true }).catch(function (err) {
+      var ai = state.archivedProjects.findIndex(function (x) { return x.id === projectId; });
+      if (ai !== -1) state.archivedProjects.splice(ai, 1);
+      p.archived = false;
+      state.projects.push(p);
+      refreshCurrentView();
+      showToast(err.message || 'Failed to archive project', 'error');
+    });
   }
 
   function unarchiveProject(projectId) {
@@ -1187,11 +1253,22 @@
 
   function deleteTask(taskId) {
     var task = state.tasks.find(function (t) { return t.id === taskId; });
-    API.del('/tasks/' + taskId).then(function () {
-      state.tasks = state.tasks.filter(function (t) { return t.id !== taskId; });
-      showToast('Task deleted', 'info');
+    if (!task) return;
+    state.tasks = state.tasks.filter(function (t) { return t.id !== taskId; });
+    playSound('delete');
+    optimisticCompleteTask(taskId);
+    refreshCurrentView();
+    showUndoToast('Task deleted', function () {
+      state.tasks.push(task);
       refreshCurrentView();
-    }).catch(function (err) { showToast(err.message || 'Failed to delete task', 'error'); });
+      showToast('Task restored', 'success');
+      playSound('success');
+    }, 5000);
+    API.del('/tasks/' + taskId).catch(function (err) {
+      state.tasks.push(task);
+      refreshCurrentView();
+      showToast(err.message || 'Failed to delete task', 'error');
+    });
   }
 
   function createTeamMember(name, role, photo) {
@@ -1245,18 +1322,29 @@
   }
 
   function toggleTaskStatus(taskId) {
+    var task = state.tasks.find(function (t) { return t.id === taskId; });
+    if (!task) return;
+    var prevStatus = task.status;
+    var newIsDone = task.status !== 'done';
+    task.status = newIsDone ? 'done' : 'todo';
+    optimisticCompleteTask(taskId);
+    playSound(newIsDone ? 'complete' : 'default');
+    refreshCurrentView();
     API.patch('/tasks/' + taskId + '/toggle').then(function (res) {
-      var task = state.tasks.find(function (t) { return t.id === taskId; });
-      if (task) {
-        task.status = res.status;
-        if (task.status === 'done' && task.project_id) {
+      task.status = res.status;
+      if (task.status === 'done') {
+        if (task.project_id) {
           var pt = state.tasks.filter(function (t2) { return t2.project_id === task.project_id; });
           var allDone = pt.length > 0 && pt.every(function (t2) { return t2.status === 'done'; });
-          if (allDone) { triggerConfetti(); announceToScreenReader('All tasks in project completed!'); }
+          if (allDone) { triggerCelebration(); announceToScreenReader('All tasks in project completed!'); }
         }
+        playSound('complete');
       }
+    }).catch(function (err) {
+      task.status = prevStatus;
       refreshCurrentView();
-    }).catch(function (err) { showToast(err.message || 'Failed to toggle task', 'error'); });
+      showToast(err.message || 'Failed to toggle task', 'error');
+    });
   }
 
   function showPageSkeleton(pageId) {
@@ -1355,6 +1443,7 @@
       case 'team': renderTeam(); break;
       case 'analytics': renderAnalytics(); break;
     }
+    setTimeout(initTooltips, 50);
   }
 
   function flashLoadingBar() {
@@ -1424,6 +1513,7 @@
         newPage.classList.remove('entering');
         triggerReveals(newPage, 60);
         observeScrollEntrances(newPage);
+        initTooltips();
       }
       document.querySelector('.page-content').scrollTo({ top: 0, behavior: 'instant' });
       completeLoadingBar();
@@ -2925,6 +3015,18 @@
       if (e.target.files[0]) importData(e.target.files[0]);
     });
     document.getElementById('clear-data-btn')?.addEventListener('click', clearAllData);
+
+    var soundToggle = document.getElementById('sound-toggle');
+    if (soundToggle) {
+      soundToggle.classList.toggle('active', soundEnabled);
+      soundToggle.addEventListener('click', function () {
+        soundEnabled = !soundEnabled;
+        localStorage.setItem('pm-sound-enabled', soundEnabled);
+        soundToggle.classList.toggle('active', soundEnabled);
+        if (soundEnabled) playSound('success');
+        showToast(soundEnabled ? 'Sound enabled' : 'Sound disabled', 'info');
+      });
+    }
   }
 
   function initWebhookSettings() {
@@ -3322,6 +3424,172 @@
     setTimeout(() => toast.remove(), 200);
   }
 
+  function showUndoToast(message, undoAction, duration) {
+    duration = duration || 5000;
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-undo';
+    let remaining = Math.ceil(duration / 1000);
+    toast.innerHTML = '<span class="toast-message">' + message + '</span><span class="undo-countdown" id="undo-countdown">' + remaining + 's</span><button class="undo-btn" id="undo-action-btn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>Undo</button><button class="toast-close" aria-label="Dismiss"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>';
+    container.appendChild(toast);
+    const timer = setInterval(function () {
+      remaining--;
+      var el = document.getElementById('undo-countdown');
+      if (el) el.textContent = remaining + 's';
+      if (remaining <= 0) { clearInterval(timer); removeToast(toast); }
+    }, 1000);
+    toast.querySelector('#undo-action-btn')?.addEventListener('click', function () {
+      clearInterval(timer);
+      undoAction();
+      removeToast(toast);
+    });
+    toast.querySelector('.toast-close')?.addEventListener('click', function () {
+      clearInterval(timer);
+      removeToast(toast);
+    });
+    setTimeout(function () { clearInterval(timer); removeToast(toast); }, duration);
+  }
+
+  function renderRichTags(tagsStr) {
+    if (!tagsStr) return '';
+    var icons = {
+      bug: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>',
+      urgent: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+      feature: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>',
+      enhancement: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>',
+      docs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>',
+      design: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>'
+    };
+    var classMap = {
+      bug: 'tag-bug', urgent: 'tag-urgent', feature: 'tag-feature',
+      enhancement: 'tag-enhancement', docs: 'tag-docs', design: 'tag-design'
+    };
+    return tagsStr.split(',').map(function (t) {
+      t = t.trim().toLowerCase();
+      if (!t) return '';
+      var cls = classMap[t] || 'tag-default';
+      var icon = icons[t] || '';
+      return '<span class="tag-pill ' + cls + '">' + icon + t + '</span>';
+    }).join('');
+  }
+
+  function renderAssigneeStackCompact(assigneeIds, max) {
+    max = max || 3;
+    var data = getData();
+    var assignees = [];
+    (assigneeIds || []).forEach(function (id) {
+      var m = data.team.find(function (x) { return x.id === id; });
+      if (m) assignees.push(m);
+    });
+    if (assignees.length === 0) return '';
+    var visible = assignees.slice(0, max);
+    var extra = assignees.length - max;
+    var html = '<div class="avatar-stack-compact">';
+    visible.forEach(function (m) {
+      var initials = getInitials(m.name);
+      if (m.photo) {
+        html += '<div class="avatar-compact" title="' + m.name + '"><img src="' + m.photo + '" alt=""></div>';
+      } else {
+        html += '<div class="avatar-compact" style="background:' + (m.color || 'var(--primary)') + ';" title="' + m.name + '">' + initials + '</div>';
+      }
+    });
+    if (extra > 0) html += '<div class="avatar-compact" style="background:var(--bg-tertiary);color:var(--text-secondary);font-size:8px;border-color:var(--bg-elevated);">+' + extra + '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderSubtaskProgress(subtasks) {
+    if (!subtasks || subtasks.length === 0) return '';
+    var done = subtasks.filter(function (s) { return s.done; }).length;
+    var total = subtasks.length;
+    var cls = done === total ? 'complete' : '';
+    return '<span class="progress-dot ' + cls + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg><span class="count-done">' + done + '</span>/<span class="count-total">' + total + '</span></span>';
+  }
+
+  function renderAttachmentCount(attachmentsStr) {
+    if (!attachmentsStr || attachmentsStr === '[]') return '';
+    try {
+      var atts = JSON.parse(attachmentsStr);
+      if (!atts || atts.length === 0) return '';
+      return '<span class="progress-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>' + atts.length + '</span>';
+    } catch (e) { return ''; }
+  }
+
+  function initTooltips() {
+    var tooltipEls = document.querySelectorAll('[data-tooltip]');
+    for (var i = 0; i < tooltipEls.length; i++) {
+      if (!tooltipEls[i].getAttribute('data-tooltip-initialized')) {
+        tooltipEls[i].setAttribute('data-tooltip-initialized', 'true');
+      }
+    }
+  }
+
+  var soundEnabled = localStorage.getItem('pm-sound-enabled') !== 'false';
+
+  function playSound(type) {
+    if (!soundEnabled) return;
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      gain.gain.value = 0.08;
+      if (type === 'complete') {
+        osc.frequency.value = 880;
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+        setTimeout(function () {
+          var o2 = ctx.createOscillator();
+          var g2 = ctx.createGain();
+          o2.connect(g2); g2.connect(ctx.destination);
+          g2.gain.value = 0.06;
+          o2.frequency.value = 1108;
+          o2.start(ctx.currentTime);
+          o2.stop(ctx.currentTime + 0.08);
+          g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+        }, 60);
+      } else if (type === 'delete') {
+        osc.frequency.value = 440;
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+      } else if (type === 'success') {
+        osc.frequency.value = 660;
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+      } else {
+        osc.frequency.value = 520;
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+      }
+    } catch (e) {}
+  }
+
+  function triggerCelebration() {
+    triggerConfetti();
+    playSound('complete');
+  }
+
+  function optimisticCompleteTask(taskId) {
+    var card = document.querySelector('.kanban-card[data-task-id="' + taskId + '"]');
+    if (card) {
+      card.classList.add('optimistic-done');
+      var check = card.querySelector('.kanban-card-check');
+      if (check) check.classList.add('optimistic-check');
+    }
+    var item = document.querySelector('.task-item[data-task-id="' + taskId + '"]');
+    if (item) {
+      item.classList.add('optimistic-done');
+      var cb = item.querySelector('.task-checkbox');
+      if (cb) cb.classList.add('optimistic-check');
+    }
+  }
+
   function setButtonLoading(btn, loading) {
     btn.classList.toggle('btn-loading', loading);
     btn.disabled = loading;
@@ -3564,6 +3832,7 @@
       initResizeHandler();
       initScrollAnimations();
       initPremiumInteractions();
+      initTooltips();
       initSSE();
       initNotificationsFromAPI();
       document.getElementById('notifications-btn')?.addEventListener('click', function (e) { e.stopPropagation(); toggleNotificationDropdown(); });
