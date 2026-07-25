@@ -9,11 +9,11 @@
   function loadAllData() {
     if (!API.isLoggedIn()) return Promise.resolve();
     return Promise.all([
-      API.get('/user').then(function (u) { state.user = u; if (u.photoUrl && !u.photo) u.photo = u.photoUrl; }).catch(function () {}),
+      API.get('/user').then(function (u) { state.user = u; if (u.photo_url && !u.photo) u.photo = u.photo_url; if (u.photoUrl && !u.photo) u.photo = u.photoUrl; }).catch(function () {}),
       API.get('/projects').then(function (d) { state.projects = d; }).catch(function () {}),
       API.get('/projects?archived=true').then(function (d) { state.archivedProjects = d; }).catch(function () {}),
       API.get('/tasks').then(function (d) { state.tasks = d; }).catch(function () {}),
-      API.get('/team').then(function (d) { d.forEach(function(m) { if (m.photoUrl && !m.photo) m.photo = m.photoUrl; }); state.team = d; }).catch(function () {}),
+      API.get('/team').then(function (d) { d.forEach(function(m) { if ((m.photo_url || m.photoUrl) && !m.photo) m.photo = m.photo_url || m.photoUrl; }); state.team = d; }).catch(function () {}),
       API.get('/events').then(function (d) { state.events = d; }).catch(function () {}),
     ]);
   }
@@ -250,10 +250,12 @@
     updateRemovePhotoVisibility(hasPhoto);
     document.getElementById('ws-dropdown-name') && (document.getElementById('ws-dropdown-name').textContent = data.user.name);
     document.getElementById('ws-dropdown-email') && (document.getElementById('ws-dropdown-email').textContent = data.user.email || '');
-    document.getElementById('ws-dropdown-avatar') && (document.getElementById('ws-dropdown-avatar').textContent = initials);
+    var wda = document.getElementById('ws-dropdown-avatar');
+    if (wda) { wda.textContent = hasPhoto ? '' : initials; wda.style.backgroundImage = hasPhoto ? 'url(' + data.user.photo + ')' : ''; wda.style.backgroundSize = hasPhoto ? 'cover' : ''; wda.style.backgroundPosition = hasPhoto ? 'center' : ''; }
     document.getElementById('user-dropdown-name') && (document.getElementById('user-dropdown-name').textContent = data.user.name);
     document.getElementById('user-dropdown-email') && (document.getElementById('user-dropdown-email').textContent = data.user.email || '');
-    document.getElementById('user-dropdown-avatar') && (document.getElementById('user-dropdown-avatar').textContent = initials);
+    var uda = document.getElementById('user-dropdown-avatar');
+    if (uda) { uda.textContent = hasPhoto ? '' : initials; uda.style.backgroundImage = hasPhoto ? 'url(' + data.user.photo + ')' : ''; uda.style.backgroundSize = hasPhoto ? 'cover' : ''; uda.style.backgroundPosition = hasPhoto ? 'center' : ''; }
   }
 
   function updateRemovePhotoVisibility(hasPhoto) {
@@ -1274,7 +1276,7 @@
 
   function createTeamMember(name, role, photo) {
     API.post('/team', { name: name, role: role || 'Member', photo_url: photo || null }).then(function (m) {
-      if (m.photoUrl && !m.photo) m.photo = m.photoUrl;
+      if ((m.photo_url || m.photoUrl) && !m.photo) m.photo = m.photo_url || m.photoUrl;
       state.team.push(m);
       showToast('Team member added');
       refreshCurrentView();
@@ -1289,7 +1291,7 @@
     if (updates.photo !== undefined) mapped.photo_url = updates.photo;
 
     API.patch('/team/' + memberId, mapped).then(function (m) {
-      if (m.photoUrl && !m.photo) m.photo = m.photoUrl;
+      if ((m.photo_url || m.photoUrl) && !m.photo) m.photo = m.photo_url || m.photoUrl;
       var idx = state.team.findIndex(function (x) { return x.id === memberId; });
       if (idx !== -1) state.team[idx] = m;
       showToast('Team member updated');
@@ -3361,7 +3363,10 @@
     if (!dropdown) return;
     const data = getData();
     if (data.user) {
-      document.getElementById('user-dropdown-avatar').textContent = getInitials(data.user.name);
+      var uda = document.getElementById('user-dropdown-avatar');
+      var hasPhoto = data.user.photo && data.user.photo.length > 0;
+      var initials = getInitials(data.user.name);
+      if (uda) { uda.textContent = hasPhoto ? '' : initials; uda.style.backgroundImage = hasPhoto ? 'url(' + data.user.photo + ')' : ''; uda.style.backgroundSize = hasPhoto ? 'cover' : ''; uda.style.backgroundPosition = hasPhoto ? 'center' : ''; }
       document.getElementById('user-dropdown-name').textContent = data.user.name;
       document.getElementById('user-dropdown-email').textContent = data.user.email || '';
     }
@@ -3384,7 +3389,10 @@
     if (!dropdown) return;
     const data = getData();
     if (data.user) {
-      document.getElementById('ws-dropdown-avatar').textContent = getInitials(data.user.name);
+      var wda = document.getElementById('ws-dropdown-avatar');
+      var hasPhoto = data.user.photo && data.user.photo.length > 0;
+      var initials = getInitials(data.user.name);
+      if (wda) { wda.textContent = hasPhoto ? '' : initials; wda.style.backgroundImage = hasPhoto ? 'url(' + data.user.photo + ')' : ''; wda.style.backgroundSize = hasPhoto ? 'cover' : ''; wda.style.backgroundPosition = hasPhoto ? 'center' : ''; }
       document.getElementById('ws-dropdown-name').textContent = data.user.name;
       document.getElementById('ws-dropdown-email').textContent = data.user.email || '';
     }
