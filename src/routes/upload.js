@@ -96,4 +96,20 @@ router.post('/', upload.single('photo'), async (req, res) => {
   }
 });
 
+router.post('/task-attachment', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(422).json({ error: 'No file uploaded.' });
+    var base64 = req.file.buffer.toString('base64');
+    var dataUrl = 'data:' + req.file.mimetype + ';base64,' + base64;
+    var name = req.file.originalname;
+    res.json({ name: name, url: dataUrl, size: req.file.size });
+  } catch (err) {
+    if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(413).json({ error: 'File too large.' });
+    }
+    console.error('Attachment upload failed:', err.message);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
 export default router;

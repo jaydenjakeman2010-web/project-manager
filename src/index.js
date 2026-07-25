@@ -127,6 +127,38 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'Internal server error.' });
 });
 
+function startRecurrenceEngine() {
+  if (!dbConnected) return;
+  setInterval(async function () {
+    try {
+      const { default: db } = await import('./db/index.js');
+      const today = new Date().toISOString().slice(0, 10);
+      const { rows } = await db.query(
+        `SELECT id, user_id, name, project_id, assignee_id, description, priority, recurrence, due_date, tags
+         FROM tasks WHERE recurrence != 'none' AND due_date IS NOT NULL AND due_date < $1 AND status != 'done'`,
+        [today]
+      );
+      for (const task of rows) {
+        var nextDate = new Date(task.due_date);
+        if (task.recurrence === 'daily') nextDate.setDate(nextDate.getDate() + 1);
+        else if (task.recurrence === 'weekly') nextDate.setDate(nextDate.getDate() + 7);
+        else if (task.recurrence === 'monthly') nextDate.setMonth(nextDate.getMonth() + 1);
+        var nextDateStr = nextDate.toISOString().slice(0, 10);
+        if (nextDateStr <= today) continue;
+        var { v4: uid } = await import('uuid');
+        await db.query(
+          `INSERT INTO tasks (id, user_id, project_id, name, description, status, priority, due_date, assignee_id, recurrence, tags)
+           VALUES ($1, $2, $3, $4, $5, 'todo', $6, $7, $8, $9, $10)`,
+          [uid(), task.user_id, task.project_id, task.name, task.description, task.priority, nextDateStr, task.assignee_id, task.recurrence, task.tags || '']
+        );
+      }
+    } catch (err) {
+      console.error('Recurrence engine error:', err.message);
+    }
+  }, 3600000);
+  console.log('Recurrence engine started (hourly check)');
+}
+
 async function ensureExtensions() {
   try {
     const { default: db } = await import('./db/index.js');
@@ -169,6 +201,8 @@ async function start() {
     console.log('WARNING: No database connection. API calls will return 503.');
     console.log('Set DATABASE_URL or add PostgreSQL plugin in Railway.');
   }
+
+  startRecurrenceEngine();
 
   app.listen(PORT, function () {
     console.log('Server running on http://localhost:' + PORT);

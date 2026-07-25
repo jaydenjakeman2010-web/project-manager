@@ -35,6 +35,37 @@
     return dateStr ? dateStr.slice(0, 10) : '';
   }
 
+  function formatTime(seconds) {
+    var h = Math.floor(seconds / 3600);
+    var m = Math.floor((seconds % 3600) / 60);
+    var s = seconds % 60;
+    if (h > 0) return h + 'h ' + m + 'm';
+    if (m > 0) return m + 'm ' + s + 's';
+    return s + 's';
+  }
+
+  function renderTaskTags(tagsStr) {
+    if (!tagsStr) return '';
+    return tagsStr.split(',').map(function (t) {
+      t = t.trim();
+      if (!t) return '';
+      return '<span class="badge badge-info" style="font-size:10px;padding:1px 8px;margin-left:4px;">' + t + '</span>';
+    }).join('');
+  }
+
+  function renderMarkdown(text) {
+    if (!text) return '';
+    return text
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`(.+?)`/g, '<code>$1</code>')
+      .replace(/^- (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>\n?)/g, '<ul>$1</ul>')
+      .replace(/<\/ul>\n?<ul>/g, '')
+      .replace(/\n/g, '<br>');
+  }
+
   function debounce(fn, delay) {
     let timer;
     return function () {
@@ -510,7 +541,7 @@
         html += `<div class="task-item ${isDone ? 'completed' : ''}" data-task-id="${task.id}"><div class="task-select-checkbox" style="margin-right:var(--space-2);" title="Select task">
           <input type="checkbox" class="task-select-input" data-task-id="${task.id}" style="display:none;">
           <div class="task-select-box"></div>
-        </div><button class="task-checkbox ${isDone ? 'checked' : ''}"></button><div class="task-item-content"><span class="task-item-title">${task.name}</span>${task.priority ? `<span class="badge badge-${task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'success'}" style="margin-left:8px;font-size:10px;padding:2px 8px;">${task.priority}</span>` : ''}${task.description ? `<p class="task-item-desc">${task.description}</p>` : ''}</div><div class="task-item-right">${assignee ? `<div class="avatar avatar-xs" style="background:${assignee.color || 'var(--primary)'};margin-right:8px;" title="${assignee.name}">${getInitials(assignee.name)}</div>` : ''}${task.dueDate ? `<span class="task-item-due ${new Date(task.dueDate) < new Date() && !isDone ? 'overdue' : ''}">${formatDueDate(task.dueDate)}</span>` : ''}</div></div>`;
+        </div><button class="task-checkbox ${isDone ? 'checked' : ''}"></button><div class="task-item-content"><span class="task-item-title">${task.name}</span>${task.tags ? renderTaskTags(task.tags) : ''}${task.description ? `<p class="task-item-desc">${renderMarkdown(task.description).replace(/<br>/g, ' ').replace(/<[^>]+>/g, '')}</p>` : ''}</div><div class="task-item-right">${task.time_spent > 0 ? `<span style="font-size:var(--text-xs);color:var(--text-tertiary);margin-right:8px;">${formatTime(task.time_spent)}</span>` : ''}${assignee ? `<div class="avatar avatar-xs" style="background:${assignee.color || 'var(--primary)'};margin-right:8px;" title="${assignee.name}">${getInitials(assignee.name)}</div>` : ''}${task.dueDate ? `<span class="task-item-due ${new Date(task.dueDate) < new Date() && !isDone ? 'overdue' : ''}">${formatDueDate(task.dueDate)}</span>` : ''}</div></div>`;
       });
       html += '</div></div>';
     }
@@ -616,7 +647,7 @@
           const dayTasks = tasksByDate[dateStr] || [];
           const dayEvents = eventsByDate[dateStr] || [];
           const items = [...dayTasks.map(t => ({ type: 'task', name: t.name, id: t.id })), ...dayEvents.map(e => ({ type: 'event', name: e.name, id: e.id }))];
-          return `<div class="week-cell" data-date="${dateStr}">${items.map(it => `<div class="week-event ${it.type === 'task' ? 'emerald' : 'amber'}" data-${it.type}-id="${it.id}" style="top:${items.indexOf(it) * 22 + 2}px;height:18px;font-size:10px;line-height:18px;">${it.name}</div>`).join('')}</div>`;
+          return `<div class="week-cell" data-date="${dateStr}">${items.map(it => `<div class="week-event ${it.type === 'task' ? 'emerald' : 'amber'}" data-${it.type}-id="${it.id}" draggable="true" style="top:${items.indexOf(it) * 22 + 2}px;height:18px;font-size:10px;line-height:18px;">${it.name}</div>`).join('')}</div>`;
         }).join('')}</div></div>`;
       } else {
         let gridHtml = '<div class="calendar-grid"><div class="calendar-weekdays">';
@@ -693,6 +724,30 @@
             ev.addEventListener('click', (e) => {
               e.stopPropagation();
               if (ev.dataset.taskId) openTaskDrawerEdit(ev.dataset.taskId);
+            });
+            ev.addEventListener('dragstart', function (e) {
+              e.dataTransfer.setData('text/plain', JSON.stringify({ type: this.dataset.taskId ? 'task' : 'event', id: this.dataset.taskId || this.dataset.eventId }));
+              this.style.opacity = '0.4';
+            });
+            ev.addEventListener('dragend', function () { this.style.opacity = ''; });
+          });
+          container.querySelectorAll('.week-cell').forEach(cell => {
+            cell.addEventListener('dragover', function (e) { e.preventDefault(); this.style.background = 'var(--primary-bg)'; });
+            cell.addEventListener('dragleave', function () { this.style.background = ''; });
+            cell.addEventListener('drop', function (e) {
+              e.preventDefault();
+              this.style.background = '';
+              var date = this.dataset.date;
+              if (!date) return;
+              try {
+                var data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                if (data.type === 'task') {
+                  API.patch('/tasks/' + data.id, { due_date: date }).then(function () {
+                    showToast('Task rescheduled to ' + date);
+                    refreshCurrentView();
+                  }).catch(function () { showToast('Failed to reschedule', 'error'); });
+                }
+              } catch (err) {}
             });
           });
         }, 0);
@@ -1713,7 +1768,12 @@
         <input type="text" class="task-drawer-title" id="edit-task-title" value="${task.name}" placeholder="Task name" autocomplete="off" autocorrect="off" spellcheck="false">
       </div>
       <div class="task-drawer-section">
-        <textarea class="task-drawer-description" id="edit-task-desc" placeholder="Add a description..." autocomplete="off" autocorrect="off" spellcheck="false">${task.description || ''}</textarea>
+        <div style="margin-bottom:var(--space-2);display:flex;gap:6px;">
+          <button class="btn btn-xs btn-ghost" id="edit-desc-preview-btn">Preview</button>
+          <button class="btn btn-xs btn-ghost active" id="edit-desc-edit-btn">Edit</button>
+        </div>
+        <textarea class="task-drawer-description" id="edit-task-desc" placeholder="Add a description... Use **bold**, *italic*, \`code\`, - lists" autocomplete="off" autocorrect="off" spellcheck="false">${task.description || ''}</textarea>
+        <div id="edit-task-desc-preview" class="task-drawer-description" style="display:none;">${renderMarkdown(task.description || '')}</div>
       </div>
        <div class="task-drawer-section">
          <div class="task-drawer-section-header">
@@ -1769,14 +1829,44 @@
            <div id="edit-task-assignee-dropdown"></div>
          </div>
          <div class="task-drawer-meta-row">
-           <span class="task-drawer-meta-label">
-             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-             Recurrence
-           </span>
-           <div id="edit-task-recur-dropdown"></div>
-         </div>
-       </div>
-      <div class="task-drawer-actions">
+            <span class="task-drawer-meta-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+              Recurrence
+            </span>
+            <div id="edit-task-recur-dropdown"></div>
+          </div>
+          <div class="task-drawer-meta-row">
+            <span class="task-drawer-meta-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              Time Spent
+            </span>
+            <span style="display:flex;align-items:center;gap:8px;">
+              <span id="edit-task-timer-display" style="font-size:var(--text-sm);font-weight:var(--weight-medium);font-variant-numeric:tabular-nums;">${formatTime(task.time_spent || 0)}</span>
+              <button class="btn btn-sm ${task._timerRunning ? 'btn-danger' : 'btn-outline'}" id="edit-task-timer-btn">${task._timerRunning ? 'Stop' : 'Start'}</button>
+            </span>
+          </div>
+          <div class="task-drawer-meta-row">
+            <span class="task-drawer-meta-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="20" y1="12" x2="4" y2="12"></line></svg>
+              Tags
+            </span>
+            <input type="text" class="task-drawer-meta-value" id="edit-task-tags" value="${task.tags || ''}" placeholder="tag1, tag2, tag3" style="border:none;background:transparent;font:inherit;color:inherit;min-width:160px;text-align:right;">
+          </div>
+          <div class="task-drawer-meta-row">
+            <span class="task-drawer-meta-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              Attachments
+            </span>
+            <button class="btn btn-sm btn-ghost" id="edit-task-add-attachment">+ Add</button>
+          </div>
+        </div>
+        <div class="task-drawer-section" id="edit-task-attachments-section" style="display:none;">
+          <div class="task-drawer-section-header">
+            <span class="task-drawer-section-title">Files</span>
+          </div>
+          <div id="edit-task-attachments-list"></div>
+        </div>
+       <div class="task-drawer-actions">
          <button class="btn btn-ghost" id="edit-task-delete" style="color:var(--danger);">
            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
            Delete
@@ -1845,8 +1935,17 @@
       const title = document.getElementById('edit-task-title')?.value?.trim();
       const description = document.getElementById('edit-task-desc')?.value?.trim();
       const dueDate = document.getElementById('edit-task-due')?.value;
+      const tags = document.getElementById('edit-task-tags')?.value?.trim() || '';
       if (!title) { showToast('Please enter a task name', 'warning'); return; }
-      updateTask(taskId, { name: title, description, projectId: selectedProjectId, dueDate, priority: selectedPriority, status: selectedStatus, assigneeId: selectedAssignee, recurrence: selectedRecur });
+      if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
+      var updateData = { name: title, description, projectId: selectedProjectId, dueDate, priority: selectedPriority, status: selectedStatus, assigneeId: selectedAssignee, recurrence: selectedRecur, tags: tags };
+      if (task._timerRunning || _timerElapsed > 0) {
+        updateData.time_spent = (task.time_spent || 0) + _timerElapsed;
+      }
+      updateTask(taskId, updateData);
+      if (_attachments && _attachments.length > 0) {
+        updateTask(taskId, { attachments: JSON.stringify(_attachments) });
+      }
       syncSubtasks(taskId, subtasks, origSubtaskIds);
       syncComments(taskId, comments, origCommentIds);
       closeDrawer();
@@ -1930,8 +2029,94 @@
       `).join('');
     }
 
+    var _timerRunning = task._timerRunning || false;
+    var _timerStart = task._timerStart || null;
+    var _timerElapsed = 0;
+    var _timerInterval = null;
+    var _attachments = [];
+
+    try { _attachments = JSON.parse(task.attachments || '[]'); } catch (e) { _attachments = []; }
+
+    function updateTimerDisplay() {
+      var total = (task.time_spent || 0) + _timerElapsed;
+      var el = document.getElementById('edit-task-timer-display');
+      if (el) el.textContent = formatTime(total);
+    }
+
+    function startTimer() {
+      _timerRunning = true;
+      _timerInterval = setInterval(function () {
+        _timerElapsed++;
+        updateTimerDisplay();
+      }, 1000);
+      var btn = document.getElementById('edit-task-timer-btn');
+      if (btn) { btn.textContent = 'Stop'; btn.className = 'btn btn-sm btn-danger'; }
+    }
+
+    function stopTimer() {
+      _timerRunning = false;
+      if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
+      var btn = document.getElementById('edit-task-timer-btn');
+      if (btn) { btn.textContent = 'Start'; btn.className = 'btn btn-sm btn-outline'; }
+    }
+
+    document.getElementById('edit-task-timer-btn')?.addEventListener('click', function () {
+      if (_timerRunning) stopTimer();
+      else startTimer();
+    });
+
+    function renderAttachments() {
+      var section = document.getElementById('edit-task-attachments-section');
+      var list = document.getElementById('edit-task-attachments-list');
+      if (!section || !list) return;
+      if (_attachments.length === 0) { section.style.display = 'none'; return; }
+      section.style.display = '';
+      list.innerHTML = _attachments.map(function (a, i) {
+        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-light);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span style="flex:1;font-size:var(--text-sm);color:var(--text-primary);">' + a.name + '</span><a href="' + a.url + '" download="' + a.name + '" class="btn-icon-small" title="Download"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></a><button class="btn-icon-small" data-remove-attach="' + i + '" style="color:var(--danger);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>';
+      }).join('');
+      list.querySelectorAll('[data-remove-attach]').forEach(function (btn) {
+        btn.addEventListener('click', function () { _attachments.splice(parseInt(this.dataset.removeAttach), 1); renderAttachments(); });
+      });
+    }
+
+    document.getElementById('edit-task-add-attachment')?.addEventListener('click', function () {
+      var input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip';
+      input.onchange = function () {
+        var file = input.files[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) { showToast('File must be under 5MB', 'warning'); return; }
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          _attachments.push({ name: file.name, url: e.target.result });
+          renderAttachments();
+          showToast('File attached', 'success');
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    });
+
+    document.getElementById('edit-desc-edit-btn')?.addEventListener('click', function () {
+      document.getElementById('edit-task-desc').style.display = '';
+      document.getElementById('edit-task-desc-preview').style.display = 'none';
+      this.classList.add('active');
+      document.getElementById('edit-desc-preview-btn')?.classList.remove('active');
+    });
+    document.getElementById('edit-desc-preview-btn')?.addEventListener('click', function () {
+      var text = document.getElementById('edit-task-desc')?.value || '';
+      document.getElementById('edit-task-desc-preview').innerHTML = renderMarkdown(text);
+      document.getElementById('edit-task-desc').style.display = 'none';
+      document.getElementById('edit-task-desc-preview').style.display = '';
+      this.classList.add('active');
+      document.getElementById('edit-desc-edit-btn')?.classList.remove('active');
+    });
+
     renderSubtasks();
     renderComments();
+    renderAttachments();
+    updateTimerDisplay();
 
     document.getElementById('add-subtask-btn')?.addEventListener('click', () => {
       const text = prompt('Enter subtask name:');

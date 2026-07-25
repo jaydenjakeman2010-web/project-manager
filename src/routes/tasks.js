@@ -16,6 +16,7 @@ const createSchema = z.object({
   due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/).optional().nullable(),
   assignee_id: z.string().uuid().optional().nullable(),
   recurrence: z.enum(['none', 'daily', 'weekly', 'monthly']).optional(),
+  tags: z.string().max(500).optional(),
 });
 
 const updateSchema = z.object({
@@ -26,6 +27,9 @@ const updateSchema = z.object({
   due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/).optional().nullable(),
   assignee_id: z.string().uuid().optional().nullable(),
   recurrence: z.enum(['none', 'daily', 'weekly', 'monthly']).optional(),
+  time_spent: z.number().int().min(0).optional(),
+  tags: z.string().max(500).optional(),
+  attachments: z.string().optional(),
 });
 
 router.use(requireAuth);
@@ -56,7 +60,7 @@ router.get('/', async (req, res) => {
   try {
     const { rows } = await db.query(
       `SELECT t.id, t.name, t.description, t.status, t.priority, t.due_date,
-              t.assignee_id, t.recurrence, t.created_at, t.project_id
+              t.assignee_id, t.recurrence, t.time_spent, t.tags, t.attachments, t.created_at, t.project_id
        FROM tasks t WHERE ${whereClause}
        ORDER BY t.created_at DESC`,
       params
@@ -95,6 +99,9 @@ router.get('/', async (req, res) => {
       due_date: r.due_date,
       assignee_id: r.assignee_id,
       recurrence: r.recurrence,
+      time_spent: r.time_spent || 0,
+      tags: r.tags || '',
+      attachments: r.attachments || '[]',
       created_at: r.created_at,
       project_id: r.project_id,
       subtasks: subtasksByTask[r.id] || [],
@@ -121,10 +128,10 @@ router.post('/', validate(createSchema), async (req, res) => {
     }
 
     const { rows } = await db.query(
-      `INSERT INTO tasks (id, user_id, project_id, name, description, status, priority, due_date, assignee_id, recurrence)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING id, name, description, status, priority, due_date, assignee_id, recurrence, created_at, project_id`,
-      [uuid(), req.userId, project_id, name, description || '', status || 'todo', priority || 'medium', due_date || null, assignee_id || null, recurrence || 'none']
+      `INSERT INTO tasks (id, user_id, project_id, name, description, status, priority, due_date, assignee_id, recurrence, tags)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       RETURNING id, name, description, status, priority, due_date, assignee_id, recurrence, time_spent, tags, attachments, created_at, project_id`,
+      [uuid(), req.userId, project_id, name, description || '', status || 'todo', priority || 'medium', due_date || null, assignee_id || null, recurrence || 'none', req.validatedBody.tags || '']
     );
 
     await db.query(
@@ -148,7 +155,7 @@ router.patch('/:id', validate(updateSchema), async (req, res) => {
   }
 
   try {
-    const allowedFields = ['name', 'description', 'status', 'priority', 'due_date', 'assignee_id', 'recurrence'];
+    const allowedFields = ['name', 'description', 'status', 'priority', 'due_date', 'assignee_id', 'recurrence', 'time_spent', 'tags', 'attachments'];
     const setClauses = [];
     const params = [];
     let idx = 1;
@@ -168,7 +175,7 @@ router.patch('/:id', validate(updateSchema), async (req, res) => {
 
     const { rows } = await db.query(
       `UPDATE tasks SET ${setClauses.join(', ')} WHERE id = $${idx++} AND user_id = $${idx}
-       RETURNING id, name, description, status, priority, due_date, assignee_id, recurrence, created_at, project_id`,
+       RETURNING id, name, description, status, priority, due_date, assignee_id, recurrence, time_spent, tags, attachments, created_at, project_id`,
       params
     );
 
