@@ -521,16 +521,10 @@
     var data = getData();
     var container = document.getElementById('projects-content');
     if (!container) return;
-    var searchQuery = document.getElementById('projects-search') && document.getElementById('projects-search').value.toLowerCase() || '';
     var projects = data.projects;
-    if (searchQuery) projects = projects.filter(function (p) { return p.name.toLowerCase().includes(searchQuery); });
-    if (projects.length === 0 && !searchQuery) {
+    if (projects.length === 0) {
       container.innerHTML = renderEmptyState('No projects yet', 'Projects help you organize tasks, set deadlines, and track progress.', 'Create Project', 'empty-create-project-2', 'folder');
       document.getElementById('empty-create-project-2') && document.getElementById('empty-create-project-2').addEventListener('click', function () { openProjectDrawerCreate(); });
-      return;
-    }
-    if (projects.length === 0) {
-      container.innerHTML = renderEmptyState('No matches', 'Try a different search term.', '', '', 'search');
       return;
     }
     var taskStats = getProjectTaskStats(data);
@@ -642,20 +636,68 @@
     }).catch(function () {});
   }
 
+  function filterTasksUI(query) {
+    var container = document.getElementById('tasks-content');
+    var subtitle = document.getElementById('tasks-subtitle');
+    if (!container) return;
+    var items = container.querySelectorAll('.task-item');
+    var visible = 0;
+    items.forEach(function (el) {
+      var text = (el.querySelector('.task-item-title')?.textContent || '') + ' ' + (el.querySelector('.task-item-desc')?.textContent || '');
+      var match = !query || text.toLowerCase().includes(query);
+      el.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    var total = items.length;
+    if (subtitle) subtitle.textContent = visible + ' of ' + total + ' tasks';
+    container.querySelectorAll('.task-group').forEach(function (g) {
+      var visibleItems = g.querySelectorAll('.task-item[style*="display: none"]');
+      var allHidden = visibleItems.length === g.querySelectorAll('.task-item').length;
+      g.style.display = allHidden && query ? 'none' : '';
+    });
+    var emptyMsg = container.querySelector('.empty-state');
+    if (!emptyMsg && visible === 0 && total > 0) {
+      var es = document.createElement('div');
+      es.innerHTML = renderEmptyState('No matches', 'Try adjusting your search or filters.', '', '', 'search');
+      es.firstChild.classList.add('search-empty-state');
+      container.appendChild(es.firstChild);
+    } else if (emptyMsg && emptyMsg.classList.contains('search-empty-state')) {
+      emptyMsg.style.display = visible === 0 && total > 0 ? '' : 'none';
+    }
+  }
+
+  function filterProjectsUI(query) {
+    var container = document.getElementById('projects-content');
+    if (!container) return;
+    var items = container.querySelectorAll('.project-card-large');
+    var visible = 0;
+    items.forEach(function (el) {
+      var text = el.querySelector('.project-card-title')?.textContent || '';
+      var match = !query || text.toLowerCase().includes(query);
+      el.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    var emptyMsg = container.querySelector('.empty-state');
+    if (!emptyMsg && visible === 0 && items.length > 0) {
+      var es = document.createElement('div');
+      es.innerHTML = renderEmptyState('No matches', 'Try a different search term.', '', '', 'search');
+      es.firstChild.classList.add('search-empty-state');
+      container.appendChild(es.firstChild);
+    } else if (emptyMsg && emptyMsg.classList.contains('search-empty-state')) {
+      emptyMsg.style.display = visible === 0 && items.length > 0 ? '' : 'none';
+    }
+  }
+
   function renderTasks() {
     const data = getData();
     const container = document.getElementById('tasks-content');
     const subtitle = document.getElementById('tasks-subtitle');
     if (!container) return;
 
-    const searchQuery = document.getElementById('tasks-search')?.value?.toLowerCase() || '';
     const activeFilter = document.querySelector('#tasks-filter-bar .filter-chip.active')?.dataset.filter || 'all';
     const sortBy = document.getElementById('tasks-sort')?.value || 'due-asc';
 
     let filteredTasks = [...data.tasks];
-    if (searchQuery) {
-      filteredTasks = filteredTasks.filter(t => t.name.toLowerCase().includes(searchQuery) || (t.description && t.description.toLowerCase().includes(searchQuery)));
-    }
     if (activeFilter !== 'all') {
       filteredTasks = filteredTasks.filter(t => t.status === activeFilter);
     }
@@ -3706,7 +3748,13 @@
         window._gKeyPending = false;
       }
       if (e.key === 't' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); navigateTo('tasks'); }
-      if (e.key === '/' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); document.getElementById('command-palette')?.classList.add('active'); setTimeout(() => document.querySelector('.command-palette-input')?.focus(), 50); }
+      if (e.key === '/' && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        var activePage = document.querySelector('.page.active');
+        var searchInput = activePage?.querySelector('.task-search-input, .filter-search');
+        if (searchInput) { searchInput.focus(); searchInput.select(); }
+        else { document.getElementById('command-palette')?.classList.add('active'); setTimeout(function () { document.querySelector('.command-palette-input')?.focus(); }, 50); }
+      }
     });
   }
 
@@ -3906,19 +3954,36 @@
         renderNotificationDropdown();
         updateNotificationBadge();
       });
-      document.getElementById('tasks-search')?.addEventListener('input', debounce(function () { requestAnimationFrame(function () { renderTasks(); }); }, 300));
-      document.getElementById('tasks-sort')?.addEventListener('change', function () { renderTasks(); });
+      var tasksSearchInput = document.getElementById('tasks-search');
+      var tasksSearchTerm = '';
+      var tasksFilterDebounced = debounce(function () { filterTasksUI(tasksSearchTerm); }, 80);
+      tasksSearchInput?.addEventListener('input', function () {
+        var val = this.value.toLowerCase();
+        if (val === tasksSearchTerm) return;
+        tasksSearchTerm = val;
+        tasksFilterDebounced();
+      });
+      document.getElementById('tasks-sort')?.addEventListener('change', function () { renderTasks(); if (tasksSearchTerm) setTimeout(function () { filterTasksUI(tasksSearchTerm); }, 0); });
       document.querySelectorAll('#tasks-filter-bar .filter-chip').forEach(function (chip) {
         chip.addEventListener('click', function () {
           document.querySelectorAll('#tasks-filter-bar .filter-chip').forEach(function (c) { c.classList.remove('active'); });
           chip.classList.add('active');
           renderTasks();
+          if (tasksSearchTerm) filterTasksUI(tasksSearchTerm);
         });
       });
       document.getElementById('gantt-btn')?.addEventListener('click', function () { openGanttView(currentProjectId); });
     document.getElementById('auto-prioritize-btn')?.addEventListener('click', function () { autoPrioritizeTasks(); });
     document.getElementById('auto-schedule-btn')?.addEventListener('click', function () { autoScheduleTasks(); });
-    document.getElementById('projects-search')?.addEventListener('input', debounce(function () { requestAnimationFrame(function () { renderProjects(); }); }, 300));
+      var projectsSearchInput = document.getElementById('projects-search');
+      var projectsSearchTerm = '';
+      var projectsFilterDebounced = debounce(function () { filterProjectsUI(projectsSearchTerm); }, 80);
+      projectsSearchInput?.addEventListener('input', function () {
+        var val = this.value.toLowerCase();
+        if (val === projectsSearchTerm) return;
+        projectsSearchTerm = val;
+        projectsFilterDebounced();
+      });
       document.getElementById('user-menu-trigger')?.addEventListener('click', function (e) { e.stopPropagation(); toggleUserMenu(); });
       document.getElementById('workspace-switcher')?.addEventListener('click', function (e) { e.stopPropagation(); toggleWorkspaceDropdown(); });
       document.querySelector('.sidebar-kbd-hint')?.addEventListener('click', function () {
