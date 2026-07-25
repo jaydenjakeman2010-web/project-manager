@@ -15,14 +15,16 @@ const createSchema = z.object({
 const updateSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  archived: z.boolean().optional(),
 });
 
 router.use(requireAuth);
 
 router.get('/', async (req, res) => {
   try {
+    var archivedFilter = req.query.archived === 'true' ? 'AND archived = TRUE' : 'AND archived = FALSE';
     const { rows } = await db.query(
-      'SELECT id, name, color, created_at FROM projects WHERE user_id = $1 ORDER BY created_at DESC',
+      'SELECT id, name, color, archived, created_at FROM projects WHERE user_id = $1 ' + archivedFilter + ' ORDER BY created_at DESC',
       [req.userId]
     );
     res.json(rows);
@@ -65,11 +67,12 @@ router.patch('/:id', validate(updateSchema), async (req, res) => {
 
     if (updates.name !== undefined) { setClauses.push(`name = $${idx++}`); params.push(updates.name); }
     if (updates.color !== undefined) { setClauses.push(`color = $${idx++}`); params.push(updates.color); }
+    if (updates.archived !== undefined) { setClauses.push(`archived = $${idx++}`); params.push(updates.archived); }
 
     params.push(id, req.userId);
 
     const { rows } = await db.query(
-      `UPDATE projects SET ${setClauses.join(', ')} WHERE id = $${idx++} AND user_id = $${idx} RETURNING id, name, color, created_at`,
+      `UPDATE projects SET ${setClauses.join(', ')} WHERE id = $${idx++} AND user_id = $${idx} RETURNING id, name, color, archived, created_at`,
       params
     );
 

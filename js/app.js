@@ -11,6 +11,7 @@
     return Promise.all([
       API.get('/user').then(function (u) { state.user = u; if (u.photoUrl && !u.photo) u.photo = u.photoUrl; }).catch(function () {}),
       API.get('/projects').then(function (d) { state.projects = d; }).catch(function () {}),
+      API.get('/projects?archived=true').then(function (d) { state.archivedProjects = d; }).catch(function () {}),
       API.get('/tasks').then(function (d) { state.tasks = d; }).catch(function () {}),
       API.get('/team').then(function (d) { d.forEach(function(m) { if (m.photoUrl && !m.photo) m.photo = m.photoUrl; }); state.team = d; }).catch(function () {}),
       API.get('/events').then(function (d) { state.events = d; }).catch(function () {}),
@@ -377,7 +378,7 @@
       var sLabel = stats.overdue > 0 ? stats.overdue + ' overdue' : (stats.total === 0 ? 'Empty' : prog + '% complete');
       var sClass = stats.overdue > 0 ? 'badge-danger' : (prog === 100 ? 'badge-success' : 'badge-info');
       var sIcon = stats.overdue > 0 ? '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>' : (prog === 100 ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>' : '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>');
-      html += `<article class="project-card-large" data-project-id="${p.id}" style="animation-delay:${i * 50}ms;"><div class="project-card-color" style="background:${p.color};"></div><div class="project-card-body"><div class="project-card-large-header"><h3 class="project-card-title">${p.name}</h3><div class="project-card-actions"><button class="btn-icon-small edit-project-btn" data-project-id="${p.id}" title="Edit project"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="btn-icon-small delete-project-btn" data-project-id="${p.id}" title="Delete project" style="color:var(--danger);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><span class="badge ${sClass} project-status-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;">${sIcon}</svg>${sLabel}</span></div>${stats.total > 0 ? `<div class="progress-bar" role="progressbar" aria-valuenow="${prog}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar-fill" style="width:${prog}%;background:${p.color};" aria-hidden="true"></div></div>` : ''}<div class="project-card-meta"><span class="project-card-task-count"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>${stats.total} task${stats.total !== 1 ? 's' : ''}</span>${data.team.length > 0 && stats.total > 0 ? `<span class="project-card-members"><div class="avatar-stack" style="display:inline-flex;vertical-align:middle;">${data.team.slice(0, 3).map((m, j) => `<div class="avatar avatar-xs" style="background:${m.color || 'var(--primary)'};margin-left:${j === 0 ? 0 : '-8px'};border:${j === 0 ? 'none' : '2px solid var(--bg-primary)'};" title="${m.name}">${m.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}</div>`).join('')}${data.team.length > 3 ? `<div class="avatar avatar-xs" style="background:var(--bg-tertiary);color:var(--text-secondary);margin-left:-8px;border:2px solid var(--bg-primary);font-size:9px;">+${data.team.length - 3}</div>` : ''}</div></span>` : ''}</div></div></article>`;
+      html += `<article class="project-card-large" data-project-id="${p.id}" style="animation-delay:${i * 50}ms;"><div class="project-card-color" style="background:${p.color};"></div><div class="project-card-body"><div class="project-card-large-header"><h3 class="project-card-title">${p.name}</h3><div class="project-card-actions"><button class="btn-icon-small edit-project-btn" data-project-id="${p.id}" title="Edit project"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button class="btn-icon-small archive-project-btn" data-project-id="${p.id}" title="Archive project"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg></button><button class="btn-icon-small delete-project-btn" data-project-id="${p.id}" title="Delete project" style="color:var(--danger);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><span class="badge ${sClass} project-status-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;">${sIcon}</svg>${sLabel}</span></div>${stats.total > 0 ? `<div class="progress-bar" role="progressbar" aria-valuenow="${prog}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar-fill" style="width:${prog}%;background:${p.color};" aria-hidden="true"></div></div>` : ''}<div class="project-card-meta"><span class="project-card-task-count"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>${stats.total} task${stats.total !== 1 ? 's' : ''}</span>${data.team.length > 0 && stats.total > 0 ? `<span class="project-card-members"><div class="avatar-stack" style="display:inline-flex;vertical-align:middle;">${data.team.slice(0, 3).map((m, j) => `<div class="avatar avatar-xs" style="background:${m.color || 'var(--primary)'};margin-left:${j === 0 ? 0 : '-8px'};border:${j === 0 ? 'none' : '2px solid var(--bg-primary)'};" title="${m.name}">${m.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}</div>`).join('')}${data.team.length > 3 ? `<div class="avatar avatar-xs" style="background:var(--bg-tertiary);color:var(--text-secondary);margin-left:-8px;border:2px solid var(--bg-primary);font-size:9px;">+${data.team.length - 3}</div>` : ''}</div></span>` : ''}</div></div></article>`;
     });
     html += '</div>';
     container.innerHTML = html;
@@ -387,9 +388,13 @@
     container.querySelectorAll('.edit-project-btn').forEach(btn => {
       btn.addEventListener('click', (e) => { e.stopPropagation(); openProjectDrawerEdit(btn.dataset.projectId); });
     });
+    container.querySelectorAll('.archive-project-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => { e.stopPropagation(); archiveProject(btn.dataset.projectId); });
+    });
     container.querySelectorAll('.delete-project-btn').forEach(btn => {
       btn.addEventListener('click', (e) => { e.stopPropagation(); if (confirm('Delete this project and all its tasks?')) deleteProject(btn.dataset.projectId); });
     });
+    renderArchivedProjects(container);
   }
 
   function renderProjectDetail(projectId) {
@@ -533,11 +538,14 @@
     document.getElementById('bulk-delete-tasks')?.addEventListener('click', () => {
       if (selectedTaskIds.length === 0) return;
       if (confirm(`Delete ${selectedTaskIds.length} selected task(s)?`)) {
-        const data = getData();
-        data.tasks = data.tasks.filter(t => !selectedTaskIds.includes(t.id));
-        saveData(data);
-        showToast(`${selectedTaskIds.length} task(s) deleted`);
-        refreshCurrentView();
+        var ids = selectedTaskIds.slice();
+        Promise.all(ids.map(function (id) { return API.del('/tasks/' + id); })).then(function () {
+          var d = getData();
+          d.tasks = d.tasks.filter(function (t) { return !ids.includes(t.id); });
+          showToast(ids.length + ' task(s) deleted');
+          selectedTaskIds = [];
+          refreshCurrentView();
+        }).catch(function () { showToast('Failed to delete tasks', 'error'); });
       }
     });
     document.getElementById('bulk-clear-tasks')?.addEventListener('click', () => {
@@ -744,13 +752,16 @@
       html += '<div class="task-item" style="margin:0;" data-task-id="' + t.id + '"><button class="task-checkbox ' + (t.status === 'done' ? 'checked' : '') + '"></button><div class="task-item-content"><span class="task-item-title">' + t.name + '</span></div></div>';
     });
     events.forEach(e => {
-      html += '<div class="task-item" style="margin:0;border-left:3px solid var(--accent);"><div class="task-item-content"><span class="task-item-title">' + e.name + '</span><span style="font-size:var(--text-xs);color:var(--text-tertiary);">' + (e.time || '') + '</span></div></div>';
+      html += '<div class="task-item" style="margin:0;border-left:3px solid var(--accent);cursor:pointer;" data-event-id="' + e.id + '"><div class="task-item-content"><span class="task-item-title">' + e.name + '</span><span style="font-size:var(--text-xs);color:var(--text-tertiary);">' + (e.time || '') + '</span></div></div>';
     });
     html += '</div></div><div class="task-drawer-actions"><button class="btn btn-ghost" id="cal-day-close">Close</button></div>';
     content.innerHTML = html;
     openDrawer();
     document.getElementById('cal-day-close')?.addEventListener('click', closeDrawer);
     initTaskItemListeners();
+    content.querySelectorAll('[data-event-id]').forEach(function (el) {
+      el.addEventListener('click', function () { closeDrawer(); openEventDrawerEdit(this.dataset.eventId); });
+    });
   }
 
   function renderTeam() {
@@ -873,10 +884,51 @@
     API.del('/projects/' + projectId).then(function () {
       state.tasks = state.tasks.filter(function (t) { return t.projectId !== projectId; });
       state.projects = state.projects.filter(function (p) { return p.id !== projectId; });
+      state.archivedProjects = (state.archivedProjects || []).filter(function (p) { return p.id !== projectId; });
       showToast('Project deleted');
       if (currentProjectId === projectId) { currentProjectId = null; navigateTo('projects'); }
       else refreshCurrentView();
     }).catch(function (err) { showToast(err.message || 'Failed to delete project', 'error'); });
+  }
+
+  function archiveProject(projectId) {
+    API.patch('/projects/' + projectId, { archived: true }).then(function () {
+      var idx = state.projects.findIndex(function (p) { return p.id === projectId; });
+      if (idx !== -1) {
+        var p = state.projects.splice(idx, 1)[0];
+        p.archived = true;
+        if (!state.archivedProjects) state.archivedProjects = [];
+        state.archivedProjects.push(p);
+      }
+      showToast('Project archived');
+      if (currentProjectId === projectId) { currentProjectId = null; navigateTo('projects'); }
+      else refreshCurrentView();
+    }).catch(function (err) { showToast(err.message || 'Failed to archive project', 'error'); });
+  }
+
+  function unarchiveProject(projectId) {
+    API.patch('/projects/' + projectId, { archived: false }).then(function (p) {
+      var idx = (state.archivedProjects || []).findIndex(function (x) { return x.id === projectId; });
+      if (idx !== -1) { state.archivedProjects.splice(idx, 1); }
+      p.archived = false;
+      state.projects.unshift(p);
+      showToast('Project restored');
+      refreshCurrentView();
+    }).catch(function (err) { showToast(err.message || 'Failed to restore project', 'error'); });
+  }
+
+  function renderArchivedProjects(container) {
+    var archived = state.archivedProjects || [];
+    if (archived.length === 0) return;
+    var html = '<div class="section" style="margin-top:var(--space-8);opacity:0.7;"><div class="section-header"><h2 class="section-title">Archived Projects</h2></div><div class="projects-grid">';
+    archived.forEach(function (p) {
+      html += '<div class="project-card-large" style="opacity:0.7;"><div class="project-card-body"><div class="project-card-large-header"><h3 class="project-card-title">' + p.name + '</h3><button class="btn-icon-small unarchive-project-btn" data-project-id="' + p.id + '" title="Restore project"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></button></div></div></div>';
+    });
+    html += '</div></div>';
+    container.insertAdjacentHTML('beforeend', html);
+    container.querySelectorAll('.unarchive-project-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) { e.stopPropagation(); unarchiveProject(btn.dataset.projectId); });
+    });
   }
 
   function createTask(name, projectId, status, dueDate, priority, description, assigneeId, recurrence) {
@@ -1794,12 +1846,40 @@
       const description = document.getElementById('edit-task-desc')?.value?.trim();
       const dueDate = document.getElementById('edit-task-due')?.value;
       if (!title) { showToast('Please enter a task name', 'warning'); return; }
-      updateTask(taskId, { name: title, description, projectId: selectedProjectId, dueDate, priority: selectedPriority, status: selectedStatus, assigneeId: selectedAssignee, recurrence: selectedRecur, subtasks, comments });
+      updateTask(taskId, { name: title, description, projectId: selectedProjectId, dueDate, priority: selectedPriority, status: selectedStatus, assigneeId: selectedAssignee, recurrence: selectedRecur });
+      syncSubtasks(taskId, subtasks, origSubtaskIds);
+      syncComments(taskId, comments, origCommentIds);
       closeDrawer();
     });
 
-    let subtasks = task.subtasks || [];
-    let comments = task.comments || [];
+    let subtasks = (task.subtasks || []).map(s => ({ ...s }));
+    let comments = (task.comments || []).map(c => ({ ...c }));
+    let origSubtaskIds = subtasks.filter(s => s.id).map(s => s.id);
+    let origCommentIds = comments.filter(c => c.id).map(c => c.id);
+
+    function syncSubtasks(tId, list, origIds) {
+      var currentIds = list.filter(s => s.id).map(s => s.id);
+      var removed = origIds.filter(id => !currentIds.includes(id));
+      removed.forEach(id => API.del('/subtasks/' + id).catch(function () {}));
+      list.forEach(function (s) {
+        if (!s.id) {
+          API.post('/subtasks', { task_id: tId, text: s.text }).catch(function () {});
+        } else if (s._changed) {
+          API.patch('/subtasks/' + s.id, { done: s.done }).catch(function () {});
+        }
+      });
+    }
+
+    function syncComments(tId, list, origIds) {
+      var currentIds = list.filter(c => c.id).map(c => c.id);
+      var removed = origIds.filter(id => !currentIds.includes(id));
+      removed.forEach(id => API.del('/comments/' + id).catch(function () {}));
+      list.forEach(function (c) {
+        if (!c.id) {
+          API.post('/comments', { task_id: tId, text: c.text, author: c.author || 'You' }).catch(function () {});
+        }
+      });
+    }
 
     function renderSubtasks() {
       const list = document.getElementById('subtask-list');
@@ -1819,6 +1899,7 @@
         cb.addEventListener('click', () => {
           const idx = parseInt(cb.dataset.index);
           subtasks[idx].done = !subtasks[idx].done;
+          subtasks[idx]._changed = true;
           renderSubtasks();
         });
       });
@@ -1842,7 +1923,7 @@
         <div class="comment-item">
           <div class="avatar" style="width:28px;height:28px;font-size:10px;margin-top:2px;">${getInitials(data.user?.name || 'U')}</div>
           <div class="comment-body">
-            <div class="comment-header"><span class="comment-author">${data.user?.name || 'You'}</span><span class="comment-time">${new Date(c.time).toLocaleDateString()}</span></div>
+            <div class="comment-header"><span class="comment-author">${data.user?.name || 'You'}</span><span class="comment-time">${new Date(c.created_at || c.time).toLocaleDateString()}</span></div>
             <div class="comment-text">${c.text}</div>
           </div>
         </div>
@@ -1864,7 +1945,7 @@
       const input = document.getElementById('comment-input');
       const text = input?.value?.trim();
       if (text) {
-        comments.push({ text, time: new Date().toISOString(), author: 'user' });
+        comments.push({ text, created_at: new Date().toISOString(), author: 'user' });
         input.value = '';
         renderComments();
       }
@@ -2016,6 +2097,62 @@
     });
     document.getElementById('new-event-title')?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') document.getElementById('create-event-submit')?.click();
+    });
+  }
+
+  function openEventDrawerEdit(eventId) {
+    var event = state.events.find(function (e) { return e.id === eventId; });
+    if (!event) { showToast('Event not found', 'error'); return; }
+    const content = document.getElementById('drawer-content');
+    const badges = document.getElementById('drawer-badges');
+    if (!content) return;
+    badges.innerHTML = '<span class="badge badge-info">Calendar</span>';
+    content.innerHTML = `
+      <div class="task-drawer-title-area">
+        <input type="text" class="task-drawer-title" id="edit-event-title" value="${event.name}" autocomplete="off" autocorrect="off" spellcheck="false">
+      </div>
+      <div class="task-drawer-meta">
+        <div class="task-drawer-meta-row">
+          <span class="task-drawer-meta-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            Date
+          </span>
+          <input type="date" class="task-drawer-meta-value" id="edit-event-date" value="${event.date}">
+        </div>
+        <div class="task-drawer-meta-row">
+          <span class="task-drawer-meta-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            Time
+          </span>
+          <input type="time" class="task-drawer-meta-value" id="edit-event-time" value="${event.time || '09:00'}">
+        </div>
+      </div>
+      <div class="task-drawer-actions">
+        <button class="btn btn-ghost" id="edit-event-delete" style="color:var(--danger);margin-right:auto;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Delete
+        </button>
+        <button class="btn btn-ghost" id="edit-event-cancel">Cancel</button>
+        <button class="btn btn-primary" id="edit-event-submit">Save</button>
+      </div>`;
+    openDrawer();
+    setTimeout(function () { document.getElementById('edit-event-title')?.focus(); }, 100);
+    document.getElementById('edit-event-cancel')?.addEventListener('click', closeDrawer);
+    document.getElementById('edit-event-submit')?.addEventListener('click', function () {
+      var title = document.getElementById('edit-event-title')?.value?.trim();
+      var date = document.getElementById('edit-event-date')?.value;
+      var time = document.getElementById('edit-event-time')?.value;
+      if (!title) { showToast('Please enter an event name', 'warning'); return; }
+      API.patch('/events/' + eventId, { name: title, date: date, time: time }).then(function (updated) {
+        var idx = state.events.findIndex(function (e) { return e.id === eventId; });
+        if (idx !== -1) state.events[idx] = updated;
+        showToast('Event updated');
+        closeDrawer();
+        refreshCurrentView();
+      }).catch(function (err) { showToast(err.message || 'Failed to update event', 'error'); });
+    });
+    document.getElementById('edit-event-delete')?.addEventListener('click', function () {
+      if (confirm('Delete this event?')) { closeDrawer(); deleteEvent(eventId); }
     });
   }
 
@@ -2563,10 +2700,52 @@
         var data = JSON.parse(reader.result);
         if (!data.projects || !data.tasks) { showToast('Invalid backup file', 'error'); return; }
         if (!confirm('This will replace all current data. Continue?')) return;
-        showToast('Import not available in cloud mode.', 'warning');
+        showToast('Importing data...', 'info');
+        clearAllDataSilent();
+        var chain = Promise.resolve();
+        data.projects.forEach(function (p) {
+          chain = chain.then(function () { return API.post('/projects', { name: p.name, color: p.color || '#1B5E3B' }); });
+        });
+        chain = chain.then(function () { return API.get('/projects'); }).then(function (newProjects) {
+          var pmap = {};
+          data.projects.forEach(function (p, i) { pmap[p.id] = newProjects[i] ? newProjects[i].id : null; });
+          data.tasks.forEach(function (t) {
+            chain = chain.then(function () {
+              return API.post('/tasks', {
+                project_id: pmap[t.projectId] || pmap[t.project_id],
+                name: t.name, description: t.description || '', status: t.status || 'todo',
+                priority: t.priority || 'medium', due_date: t.dueDate || t.due_date || null,
+                recurrence: t.recurrence || 'none',
+              });
+            });
+          });
+        });
+        if (data.team) {
+          data.team.forEach(function (m) {
+            chain = chain.then(function () { return API.post('/team', { name: m.name, role: m.role || 'Member', color: m.color || '#1B5E3B' }).catch(function () {}); });
+          });
+        }
+        if (data.events) {
+          data.events.forEach(function (e) {
+            chain = chain.then(function () { return API.post('/events', { name: e.name, date: e.date, time: e.time || '09:00' }).catch(function () {}); });
+          });
+        }
+        chain.then(function () {
+          showToast('Import complete!', 'success');
+          loadAllData().then(function () { refreshCurrentView(); });
+        }).catch(function () { showToast('Import failed', 'error'); });
       } catch { showToast('Invalid file format', 'error'); }
     };
     reader.readAsText(file);
+  }
+
+  function clearAllDataSilent() {
+    Promise.all([
+      API.del('/projects').catch(function () {}),
+      API.del('/tasks').catch(function () {}),
+      API.del('/team').catch(function () {}),
+      API.del('/events').catch(function () {}),
+    ]);
   }
 
   function clearAllData() {

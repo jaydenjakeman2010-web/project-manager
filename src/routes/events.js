@@ -13,6 +13,12 @@ const createSchema = z.object({
   time: z.string().optional(),
 });
 
+const updateSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  time: z.string().optional(),
+});
+
 router.use(requireAuth);
 
 router.get('/', async (req, res) => {
@@ -38,6 +44,28 @@ router.post('/', validate(createSchema), async (req, res) => {
     res.status(201).json(rows[0]);
   } catch (err) {
     console.error('Failed to create event:', err.message);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
+router.patch('/:id', validate(updateSchema), async (req, res) => {
+  const { id } = req.params;
+  const updates = req.validatedBody;
+  try {
+    const setClauses = []; const params = []; let idx = 1;
+    if (updates.name !== undefined) { setClauses.push(`name = $${idx++}`); params.push(updates.name); }
+    if (updates.date !== undefined) { setClauses.push(`date = $${idx++}`); params.push(updates.date); }
+    if (updates.time !== undefined) { setClauses.push(`time = $${idx++}`); params.push(updates.time); }
+    if (setClauses.length === 0) return res.status(422).json({ error: 'No fields to update.' });
+    params.push(id, req.userId);
+    const { rows } = await db.query(
+      `UPDATE events SET ${setClauses.join(', ')} WHERE id = $${idx++} AND user_id = $${idx} RETURNING id, name, date, time`,
+      params
+    );
+    if (rows.length === 0) return res.status(404).json({ error: 'Event not found.' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('Failed to update event:', err.message);
     res.status(500).json({ error: 'Internal server error.' });
   }
 });
