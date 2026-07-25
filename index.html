@@ -330,6 +330,14 @@
           <div class="task-toolbar">
             <input type="text" class="task-search-input" id="tasks-search" placeholder="Search tasks..." autocomplete="off">
             <div class="task-toolbar-right">
+              <button class="btn btn-ghost btn-sm" id="auto-prioritize-btn" title="Auto-prioritize tasks by urgency">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                Auto
+              </button>
+              <button class="btn btn-ghost btn-sm" id="auto-schedule-btn" title="Auto-schedule unscheduled tasks">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                Schedule
+              </button>
               <div class="filter-bar" id="tasks-filter-bar" style="margin-bottom:0;">
                 <button class="filter-chip active" data-filter="all">All</button>
                 <button class="filter-chip" data-filter="todo">To Do</button>
@@ -545,6 +553,14 @@
                     </div>
                     <button class="btn btn-outline btn-sm" id="import-data-btn">Import</button>
                     <input type="file" id="import-data-input" accept=".json" style="display:none;">
+                  </div>
+                  <div class="settings-list-item">
+                    <div>
+                      <div class="settings-list-item-title">Webhook URL</div>
+                      <div class="settings-list-item-desc">POST JSON events on project/task changes</div>
+                    </div>
+                    <input type="url" id="webhook-url-input" placeholder="https://hooks.example.com/events" style="flex:1;max-width:300px;padding:6px 10px;border:1px solid var(--hairline);border-radius:var(--radius-md);background:var(--bg-secondary);color:var(--text-primary);font-size:var(--text-sm);">
+                    <button class="btn btn-primary btn-sm" id="webhook-save-btn">Save</button>
                   </div>
                   <div class="settings-list-item">
                     <div>

@@ -72,4 +72,21 @@ router.post('/smtp/test', requireAuth, validate(smtpSchema), async function (req
   }
 });
 
+var webhookSchema = z.object({ webhook_url: z.string().max(500).optional() });
+
+router.get('/webhook', requireAuth, async function (req, res) {
+  try {
+    var { rows } = await db.query("SELECT value FROM settings WHERE key = 'webhook' LIMIT 1");
+    res.json({ webhook_url: rows.length ? (rows[0].value.webhook_url || '') : '' });
+  } catch (err) { res.status(500).json({ error: 'Failed.' }); }
+});
+
+router.put('/webhook', requireAuth, validate(webhookSchema), async function (req, res) {
+  try {
+    var value = { webhook_url: req.validatedBody.webhook_url || '' };
+    await db.query("INSERT INTO settings (key, value, updated_at) VALUES ('webhook', $1, NOW()) ON CONFLICT (key) DO UPDATE SET value = $1, updated_at = NOW()", [value]);
+    res.json({ message: 'Webhook URL saved.' });
+  } catch (err) { res.status(500).json({ error: 'Failed.' }); }
+});
+
 export default router;

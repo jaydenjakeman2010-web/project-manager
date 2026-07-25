@@ -20,6 +20,7 @@ import uploadRoutes from './routes/upload.js';
 import activityRoutes from './routes/activity.js';
 import settingsRoutes from './routes/settings.js';
 import notificationRoutes from './routes/notifications.js';
+import goalRoutes from './routes/goals.js';
 import { sseHandler } from './sse.js';
 import { broadcast } from './sse.js';
 
@@ -84,6 +85,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/goals', goalRoutes);
 app.get('/api/events/subscribe', sseHandler);
 
 app.use(express.static(ROOT, {

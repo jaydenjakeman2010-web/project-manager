@@ -53,6 +53,111 @@
     }).join('');
   }
 
+  function autoPrioritizeTasks() {
+    var data = getData();
+    var now = new Date();
+    var scored = data.tasks.filter(function (t) { return t.status !== 'done'; }).map(function (t) {
+      var score = 0;
+      if (t.priority === 'high') score += 100;
+      else if (t.priority === 'medium') score += 50;
+      if (t.dueDate) {
+        var diff = Math.ceil((new Date(t.dueDate) - now) / 86400000);
+        if (diff < 0) score += 200;
+        else if (diff === 0) score += 150;
+        else if (diff <= 2) score += 100;
+        else if (diff <= 7) score += 50;
+      }
+      return { task: t, score: score };
+    });
+    scored.sort(function (a, b) { return b.score - a.score; });
+    var msg = scored.map(function (s, i) { return (i + 1) + '. ' + s.task.name + ' (' + s.score + 'pts)'; }).slice(0, 10).join('\n');
+    showToast('Top priority: ' + scored[0]?.task.name || 'No tasks', 'info');
+  }
+
+  function autoScheduleTasks() {
+    var data = getData();
+    var unscheduled = data.tasks.filter(function (t) { return !t.dueDate && t.status !== 'done'; });
+    if (!unscheduled.length) { showToast('No unscheduled tasks', 'info'); return; }
+    var today = new Date();
+    unscheduled.forEach(function (t, i) {
+      var d = new Date(today);
+      d.setDate(d.getDate() + i);
+      var dateStr = d.toISOString().split('T')[0];
+      API.patch('/tasks/' + t.id, { due_date: dateStr }).catch(function () {});
+    });
+    showToast('Scheduled ' + unscheduled.length + ' tasks starting today', 'success');
+    setTimeout(refreshCurrentView, 1000);
+  }
+
+  function openGanttView(projectId) {
+    var data = getData();
+    var tasks = data.tasks.filter(function (t) { return t.projectId === projectId && t.dueDate; });
+    if (!tasks.length) { showToast('No tasks with due dates', 'warning'); return; }
+    tasks.sort(function (a, b) { return (a.dueDate || '').localeCompare(b.dueDate || ''); });
+    var minDate = new Date(tasks[0].dueDate);
+    var maxDate = new Date(tasks[tasks.length - 1].dueDate);
+    var totalDays = Math.max(1, Math.ceil((maxDate - minDate) / 86400000) + 1);
+    var today = new Date();
+    var badges = document.getElementById('drawer-badges');
+    var content = document.getElementById('drawer-content');
+    if (!content) return;
+    badges.innerHTML = '<span class="badge badge-info">Gantt</span>';
+    var html = '<div style="overflow-x:auto;padding:var(--space-4) 0;position:relative;min-height:400px;">';
+    tasks.forEach(function (t) {
+      var start = new Date(t.dueDate);
+      start.setDate(start.getDate() - 2);
+      if (start < minDate) start = minDate;
+      var leftPct = ((start - minDate) / 86400000 / totalDays) * 100;
+      var widthPct = Math.max(5, (3 / totalDays) * 100);
+      var isOverdue = t.status !== 'done' && new Date(t.dueDate) < today;
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;height:28px;"><span style="width:150px;font-size:var(--text-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-primary);">' + t.name + '</span><div style="flex:1;position:relative;height:20px;background:var(--bg-secondary);border-radius:4px;overflow:hidden;"><div style="position:absolute;left:' + leftPct + '%;width:' + widthPct + '%;height:100%;background:' + (isOverdue ? 'var(--danger)' : t.status === 'done' ? 'var(--success)' : 'var(--primary)') + ';border-radius:4px;opacity:0.8;"></div></div><span style="width:80px;font-size:var(--text-xs);color:var(--text-tertiary);text-align:right;">' + (t.dueDate || '').slice(0, 10) + '</span></div>';
+    });
+    html += '</div>';
+    content.innerHTML = html;
+    openDrawer();
+  }
+
+  function renderGoals(container) {
+    if (!container) return;
+    API.get('/goals').then(function (goals) {
+      if (!goals || !goals.length) {
+        container.innerHTML = '<div class="widget" style="text-align:center;padding:var(--space-6);"><p style="font-size:var(--text-sm);color:var(--text-tertiary);">Set goals to track your progress</p><button class="btn btn-primary btn-sm" id="add-goal-btn-dash" style="margin-top:12px;">+ Add Goal</button></div>';
+        document.getElementById('add-goal-btn-dash')?.addEventListener('click', function () { openGoalDrawer(); });
+        return;
+      }
+      container.innerHTML = '<div class="widget"><div class="widget-header"><h3 class="widget-title">Goals</h3><button class="btn btn-sm btn-ghost" id="add-goal-btn-dash2">+ Add</button></div><div style="display:flex;flex-direction:column;gap:var(--space-3);">' + goals.map(function (g) {
+        return '<div style="display:flex;align-items:center;gap:10px;"><div style="flex:1;"><div style="display:flex;justify-content:space-between;font-size:var(--text-sm);"><span style="color:var(--text-primary);font-weight:var(--weight-medium);">' + g.name + '</span><span style="color:var(--text-tertiary);">' + g.progress + '%</span></div><div class="progress-bar" style="height:6px;margin-top:4px;"><div class="progress-bar-fill" style="width:' + g.progress + '%;background:var(--primary);"></div></div></div></div>';
+      }).join('') + '</div></div>';
+      document.getElementById('add-goal-btn-dash2')?.addEventListener('click', function () { openGoalDrawer(); });
+    }).catch(function () {});
+  }
+
+  function openGoalDrawer(editGoal) {
+    var badges = document.getElementById('drawer-badges');
+    var content = document.getElementById('drawer-content');
+    if (!content) return;
+    badges.innerHTML = '<span class="badge badge-info">Goal</span>';
+    var isEdit = !!editGoal;
+    content.innerHTML = '<div class="task-drawer-title-area"><input type="text" class="task-drawer-title" id="goal-name" placeholder="Goal name" value="' + (editGoal ? editGoal.name : '') + '" autocomplete="off"></div><div class="task-drawer-meta"><div class="task-drawer-meta-row"><span class="task-drawer-meta-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>Target</span><input type="date" class="task-drawer-meta-value" id="goal-date" value="' + (editGoal ? editGoal.target_date || '' : '') + '"></div><div class="task-drawer-meta-row"><span class="task-drawer-meta-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>Progress</span><input type="range" id="goal-progress" min="0" max="100" value="' + (editGoal ? editGoal.progress : 0) + '" style="width:120px;"><span id="goal-progress-label" style="font-size:var(--text-sm);min-width:30px;text-align:right;">' + (editGoal ? editGoal.progress : 0) + '%</span></div></div><div class="task-drawer-actions"><button class="btn btn-ghost" id="goal-cancel">Cancel</button><button class="btn btn-primary" id="goal-save">' + (isEdit ? 'Save' : 'Create') + '</button></div>';
+    openDrawer();
+    document.getElementById('goal-progress')?.addEventListener('input', function () {
+      document.getElementById('goal-progress-label').textContent = this.value + '%';
+    });
+    document.getElementById('goal-cancel')?.addEventListener('click', closeDrawer);
+    document.getElementById('goal-save')?.addEventListener('click', function () {
+      var name = document.getElementById('goal-name')?.value?.trim();
+      if (!name) { showToast('Enter a goal name', 'warning'); return; }
+      var target_date = document.getElementById('goal-date')?.value || null;
+      var progress = parseInt(document.getElementById('goal-progress')?.value || '0', 10);
+      var req = isEdit ? API.patch('/goals/' + editGoal.id, { name: name, target_date: target_date, progress: progress }) : API.post('/goals', { name: name, target_date: target_date, progress: progress });
+      req.then(function () {
+        showToast(isEdit ? 'Goal updated' : 'Goal created', 'success');
+        closeDrawer();
+        refreshCurrentView();
+      }).catch(function (err) { showToast(err.message || 'Failed', 'error'); });
+    });
+  }
+
   function renderMarkdown(text) {
     if (!text) return '';
     return text
@@ -375,9 +480,10 @@
       var sIcon = stats.overdue > 0 ? '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>' : (prog === 100 ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>' : '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>');
       html += '<article class="project-card" data-project-id="' + p.id + '" style="animation-delay:' + (i * 50) + 'ms;"><div class="project-card-color" style="background:' + p.color + ';"></div><div class="project-card-body"><div class="project-card-header"><h3 class="project-card-title">' + p.name + '</h3><span class="badge ' + sClass + ' project-status-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;">' + sIcon + '</svg>' + sLabel + '</span></div>' + (stats.total > 0 ? '<div class="progress-bar" role="progressbar" aria-valuenow="' + prog + '" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar-fill" style="width:' + prog + '%;background:' + p.color + ';" aria-hidden="true"></div></div>' : '') + '<div class="project-card-meta"><span class="project-card-task-count"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>' + stats.total + ' task' + (stats.total !== 1 ? 's' : '') + '</span>' + (data.team.length > 0 && stats.total > 0 ? '<span class="project-card-members"><div class="avatar-stack" style="display:inline-flex;vertical-align:middle;">' + data.team.slice(0, 3).map(function(m, j) { return '<div class="avatar avatar-xs" style="background:' + (m.color || 'var(--primary)') + ';margin-left:' + (j === 0 ? 0 : '-8px') + ';border:' + (j === 0 ? 'none' : '2px solid var(--bg-primary)') + ';" title="' + m.name + '">' + m.name.split(' ').map(function(w2) { return w2[0]; }).join('').toUpperCase().slice(0, 2) + '</div>'; }).join('') + (data.team.length > 3 ? '<div class="avatar avatar-xs" style="background:var(--bg-tertiary);color:var(--text-secondary);margin-left:-8px;border:2px solid var(--bg-primary);font-size:9px;">+' + (data.team.length - 3) + '</div>' : '') + '</div></span>' : '') + '</div></div></article>';
     });
-        html += '</div></div></div><div class="dashboard-side"><div class="widget"><div class="widget-header"><h3 class="widget-title">Recent Activity <span class="live-dot"></span></h3></div><div id="dashboard-activity"></div></div></div></div>';
+        html += '</div></div></div><div class="dashboard-side"><div class="widget"><div class="widget-header"><h3 class="widget-title">Recent Activity <span class="live-dot"></span></h3></div><div id="dashboard-activity"></div></div><div id="dashboard-goals"></div></div></div>';
     container.innerHTML = html;
     renderActivityFeed(document.getElementById('dashboard-activity'));
+    renderGoals(document.getElementById('dashboard-goals'));
     container.querySelectorAll('.project-card').forEach(card => {
       card.addEventListener('click', () => navigateTo('project-detail', card.dataset.projectId));
     });
@@ -445,6 +551,15 @@
     const projectTasks = data.tasks.filter(t => t.projectId === projectId);
     if (titleEl) titleEl.textContent = project.name;
     if (subtitleEl) subtitleEl.textContent = `${projectTasks.length} tasks`;
+    var phActions = document.querySelector('#page-project-detail .page-header-actions');
+    if (phActions && !document.getElementById('gantt-btn')) {
+      var ganttBtn = document.createElement('button');
+      ganttBtn.className = 'btn btn-ghost';
+      ganttBtn.id = 'gantt-btn';
+      ganttBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg> Gantt';
+      ganttBtn.addEventListener('click', function () { openGanttView(projectId); });
+      phActions.prepend(ganttBtn);
+    }
     if (!container) return;
     if (projectTasks.length === 0) {
       container.innerHTML = renderEmptyState('No tasks yet', 'Add your first task to this project.', 'Add Task', 'empty-add-task');
@@ -2727,6 +2842,7 @@
     }
 
     initSmtpSettings();
+    initWebhookSettings();
 
     document.getElementById('export-data-btn')?.addEventListener('click', exportData);
     document.getElementById('import-data-btn')?.addEventListener('click', () => {
@@ -2736,6 +2852,21 @@
       if (e.target.files[0]) importData(e.target.files[0]);
     });
     document.getElementById('clear-data-btn')?.addEventListener('click', clearAllData);
+  }
+
+  function initWebhookSettings() {
+    var input = document.getElementById('webhook-url-input');
+    var saveBtn = document.getElementById('webhook-save-btn');
+    if (!input || !saveBtn) return;
+    API.get('/settings/webhook').then(function (data) {
+      if (data && data.webhook_url) input.value = data.webhook_url;
+    }).catch(function () {});
+    saveBtn.addEventListener('click', function () {
+      var url = input.value.trim();
+      API.put('/settings/webhook', { webhook_url: url }).then(function () {
+        showToast('Webhook URL saved', 'success');
+      }).catch(function (err) { showToast(err.message || 'Failed', 'error'); });
+    });
   }
 
   function initSmtpSettings() {
@@ -3379,7 +3510,10 @@
           renderTasks();
         });
       });
-      document.getElementById('projects-search')?.addEventListener('input', debounce(function () { requestAnimationFrame(function () { renderProjects(); }); }, 300));
+      document.getElementById('gantt-btn')?.addEventListener('click', function () { openGanttView(currentProjectId); });
+    document.getElementById('auto-prioritize-btn')?.addEventListener('click', function () { autoPrioritizeTasks(); });
+    document.getElementById('auto-schedule-btn')?.addEventListener('click', function () { autoScheduleTasks(); });
+    document.getElementById('projects-search')?.addEventListener('input', debounce(function () { requestAnimationFrame(function () { renderProjects(); }); }, 300));
       document.getElementById('user-menu-trigger')?.addEventListener('click', function (e) { e.stopPropagation(); toggleUserMenu(); });
       document.getElementById('workspace-switcher')?.addEventListener('click', function (e) { e.stopPropagation(); toggleWorkspaceDropdown(); });
       document.querySelector('.sidebar-kbd-hint')?.addEventListener('click', function () {
