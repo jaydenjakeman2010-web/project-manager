@@ -4015,7 +4015,7 @@
           var hiddenAt = sessionStorage.getItem('pm-tab-hidden-at');
           if (booted && hiddenAt) {
             var elapsed = Date.now() - parseInt(hiddenAt, 10);
-            if (elapsed > 60000) {
+            if (elapsed > 3000) {
               showWelcomeBack();
             }
           }
