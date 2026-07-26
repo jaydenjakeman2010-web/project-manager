@@ -3879,68 +3879,55 @@
     }
 
     function initPremiumInteractions() {
-      // 1. Magnetic Elements with spring physics simulation
-      const magneticSelectors = '.btn-primary, .stat-card, .project-card, .sidebar-item, .nav-item-mobile, .onboarding-btn';
-      
+      var magneticEls = null;
+      var magneticSelectors = '.btn-primary, .stat-card, .project-card';
+      var orbs = null;
+      var ticking = false;
+
       document.addEventListener('mousemove', function(e) {
-        const els = document.querySelectorAll(magneticSelectors);
-        els.forEach(el => {
-          const rect = el.getBoundingClientRect();
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
-          
-          const deltaX = e.clientX - centerX;
-          const deltaY = e.clientY - centerY;
-          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-          
-          // Radius of influence
-          const radius = el.classList.contains('sidebar-item') ? 40 : 80;
-          
-          if (distance < radius) {
-            const pull = el.classList.contains('sidebar-item') ? 0.1 : 0.2;
-            el.style.transform = `translate(${deltaX * pull}px, ${deltaY * pull}px) scale(1.02)`;
-            el.style.transition = 'transform 0.1s cubic-bezier(0.23, 1, 0.32, 1)';
-          } else {
-            el.style.transform = '';
-            el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function() {
+          ticking = false;
+          if (!magneticEls) magneticEls = document.querySelectorAll(magneticSelectors);
+          for (var i = 0; i < magneticEls.length; i++) {
+            var el = magneticEls[i];
+            var rect = el.getBoundingClientRect();
+            var centerX = rect.left + rect.width / 2;
+            var centerY = rect.top + rect.height / 2;
+            var deltaX = e.clientX - centerX;
+            var deltaY = e.clientY - centerY;
+            var distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            if (distance < 80) {
+              el.style.transform = 'translate(' + (deltaX * 0.15) + 'px, ' + (deltaY * 0.15) + 'px) scale(1.02)';
+              el.style.transition = 'transform 0.1s cubic-bezier(0.23, 1, 0.32, 1)';
+            } else {
+              el.style.transform = '';
+              el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            }
           }
-
-          // Spotlight effect
-          if (el.classList.contains('project-card') || el.classList.contains('stat-card') || el.classList.contains('widget')) {
-            el.style.setProperty('--x', `${e.clientX - rect.left}px`);
-            el.style.setProperty('--y', `${e.clientY - rect.top}px`);
+          if (!orbs) orbs = document.querySelectorAll('.glow-orb');
+          if (orbs.length) {
+            var x = (e.clientX / window.innerWidth - 0.5) * 20;
+            var y = (e.clientY / window.innerHeight - 0.5) * 20;
+            for (var j = 0; j < orbs.length; j++) {
+              var factor = (j + 1) * 0.6;
+              orbs[j].style.transform = 'translate3d(' + (x * factor) + 'px, ' + (y * factor) + 'px, 0)';
+            }
           }
         });
       });
 
-      // 2. Ambient parallax effect for background orbs
-      document.addEventListener('mousemove', e => {
-        const x = (e.clientX / window.innerWidth - 0.5) * 30;
-        const y = (e.clientY / window.innerHeight - 0.5) * 30;
-        const orbs = document.querySelectorAll('.glow-orb');
-        orbs.forEach((orb, i) => {
-          const factor = (i + 1) * 0.8;
-          orb.style.transform = `translate(${x * factor}px, ${y * factor}px)`;
-        });
-      });
-      
-      // 3. Ripple Effect for all buttons
       document.addEventListener('mousedown', function(e) {
-        const target = e.target.closest('.btn, .onboarding-btn, .sidebar-item, .nav-item-mobile');
+        var target = e.target.closest('.btn, .onboarding-btn');
         if (!target) return;
-
-        const rect = target.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const ripple = document.createElement('span');
+        var rect = target.getBoundingClientRect();
+        var ripple = document.createElement('span');
         ripple.className = 'ripple-effect';
-        ripple.style.left = `${x}px`;
-        ripple.style.top = `${y}px`;
-        
+        ripple.style.left = (e.clientX - rect.left) + 'px';
+        ripple.style.top = (e.clientY - rect.top) + 'px';
         target.appendChild(ripple);
-        
-        setTimeout(() => ripple.remove(), 600);
+        setTimeout(function() { ripple.remove(); }, 600);
       });
     }
 

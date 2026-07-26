@@ -430,6 +430,7 @@ button {
 
 .sidebar.collapsed {
   width: var(--sidebar-collapsed);
+  will-change: width;
 }
 
 .sidebar.collapsed .sidebar-item span,
@@ -1060,7 +1061,6 @@ button {
 .top-nav-icon-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
-  transform: scale(1.08);
 }
 
 .notification-badge {
@@ -1097,7 +1097,6 @@ button {
 
 .top-nav-quick-create:hover {
   background: var(--primary-dark);
-  transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3), 0 0 0 2px rgba(2, 132, 199, 0.15), var(--shadow-glow);
   filter: brightness(1.1);
 }
@@ -1127,7 +1126,6 @@ button {
 .top-nav-menu-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
-  transform: scale(1.05);
 }
 
 .page-content {
@@ -1344,7 +1342,6 @@ button {
 
 .dashboard-banner-btn:hover {
   background: var(--bg-hover) !important;
-  transform: translateY(-1px);
 }
 
 .stats-row {
@@ -1367,6 +1364,7 @@ button {
   overflow: hidden;
   box-shadow: var(--shadow-xs);
   contain: layout style paint;
+  will-change: transform;
 }
 
 .stat-card::before {
@@ -2243,7 +2241,6 @@ button {
 
 .btn-primary:hover:not(:disabled) {
   background: var(--primary-dark);
-  transform: translateY(-2px);
   box-shadow: var(--shadow-accent), var(--shadow-glow);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
@@ -2257,7 +2254,6 @@ button {
 .btn-secondary:hover:not(:disabled) {
   background: var(--bg-hover);
   border-color: var(--border-strong);
-  transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
 }
 
@@ -2281,7 +2277,6 @@ button {
   background: var(--bg-hover);
   border-color: var(--primary);
   color: var(--primary);
-  transform: translateY(-2px);
   box-shadow: var(--shadow-sm), 0 0 0 2px var(--primary-bg);
 }
 
@@ -2538,7 +2533,6 @@ button {
 .filter-chip:hover {
   border-color: var(--border-strong);
   background: var(--bg-tertiary);
-  transform: translateY(-1px);
 }
 
 .filter-chip.active {
@@ -2581,7 +2575,6 @@ button {
 
 .segmented-control-item:hover:not(.active) {
   color: var(--text-primary);
-  transform: translateY(-1px);
 }
 
 .view-toggle {
@@ -2616,7 +2609,6 @@ button {
 .view-toggle-btn:hover:not(.active) {
   background: var(--bg-hover);
   color: var(--text-primary);
-  transform: scale(1.08);
 }
 
 .widget {
@@ -2679,7 +2671,6 @@ button {
 
 .mini-cal-day:hover {
   background: var(--bg-hover);
-  transform: scale(1.1);
 }
 
 .mini-cal-day.today {
@@ -3212,7 +3203,6 @@ button {
   border-color: var(--text-tertiary);
   color: var(--text-secondary);
   background: var(--bg-hover);
-  transform: translateY(-1px);
 }
 
 .kanban-card .kanban-card-progress {
@@ -3827,7 +3817,6 @@ button {
 .chart-card:hover {
   box-shadow: var(--shadow-lg);
   border-color: var(--primary);
-  transform: translateY(-3px);
 }
 
 .chart-card-wide {
@@ -4485,7 +4474,6 @@ button {
 }
 
 .profile-picture-btn:hover {
-  transform: translateY(-2px) !important;
   box-shadow: var(--shadow-sm) !important;
 }
 
@@ -6929,7 +6917,6 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
 }
 
 .onboarding-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(124, 58, 237, 0.2);
 }
 
@@ -7067,7 +7054,6 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
 
 .empty-state-btn:hover {
   background: var(--primary-dark);
-  transform: translateY(-2px);
   box-shadow: var(--shadow-accent);
 }
 
@@ -9090,7 +9076,6 @@ kbd, .kbd-shortcut, .sidebar-kbd-hint kbd {
 }
 
 .btn-primary:hover, .onboarding-btn:hover, .top-nav-quick-create:hover {
-  transform: translateY(-2px);
   box-shadow: 0 8px 28px rgba(124, 58, 237, 0.35) !important;
 }
 
@@ -9102,7 +9087,6 @@ kbd, .kbd-shortcut, .sidebar-kbd-hint kbd {
 /* Ghost / outline / secondary uniform lift */
 .btn-ghost:hover, .btn-outline:hover,
 .btn-secondary:hover, .filter-chip:hover {
-  transform: translateY(-1px);
 }
 
 /* Focus ring – precision glow */
@@ -9267,9 +9251,7 @@ input:focus, textarea:focus, select:focus,
   }
 }
 
-/* ==========================================================================
-   GEMINI-STYLE AMBIENT SYSTEM
-   ========================================================================== */
+/* GEMINI-STYLE AMBIENT SYSTEM — optimized for 60fps */
 
 .ambient-glow {
   position: fixed;
@@ -9277,76 +9259,52 @@ input:focus, textarea:focus, select:focus,
   pointer-events: none;
   z-index: -1;
   overflow: hidden;
-  opacity: 0.6;
+  opacity: 0.5;
+  contain: layout style;
 }
 
 .glow-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.4;
+  will-change: transform;
+  opacity: 0.25;
   animation: orbFloat 20s ease-in-out infinite alternate;
 }
 
 .glow-orb-1 {
-  width: 600px;
-  height: 600px;
+  width: 500px; height: 500px;
   background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
-  top: -100px;
-  left: -100px;
+  top: -100px; left: -100px;
   animation-duration: 25s;
 }
 
 .glow-orb-2 {
-  width: 500px;
-  height: 500px;
+  width: 400px; height: 400px;
   background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-  bottom: -50px;
-  right: -50px;
+  bottom: -50px; right: -50px;
   animation-duration: 30s;
   animation-delay: -5s;
 }
 
 .glow-orb-3 {
-  width: 400px;
-  height: 400px;
+  width: 300px; height: 300px;
   background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
-  top: 40%;
-  left: 60%;
+  top: 40%; left: 60%;
   animation-duration: 22s;
   animation-delay: -10s;
 }
 
 @keyframes orbFloat {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, 50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0, 0) scale(1); }
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  33%  { transform: translate3d(20px, 30px, 0) scale(1.05); }
+  66%  { transform: translate3d(-15px, 15px, 0) scale(0.95); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
 }
 
-/* Advanced Glassmorphism Overrides */
-.sidebar, .top-nav, .project-card, .stat-card, .task-item, .widget, .onboarding-container {
-  backdrop-filter: var(--glass-blur) !important;
-  -webkit-backdrop-filter: var(--glass-blur) !important;
-  border: 1px solid var(--hairline) !important;
-  box-shadow: var(--shadow-glass) !important;
-}
-
-[data-theme="dark"] .sidebar, 
-[data-theme="dark"] .top-nav, 
-[data-theme="dark"] .project-card, 
-[data-theme="dark"] .stat-card, 
-[data-theme="dark"] .task-item, 
-[data-theme="dark"] .widget,
-[data-theme="dark"] .onboarding-container {
-  background: rgba(18, 17, 15, 0.7) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-/* Magnetic Hover Tracking */
-.magnetic-wrap {
-  display: inline-block;
-  transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+/* Glassmorphism — lighter blur, no !important */
+.sidebar, .top-nav {
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
 }
 
 /* Page Transition Surface */
@@ -9356,55 +9314,20 @@ input:focus, textarea:focus, select:focus,
   background: var(--bg-primary);
   z-index: 9999;
   pointer-events: none;
-  clip-path: circle(0% at 50% 50%);
-  transition: clip-path 0.8s var(--ease-out-expo);
+  will-change: opacity;
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-out-expo);
 }
 
 .page-transition-overlay.active {
-  clip-path: circle(150% at 50% 50%);
-}
-
-/* Spotlight Hover Effect */
-.project-card, .stat-card, .task-item, .widget {
-  position: relative;
-  overflow: hidden;
-}
-
-.project-card::before, .stat-card::before, .task-item::before, .widget::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    800px circle at var(--x, 0) var(--y, 0),
-    rgba(255, 255, 255, 0.06),
-    transparent 40%
-  );
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
-  z-index: 1;
-}
-
-[data-theme="dark"] .project-card::before, 
-[data-theme="dark"] .stat-card::before, 
-[data-theme="dark"] .task-item::before, 
-[data-theme="dark"] .widget::before {
-  background: radial-gradient(
-    600px circle at var(--x, 0) var(--y, 0),
-    rgba(124, 58, 237, 0.1),
-    transparent 40%
-  );
-}
-
-.project-card:hover::before, .stat-card:hover::before, .task-item:hover::before, .widget:hover::before {
   opacity: 1;
 }
 
 /* Stagger Animation Base */
 .anim-stagger > * {
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+  transform: translateY(16px);
+  transition: opacity 0.5s var(--ease-out-expo), transform 0.5s var(--ease-out-expo);
 }
 
 .anim-stagger.visible > * {
@@ -9412,14 +9335,14 @@ input:focus, textarea:focus, select:focus,
   transform: translateY(0);
 }
 
-.anim-stagger.visible > *:nth-child(1) { transition-delay: 0.1s; }
-.anim-stagger.visible > *:nth-child(2) { transition-delay: 0.2s; }
-.anim-stagger.visible > *:nth-child(3) { transition-delay: 0.3s; }
-.anim-stagger.visible > *:nth-child(4) { transition-delay: 0.4s; }
-.anim-stagger.visible > *:nth-child(5) { transition-delay: 0.5s; }
+.anim-stagger.visible > *:nth-child(1) { transition-delay: 0.08s; }
+.anim-stagger.visible > *:nth-child(2) { transition-delay: 0.16s; }
+.anim-stagger.visible > *:nth-child(3) { transition-delay: 0.24s; }
+.anim-stagger.visible > *:nth-child(4) { transition-delay: 0.32s; }
+.anim-stagger.visible > *:nth-child(5) { transition-delay: 0.4s; }
 
 /* Ripple Effect */
-.btn, .onboarding-btn, .sidebar-item, .nav-item-mobile {
+.btn, .onboarding-btn {
   position: relative;
   overflow: hidden;
 }
@@ -9428,8 +9351,8 @@ input:focus, textarea:focus, select:focus,
   position: absolute;
   width: 10px;
   height: 10px;
-  background: rgba(255, 255, 255, 0.3);
   border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
   transform: translate(-50%, -50%) scale(0);
   animation: ripple 0.6s var(--ease-out-expo) forwards;
   pointer-events: none;
