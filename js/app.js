@@ -642,19 +642,21 @@
     if (!container) return;
     var items = container.querySelectorAll('.task-item');
     var visible = 0;
-    items.forEach(function (el) {
+    for (var i = 0; i < items.length; i++) {
+      var el = items[i];
       var text = (el.querySelector('.task-item-title')?.textContent || '') + ' ' + (el.querySelector('.task-item-desc')?.textContent || '');
       var match = !query || text.toLowerCase().includes(query);
       el.style.display = match ? '' : 'none';
       if (match) visible++;
-    });
+    }
     var total = items.length;
     if (subtitle) subtitle.textContent = visible + ' of ' + total + ' tasks';
-    container.querySelectorAll('.task-group').forEach(function (g) {
-      var visibleItems = g.querySelectorAll('.task-item[style*="display: none"]');
-      var allHidden = visibleItems.length === g.querySelectorAll('.task-item').length;
-      g.style.display = allHidden && query ? 'none' : '';
-    });
+    var groups = container.querySelectorAll('.task-group');
+    for (var g = 0; g < groups.length; g++) {
+      var group = groups[g];
+      var visItems = group.querySelectorAll('.task-item:not([style*="display: none"])');
+      group.style.display = visItems.length === 0 && query ? 'none' : '';
+    }
     var emptyMsg = container.querySelector('.empty-state');
     if (!emptyMsg && visible === 0 && total > 0) {
       var es = document.createElement('div');
@@ -2884,15 +2886,18 @@
   function initKanbanDrag() {
     const columns = document.querySelectorAll('.kanban-cards');
     let draggedCard = null;
+    var dragTick = false;
 
     function getDragAfterElement(container, y) {
-      const elements = [...container.querySelectorAll('.kanban-card:not(.dragging)')];
-      return elements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) return { offset, element: child };
-        return closest;
-      }, { offset: Number.NEGATIVE_INFINITY }).element;
+      var elements = container.querySelectorAll('.kanban-card:not(.dragging)');
+      var closestEl = null;
+      var closestOffset = Number.NEGATIVE_INFINITY;
+      for (var i = 0; i < elements.length; i++) {
+        var box = elements[i].getBoundingClientRect();
+        var offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closestOffset) { closestOffset = offset; closestEl = elements[i]; }
+      }
+      return closestEl;
     }
 
     document.addEventListener('dragstart', (e) => {
@@ -2914,14 +2919,19 @@
     });
 
     columns.forEach(column => {
+      var dragRAF = null;
       column.addEventListener('dragover', (e) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
-        const afterElement = getDragAfterElement(column, e.clientY);
-        if (draggedCard) {
-          if (afterElement) column.insertBefore(draggedCard, afterElement);
-          else column.appendChild(draggedCard);
-        }
+        if (dragRAF) return;
+        dragRAF = requestAnimationFrame(function() {
+          dragRAF = null;
+          var afterElement = getDragAfterElement(column, e.clientY);
+          if (draggedCard) {
+            if (afterElement) column.insertBefore(draggedCard, afterElement);
+            else column.appendChild(draggedCard);
+          }
+        });
       });
       column.addEventListener('drop', (e) => {
         e.preventDefault();
@@ -3883,30 +3893,31 @@
       var magneticSelectors = '.btn-primary, .stat-card, .project-card';
       var orbs = null;
       var ticking = false;
+      var refreshTimer = 0;
 
       document.addEventListener('mousemove', function(e) {
         if (ticking) return;
         ticking = true;
         requestAnimationFrame(function() {
           ticking = false;
-          if (!magneticEls) magneticEls = document.querySelectorAll(magneticSelectors);
+          if (!magneticEls || ++refreshTimer > 120) {
+            magneticEls = document.querySelectorAll(magneticSelectors);
+            orbs = document.querySelectorAll('.glow-orb');
+            refreshTimer = 0;
+          }
           for (var i = 0; i < magneticEls.length; i++) {
             var el = magneticEls[i];
+            if (!el || !el.getBoundingClientRect) continue;
             var rect = el.getBoundingClientRect();
-            var centerX = rect.left + rect.width / 2;
-            var centerY = rect.top + rect.height / 2;
-            var deltaX = e.clientX - centerX;
-            var deltaY = e.clientY - centerY;
-            var distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-            if (distance < 80) {
-              el.style.transform = 'translate(' + (deltaX * 0.15) + 'px, ' + (deltaY * 0.15) + 'px) scale(1.02)';
-              el.style.transition = 'transform 0.1s cubic-bezier(0.23, 1, 0.32, 1)';
+            var deltaX = e.clientX - rect.left - rect.width / 2;
+            var deltaY = e.clientY - rect.top - rect.height / 2;
+            var distance = deltaX * deltaX + deltaY * deltaY;
+            if (distance < 6400) {
+              el.style.transform = 'translate(' + (deltaX * 0.12) + 'px, ' + (deltaY * 0.12) + 'px)';
             } else {
               el.style.transform = '';
-              el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
             }
           }
-          if (!orbs) orbs = document.querySelectorAll('.glow-orb');
           if (orbs.length) {
             var x = (e.clientX / window.innerWidth - 0.5) * 20;
             var y = (e.clientY / window.innerHeight - 0.5) * 20;
@@ -3921,11 +3932,10 @@
       document.addEventListener('mousedown', function(e) {
         var target = e.target.closest('.btn, .onboarding-btn');
         if (!target) return;
-        var rect = target.getBoundingClientRect();
         var ripple = document.createElement('span');
         ripple.className = 'ripple-effect';
-        ripple.style.left = (e.clientX - rect.left) + 'px';
-        ripple.style.top = (e.clientY - rect.top) + 'px';
+        ripple.style.left = (e.offsetX) + 'px';
+        ripple.style.top = (e.offsetY) + 'px';
         target.appendChild(ripple);
         setTimeout(function() { ripple.remove(); }, 600);
       });
