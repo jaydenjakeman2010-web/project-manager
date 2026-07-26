@@ -2928,7 +2928,16 @@
         if (taskId && newStatus) {
           const data = getData();
           const task = data.tasks.find(t => t.id === taskId);
-          if (task) { task.status = newStatus; saveData(data); showToast('Task moved'); }
+          if (task) {
+            var oldStatus = task.status;
+            task.status = newStatus;
+            showToast('Task moved');
+            API.patch('/tasks/' + taskId, { status: newStatus }).catch(function () {
+              task.status = oldStatus;
+              showToast('Failed to save task position', 'error');
+              refreshCurrentView();
+            });
+          }
         }
       });
     });
@@ -3930,7 +3939,7 @@
 
     function formatDuration(ms) {
       var totalSec = Math.floor(ms / 1000);
-      if (totalSec < 60) return '< 1m';
+      if (totalSec < 60) return 'a moment';
       var m = Math.floor(totalSec / 60);
       var h = Math.floor(m / 60);
       m = m % 60;
@@ -3938,19 +3947,8 @@
       return m + 'm';
     }
 
-    function hideWelcomeBack() {
-      var overlay = document.getElementById('welcome-back');
-      var card = document.getElementById('welcome-back-card');
-      if (!overlay || !overlay.classList.contains('active')) return;
-      if (card) card.classList.add('exiting');
-      setTimeout(function () {
-        overlay.classList.remove('active');
-        overlay.style.display = 'none';
-        if (card) card.classList.remove('exiting');
-      }, 250);
-    }
-
     function showWelcomeBack() {
+      if (sessionStorage.getItem('pm-welcome-shown')) return;
       var data = getData();
       if (!data.user) return;
       var overlay = document.getElementById('welcome-back');
@@ -3965,41 +3963,46 @@
       var overdueCount = data.tasks.filter(function (t) { return t.status !== 'done' && t.dueDate && t.dueDate.slice(0, 10) < today; }).length;
       var dueTodayCount = data.tasks.filter(function (t) { return t.dueDate && t.dueDate.slice(0, 10) === today; }).length;
       var openCount = data.tasks.filter(function (t) { return t.status !== 'done'; }).length;
-      var projectCount = data.projects.length;
-      var awayHtml = durationStr ? '<p class="welcome-back-away">Back after ' + durationStr + '</p>' : '';
-      var contextHtml = '';
-      if (data.projects.length > 0) {
-        contextHtml = '<div class="welcome-back-context" id="wb-continue"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg><span>Continue to ' + (data.projects[0].name || 'Dashboard') + '</span></div>';
-      }
+      var totalTasks = data.tasks.length;
+      var doneCount = data.tasks.filter(function (t) { return t.status === 'done'; }).length;
+      var completionRate = totalTasks > 0 ? Math.round(doneCount / totalTasks * 100) : 0;
+
+      sessionStorage.setItem('pm-welcome-shown', 'true');
+
+      var awayLine = durationStr ? '<p class="wb-away">You were away for <strong>' + durationStr + '</strong></p>' : '';
+      var projectsLine = data.projects.length > 0 ? '<p class="wb-projects">' + data.projects.length + ' project' + (data.projects.length !== 1 ? 's' : '') + ' waiting</p>' : '';
 
       card.innerHTML =
-        '<div class="welcome-back-icon"><svg width="24" height="24" viewBox="0 0 36 36" fill="none"><rect x="0.5" y="0.5" width="35" height="35" rx="9" fill="currentColor"/><path d="M13 27V10h5q3.5 0 5.5 1.7t2 4.8v0.5q0 3.1-2 4.8t-5.5 1.7H17v3.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>' +
-        '<h2 class="welcome-back-greeting">' + timeGreeting + ', ' + name + '</h2>' +
-        awayHtml +
-        '<div class="welcome-back-stats"><div class="welcome-back-stat' + (overdueCount > 0 ? ' overdue' : '') + '"><div class="welcome-back-stat-value">' + overdueCount + '</div><div class="welcome-back-stat-label">Overdue</div></div><div class="welcome-back-stat"><div class="welcome-back-stat-value">' + dueTodayCount + '</div><div class="welcome-back-stat-label">Due Today</div></div><div class="welcome-back-stat"><div class="welcome-back-stat-value">' + openCount + '</div><div class="welcome-back-stat-label">Open</div></div></div>' +
-        contextHtml +
-        '<p class="welcome-back-hint">Press <kbd style="font-family:inherit;padding:1px 5px;border-radius:4px;border:1px solid var(--hairline);font-size:10px;">Esc</kbd> or click anywhere to continue</p>';
+        '<div class="wb-logo-wrap"><svg class="wb-logo" width="40" height="40" viewBox="0 0 36 36" fill="none"><rect x="0.5" y="0.5" width="35" height="35" rx="9" fill="var(--primary)"/><path d="M13 27V10h5q3.5 0 5.5 1.7t2 4.8v0.5q0 3.1-2 4.8t-5.5 1.7H17v3.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>' +
+        '<h2 class="wb-greeting">' + timeGreeting + ', ' + name + '</h2>' +
+        awayLine +
+        projectsLine +
+        '<div class="wb-stats"><div class="wb-stat"><div class="wb-stat-value">' + openCount + '</div><div class="wb-stat-label">Open</div></div><div class="wb-stat sep"></div><div class="wb-stat"><div class="wb-stat-value">' + (overdueCount > 0 ? overdueCount : '0') + '</div><div class="wb-stat-label' + (overdueCount > 0 ? ' warn' : '') + '">Overdue</div></div><div class="wb-stat sep"></div><div class="wb-stat"><div class="wb-stat-value">' + completionRate + '%</div><div class="wb-stat-label">Done</div></div></div>' +
+        '<button class="wb-dismiss" id="wb-dismiss">Continue</button>';
 
       overlay.style.display = 'flex';
       requestAnimationFrame(function () {
         overlay.classList.add('active');
       });
 
-      var timer = setTimeout(hideWelcomeBack, 5000);
+      var timer = setTimeout(dismissWelcomeBack, 5000);
 
-      function dismiss(e) {
-        if (e && e.type === 'keydown' && e.key !== 'Escape') return;
+      document.getElementById('wb-dismiss')?.addEventListener('click', function () {
         clearTimeout(timer);
-        hideWelcomeBack();
-      }
-
-      overlay.addEventListener('click', function () { clearTimeout(timer); hideWelcomeBack(); }, { once: true });
-      document.addEventListener('keydown', dismiss, { once: true });
-
-      document.getElementById('wb-continue')?.addEventListener('click', function () {
-        clearTimeout(timer);
-        hideWelcomeBack();
+        dismissWelcomeBack();
       });
+    }
+
+    function dismissWelcomeBack() {
+      var overlay = document.getElementById('welcome-back');
+      var card = document.getElementById('welcome-back-card');
+      if (!overlay || !overlay.classList.contains('active')) return;
+      overlay.classList.remove('active');
+      card?.classList.add('exiting');
+      setTimeout(function () {
+        overlay.style.display = 'none';
+        card?.classList.remove('exiting');
+      }, 300);
     }
 
     function initWelcomeBack() {
@@ -4013,7 +4016,8 @@
         } else if (document.visibilityState === 'visible') {
           var booted = sessionStorage.getItem('pm-booted');
           var hiddenAt = sessionStorage.getItem('pm-tab-hidden-at');
-          if (booted && hiddenAt) {
+          var shown = sessionStorage.getItem('pm-welcome-shown');
+          if (booted && hiddenAt && !shown) {
             var elapsed = Date.now() - parseInt(hiddenAt, 10);
             if (elapsed > 3000) {
               showWelcomeBack();

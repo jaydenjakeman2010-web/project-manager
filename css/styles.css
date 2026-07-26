@@ -8816,8 +8816,8 @@ mark.search-match {
 .welcome-back-overlay {
   position: fixed;
   inset: 0;
-  z-index: calc(var(--z-modal) - 1);
-  display: flex;
+  z-index: calc(var(--z-modal) + 10);
+  display: none;
   align-items: center;
   justify-content: center;
   padding: var(--space-6);
@@ -8831,196 +8831,173 @@ mark.search-match {
   position: absolute;
   inset: 0;
   background: var(--surface-overlay);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  animation: wbFadeIn 0.4s var(--ease-out-expo) both;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: opacity 0.5s var(--ease-out-expo);
+  opacity: 0;
 }
 
-@keyframes wbFadeIn {
-  from { opacity: 0; backdrop-filter: blur(0px); }
-  to { opacity: 1; backdrop-filter: blur(8px); }
+.welcome-back-overlay.active .welcome-back-backdrop {
+  opacity: 1;
 }
 
 .welcome-back-card {
   position: relative;
   width: 100%;
-  max-width: 400px;
+  max-width: 380px;
   background: var(--surface-modal);
   border: 1px solid var(--hairline);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   padding: var(--space-8) var(--space-7) var(--space-7);
   box-shadow: var(--shadow-2xl), var(--shadow-glass), var(--shadow-glow);
-  animation: wbCardIn 0.5s var(--ease-out-expo) 0.1s both;
-  transform-origin: center bottom;
+  transition: opacity 0.45s var(--ease-out-expo), transform 0.45s var(--ease-out-expo);
+  opacity: 0;
+  transform: translateY(16px);
+  text-align: center;
 }
 
-@keyframes wbCardIn {
-  from {
-    opacity: 0;
-    transform: scale(0.92) translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+.welcome-back-overlay.active .welcome-back-card {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .welcome-back-card.exiting {
-  animation: wbCardOut 0.25s var(--ease-in-out) both;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.97);
+  transition: opacity 0.25s var(--ease-in-out), transform 0.25s var(--ease-in-out);
 }
 
-@keyframes wbCardOut {
-  from { opacity: 1; transform: scale(1) translateY(0); }
-  to { opacity: 0; transform: scale(0.95) translateY(-12px); }
-}
-
-.welcome-back-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-lg);
+.wb-logo-wrap {
+  margin: 0 auto var(--space-5);
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-xl);
   background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto var(--space-5);
-  color: white;
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
-  animation: wbIconIn 0.6s var(--ease-out-expo) 0.2s both;
+  box-shadow: 0 8px 28px rgba(124, 58, 237, 0.25);
 }
 
-@keyframes wbIconIn {
-  from { opacity: 0; transform: scale(0.6) rotate(-8deg); }
-  to { opacity: 1; transform: scale(1) rotate(0); }
+.wb-logo-wrap svg {
+  width: 36px;
+  height: 36px;
 }
 
-.welcome-back-icon svg {
-  width: 24px;
-  height: 24px;
-}
-
-.welcome-back-greeting {
+.wb-greeting {
   font-size: var(--text-2xl);
   font-weight: 700;
   color: var(--text-primary);
-  text-align: center;
   letter-spacing: -0.03em;
   margin-bottom: var(--space-1);
-  animation: wbReveal 0.5s var(--ease-out-expo) 0.3s both;
 }
 
-.welcome-back-away {
+.wb-away {
   font-size: var(--text-sm);
   color: var(--text-tertiary);
-  text-align: center;
+  margin-bottom: var(--space-1);
+}
+
+.wb-away strong {
+  color: var(--text-secondary);
+  font-weight: var(--weight-semibold);
+}
+
+.wb-projects {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
   margin-bottom: var(--space-6);
-  animation: wbReveal 0.5s var(--ease-out-expo) 0.35s both;
 }
 
-@keyframes wbReveal {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.welcome-back-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-3);
+.wb-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
   margin-bottom: var(--space-6);
-  animation: wbReveal 0.5s var(--ease-out-expo) 0.4s both;
-}
-
-.welcome-back-stat {
-  text-align: center;
-  padding: var(--space-3) var(--space-2);
-  border-radius: var(--radius-md);
   background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--hairline);
+  overflow: hidden;
 }
 
-.welcome-back-stat-value {
+.wb-stat {
+  flex: 1;
+  padding: var(--space-4) var(--space-2);
+  text-align: center;
+}
+
+.wb-stat.sep {
+  flex: 0 0 1px;
+  padding: 0;
+  background: var(--hairline);
+  height: 40px;
+  align-self: center;
+}
+
+.wb-stat-value {
   font-size: var(--text-xl);
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
-.welcome-back-stat-label {
+.wb-stat-label {
   font-size: 10px;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-weight: var(--weight-medium);
+  letter-spacing: 0.06em;
+  font-weight: var(--weight-semibold);
 }
 
-.welcome-back-stat.overdue .welcome-back-stat-value {
+.wb-stat-label.warn {
   color: var(--danger);
 }
 
-.welcome-back-context {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--primary-subtle);
-  border: 1px solid transparent;
-  margin-bottom: var(--space-6);
+.wb-dismiss {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  font-family: var(--font-sans);
   font-size: var(--text-sm);
-  color: var(--primary);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-semibold);
+  color: white;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background 0.2s var(--ease-luxury), border-color 0.2s var(--ease-luxury);
-  animation: wbReveal 0.5s var(--ease-out-expo) 0.45s both;
+  transition: transform 0.2s var(--ease-out-expo), box-shadow 0.2s var(--ease-out-expo);
+  letter-spacing: 0.01em;
 }
 
-.welcome-back-context:hover {
-  background: var(--primary-bg);
-  border-color: rgba(124, 58, 237, 0.15);
+.wb-dismiss:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-accent);
 }
 
-.welcome-back-context svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-}
-
-.welcome-back-hint {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  text-align: center;
-  animation: wbReveal 0.5s var(--ease-out-expo) 0.5s both;
+.wb-dismiss:active {
+  transform: translateY(0) scale(0.97);
 }
 
 @media (max-width: 640px) {
   .welcome-back-card {
+    max-width: 100%;
     padding: var(--space-6) var(--space-5);
   }
-  .welcome-back-stats {
-    gap: var(--space-2);
+  .wb-stat {
+    padding: var(--space-3) var(--space-1);
   }
-  .welcome-back-stat {
-    padding: var(--space-2) var(--space-1);
-  }
-  .welcome-back-stat-value {
+  .wb-stat-value {
     font-size: var(--text-lg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .welcome-back-card,
-  .welcome-back-icon,
-  .welcome-back-greeting,
-  .welcome-back-away,
-  .welcome-back-stats,
-  .welcome-back-context,
-  .welcome-back-hint {
-    animation: none;
-  }
   .welcome-back-backdrop {
-    animation: none;
+    transition: none;
   }
 }
 
