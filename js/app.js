@@ -3928,6 +3928,101 @@
       }).catch(function () {});
     }
 
+    function formatDuration(ms) {
+      var totalSec = Math.floor(ms / 1000);
+      if (totalSec < 60) return '< 1m';
+      var m = Math.floor(totalSec / 60);
+      var h = Math.floor(m / 60);
+      m = m % 60;
+      if (h > 0) return h + 'h ' + m + 'm';
+      return m + 'm';
+    }
+
+    function hideWelcomeBack() {
+      var overlay = document.getElementById('welcome-back');
+      var card = document.getElementById('welcome-back-card');
+      if (!overlay || !overlay.classList.contains('active')) return;
+      if (card) card.classList.add('exiting');
+      setTimeout(function () {
+        overlay.classList.remove('active');
+        overlay.style.display = 'none';
+        if (card) card.classList.remove('exiting');
+      }, 250);
+    }
+
+    function showWelcomeBack() {
+      var data = getData();
+      if (!data.user) return;
+      var overlay = document.getElementById('welcome-back');
+      var card = document.getElementById('welcome-back-card');
+      if (!overlay || !card) return;
+      var hiddenAt = parseInt(sessionStorage.getItem('pm-tab-hidden-at'), 10);
+      var durationStr = hiddenAt ? formatDuration(Date.now() - hiddenAt) : '';
+      var hour = new Date().getHours();
+      var timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+      var name = data.user.name ? data.user.name.split(' ')[0] : 'there';
+      var today = new Date().toISOString().split('T')[0];
+      var overdueCount = data.tasks.filter(function (t) { return t.status !== 'done' && t.dueDate && t.dueDate.slice(0, 10) < today; }).length;
+      var dueTodayCount = data.tasks.filter(function (t) { return t.dueDate && t.dueDate.slice(0, 10) === today; }).length;
+      var openCount = data.tasks.filter(function (t) { return t.status !== 'done'; }).length;
+      var projectCount = data.projects.length;
+      var awayHtml = durationStr ? '<p class="welcome-back-away">Back after ' + durationStr + '</p>' : '';
+      var contextHtml = '';
+      if (data.projects.length > 0) {
+        contextHtml = '<div class="welcome-back-context" id="wb-continue"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg><span>Continue to ' + (data.projects[0].name || 'Dashboard') + '</span></div>';
+      }
+
+      card.innerHTML =
+        '<div class="welcome-back-icon"><svg width="24" height="24" viewBox="0 0 36 36" fill="none"><rect x="0.5" y="0.5" width="35" height="35" rx="9" fill="currentColor"/><path d="M13 27V10h5q3.5 0 5.5 1.7t2 4.8v0.5q0 3.1-2 4.8t-5.5 1.7H17v3.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>' +
+        '<h2 class="welcome-back-greeting">' + timeGreeting + ', ' + name + '</h2>' +
+        awayHtml +
+        '<div class="welcome-back-stats"><div class="welcome-back-stat' + (overdueCount > 0 ? ' overdue' : '') + '"><div class="welcome-back-stat-value">' + overdueCount + '</div><div class="welcome-back-stat-label">Overdue</div></div><div class="welcome-back-stat"><div class="welcome-back-stat-value">' + dueTodayCount + '</div><div class="welcome-back-stat-label">Due Today</div></div><div class="welcome-back-stat"><div class="welcome-back-stat-value">' + openCount + '</div><div class="welcome-back-stat-label">Open</div></div></div>' +
+        contextHtml +
+        '<p class="welcome-back-hint">Press <kbd style="font-family:inherit;padding:1px 5px;border-radius:4px;border:1px solid var(--hairline);font-size:10px;">Esc</kbd> or click anywhere to continue</p>';
+
+      overlay.style.display = 'flex';
+      requestAnimationFrame(function () {
+        overlay.classList.add('active');
+      });
+
+      var timer = setTimeout(hideWelcomeBack, 5000);
+
+      function dismiss(e) {
+        if (e && e.type === 'keydown' && e.key !== 'Escape') return;
+        clearTimeout(timer);
+        hideWelcomeBack();
+      }
+
+      overlay.addEventListener('click', function () { clearTimeout(timer); hideWelcomeBack(); }, { once: true });
+      document.addEventListener('keydown', dismiss, { once: true });
+
+      document.getElementById('wb-continue')?.addEventListener('click', function () {
+        clearTimeout(timer);
+        hideWelcomeBack();
+      });
+    }
+
+    function initWelcomeBack() {
+      var booted = sessionStorage.getItem('pm-booted');
+      if (!booted) {
+        sessionStorage.setItem('pm-booted', 'true');
+      }
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'hidden') {
+          sessionStorage.setItem('pm-tab-hidden-at', Date.now());
+        } else if (document.visibilityState === 'visible') {
+          var booted = sessionStorage.getItem('pm-booted');
+          var hiddenAt = sessionStorage.getItem('pm-tab-hidden-at');
+          if (booted && hiddenAt) {
+            var elapsed = Date.now() - parseInt(hiddenAt, 10);
+            if (elapsed > 60000) {
+              showWelcomeBack();
+            }
+          }
+        }
+      });
+    }
+
     function bootApp() {
       initNavigation();
       initSidebar();
@@ -4005,6 +4100,8 @@
           navigateTo('dashboard');
         }
       }
+
+      initWelcomeBack();
     }
 
     var onboarding = document.getElementById('onboarding');
