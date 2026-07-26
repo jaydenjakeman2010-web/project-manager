@@ -1,6 +1,6 @@
 (function () {
-  const COLORS = ['#1B5E3B', '#2C5282', '#2D8B5E', '#3B6FA0', '#145232', '#1A365D', '#D4A04A', '#C75B3B'];
-  const PRIORITY_COLORS = { low: '#2D8B5E', medium: '#D4A04A', high: '#C75B3B' };
+  const COLORS = ['#7C3AED', '#0284C7', '#8B5CF6', '#38BDF8', '#6D28D9', '#0EA5E9', '#D97706', '#DC2626'];
+  const PRIORITY_COLORS = { low: '#059669', medium: '#D97706', high: '#DC2626' };
 
   var state = { user: null, projects: [], tasks: [], team: [], events: [] };
 
@@ -1499,25 +1499,22 @@
     bar.style.width = '0';
     bar.style.opacity = '1';
     requestAnimationFrame(function () {
-      bar.style.width = '40%';
+      bar.style.width = '45%';
       bar.classList.add('active');
-      setTimeout(function () {
-        bar.style.width = '85%';
-      }, 200);
     });
   }
 
     function flashTransitionOverlay() {
       var overlay = document.getElementById('page-transition-overlay');
       if (!overlay) return;
-      overlay.classList.remove('active', 'flash');
       overlay.style.display = 'block';
+      overlay.classList.remove('active');
       requestAnimationFrame(function () {
-        overlay.classList.add('flash');
+        overlay.classList.add('active');
         setTimeout(function () {
-          overlay.classList.remove('flash');
+          overlay.classList.remove('active');
           overlay.style.display = '';
-        }, 100);
+        }, 250);
       });
     }
 
@@ -1591,7 +1588,7 @@
       clearPageTimer = setTimeout(function () {
         oldPage.classList.remove('active', 'exiting');
         finishTransition();
-      }, 450);
+      }, 500);
     } else if (newPage) {
       newPage.classList.add('active');
       switchPage(pageId);
@@ -3283,7 +3280,7 @@
         clearAllDataSilent();
         var chain = Promise.resolve();
         data.projects.forEach(function (p) {
-          chain = chain.then(function () { return API.post('/projects', { name: p.name, color: p.color || '#1B5E3B' }); });
+          chain = chain.then(function () { return API.post('/projects', { name: p.name, color: p.color || '#7C3AED' }); });
         });
         chain = chain.then(function () { return API.get('/projects'); }).then(function (newProjects) {
           var pmap = {};
@@ -3301,7 +3298,7 @@
         });
         if (data.team) {
           data.team.forEach(function (m) {
-            chain = chain.then(function () { return API.post('/team', { name: m.name, role: m.role || 'Member', color: m.color || '#1B5E3B' }).catch(function () {}); });
+            chain = chain.then(function () { return API.post('/team', { name: m.name, role: m.role || 'Member', color: m.color || '#7C3AED' }).catch(function () {}); });
           });
         }
         if (data.events) {

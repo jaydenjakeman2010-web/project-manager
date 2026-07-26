@@ -47,7 +47,7 @@ router.post('/', validate(createSchema), async (req, res) => {
   try {
     const { rows } = await db.query(
       'INSERT INTO projects (id, user_id, name, color) VALUES ($1, $2, $3, $4) RETURNING id, name, color, created_at',
-      [uuid(), req.userId, name, color || '#1B5E3B']
+      [uuid(), req.userId, name, color || '#7C3AED']
     );
     await db.query(
       'INSERT INTO activity_logs (id, user_id, type, description, project_id) VALUES ($1, $2, $3, $4, $5)',

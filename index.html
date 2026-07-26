@@ -43,19 +43,19 @@
             </button>
           </div>
         </div>
-        <div class="onboarding-step checkbox-step" style="margin-top:-4px;margin-bottom:4px;">
-          <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-secondary);">
-            <input type="checkbox" id="login-remember" checked style="accent-color:var(--primary);width:16px;height:16px;cursor:pointer;">
+        <div class="onboarding-step checkbox-step">
+          <label class="checkbox-label">
+            <input type="checkbox" id="login-remember" checked>
             Remember me
           </label>
         </div>
         <button class="onboarding-btn" id="login-submit">Sign In</button>
-        <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-tertiary);">
-          <a href="#" id="auth-show-forgot" style="color:var(--primary);text-decoration:none;">Forgot password?</a>
-          <span style="margin:0 10px;">&#183;</span>
-          <a href="#" id="auth-show-signup" style="color:var(--primary);text-decoration:none;">Create account</a>
+        <div class="auth-links-row">
+          <a href="#" id="auth-show-forgot">Forgot password?</a>
+          <span class="auth-links-divider">&#183;</span>
+          <a href="#" id="auth-show-signup">Create account</a>
         </div>
-        <div id="login-error" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--danger-bg);color:var(--danger);font-size:13px;text-align:center;"></div>
+        <div id="login-error" class="auth-error-msg"></div>
       </div>
 
       <div id="auth-signup" class="auth-view" style="display:none;">

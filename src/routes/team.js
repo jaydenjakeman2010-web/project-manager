@@ -41,7 +41,7 @@ router.post('/', validate(createSchema), async (req, res) => {
   try {
     const { rows } = await db.query(
       'INSERT INTO team_members (id, user_id, name, role, color, photo_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, role, color, photo_url',
-      [uuid(), req.userId, name, role || 'Member', color || '#1B5E3B', photo_url || null]
+      [uuid(), req.userId, name, role || 'Member', color || '#7C3AED', photo_url || null]
     );
     res.status(201).json(rows[0]);
   } catch (err) {
