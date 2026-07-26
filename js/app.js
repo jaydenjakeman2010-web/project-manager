@@ -1511,10 +1511,6 @@
       overlay.classList.remove('active');
       requestAnimationFrame(function () {
         overlay.classList.add('active');
-        setTimeout(function () {
-          overlay.classList.remove('active');
-          overlay.style.display = '';
-        }, 250);
       });
     }
 
@@ -1558,6 +1554,13 @@
         observeScrollEntrances(newPage);
         initTooltips();
       }
+
+      var overlay = document.getElementById('page-transition-overlay');
+      if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(function () { overlay.style.display = ''; }, 800);
+      }
+
       document.querySelector('.page-content').scrollTo({ top: 0, behavior: 'instant' });
       completeLoadingBar();
     }
@@ -3876,40 +3879,68 @@
     }
 
     function initPremiumInteractions() {
-      // Mouse Glow Tracking for cards
-      document.addEventListener('mousemove', function (e) {
-        var cards = document.querySelectorAll('.stat-card, .project-card, .widget, .chart-card, .task-item, .team-member-card');
-        for (var i = 0; i < cards.length; i++) {
-          var rect = cards[i].getBoundingClientRect();
-          if (e.clientX > rect.left - 100 && e.clientX < rect.right + 100 && e.clientY > rect.top - 100 && e.clientY < rect.bottom + 100) {
-            var x = ((e.clientX - rect.left) / rect.width) * 100;
-            var y = ((e.clientY - rect.top) / rect.height) * 100;
-            cards[i].style.setProperty('--mouse-x', x + '%');
-            cards[i].style.setProperty('--mouse-y', y + '%');
+      // 1. Magnetic Elements with spring physics simulation
+      const magneticSelectors = '.btn-primary, .stat-card, .project-card, .sidebar-item, .nav-item-mobile, .onboarding-btn';
+      
+      document.addEventListener('mousemove', function(e) {
+        const els = document.querySelectorAll(magneticSelectors);
+        els.forEach(el => {
+          const rect = el.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          
+          const deltaX = e.clientX - centerX;
+          const deltaY = e.clientY - centerY;
+          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+          
+          // Radius of influence
+          const radius = el.classList.contains('sidebar-item') ? 40 : 80;
+          
+          if (distance < radius) {
+            const pull = el.classList.contains('sidebar-item') ? 0.1 : 0.2;
+            el.style.transform = `translate(${deltaX * pull}px, ${deltaY * pull}px) scale(1.02)`;
+            el.style.transition = 'transform 0.1s cubic-bezier(0.23, 1, 0.32, 1)';
+          } else {
+            el.style.transform = '';
+            el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
           }
-        }
+
+          // Spotlight effect
+          if (el.classList.contains('project-card') || el.classList.contains('stat-card') || el.classList.contains('widget')) {
+            el.style.setProperty('--x', `${e.clientX - rect.left}px`);
+            el.style.setProperty('--y', `${e.clientY - rect.top}px`);
+          }
+        });
       });
 
-      // Magnetic Elements
-      var magneticSelectors = '.btn-primary, .dashboard-banner-btn, .action-btn';
-      document.addEventListener('mousemove', function (e) {
-        var els = document.querySelectorAll(magneticSelectors);
-        for (var i = 0; i < els.length; i++) {
-          var rect = els[i].getBoundingClientRect();
-          var centerX = rect.left + rect.width / 2;
-          var centerY = rect.top + rect.height / 2;
-          var distance = Math.sqrt(Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2));
-          
-          if (distance < 60) {
-            var x = (e.clientX - centerX) * 0.2;
-            var y = (e.clientY - centerY) * 0.2;
-            els[i].style.transform = 'translate(' + x + 'px, ' + y + 'px)';
-            els[i].style.transition = 'transform 0.1s var(--ease-out)';
-          } else {
-            els[i].style.transform = '';
-            els[i].style.transition = 'transform 0.4s var(--ease-spring)';
-          }
-        }
+      // 2. Ambient parallax effect for background orbs
+      document.addEventListener('mousemove', e => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 30;
+        const y = (e.clientY / window.innerHeight - 0.5) * 30;
+        const orbs = document.querySelectorAll('.glow-orb');
+        orbs.forEach((orb, i) => {
+          const factor = (i + 1) * 0.8;
+          orb.style.transform = `translate(${x * factor}px, ${y * factor}px)`;
+        });
+      });
+      
+      // 3. Ripple Effect for all buttons
+      document.addEventListener('mousedown', function(e) {
+        const target = e.target.closest('.btn, .onboarding-btn, .sidebar-item, .nav-item-mobile');
+        if (!target) return;
+
+        const rect = target.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple-effect';
+        ripple.style.left = `${x}px`;
+        ripple.style.top = `${y}px`;
+        
+        target.appendChild(ripple);
+        
+        setTimeout(() => ripple.remove(), 600);
       });
     }
 
