@@ -5727,9 +5727,7 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
   transition: transform 0.3s var(--ease-spring);
 }
 
-.nav-item-mobile:hover svg {
-  transform: translateY(-2px);
-}
+
 
 .nav-item-mobile:active {
   transform: scale(0.92);
@@ -9082,11 +9080,6 @@ kbd, .kbd-shortcut, .sidebar-kbd-hint kbd {
 .btn-primary:active, .onboarding-btn:active, .top-nav-quick-create:active {
   transform: translateY(0) scale(0.97) !important;
   box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2) !important;
-}
-
-/* Ghost / outline / secondary uniform lift */
-.btn-ghost:hover, .btn-outline:hover,
-.btn-secondary:hover, .filter-chip:hover {
 }
 
 /* Focus ring – precision glow */
