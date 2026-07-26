@@ -135,6 +135,7 @@ function mockFetch(path, options) {
             setStore('tasks', tasks);
             return resolve(tasks[idx]);
           }
+          return resolve({});
         }
         if (method === 'DELETE') {
           if (idx !== -1) {
@@ -142,6 +143,7 @@ function mockFetch(path, options) {
             setStore('tasks', tasks);
             return resolve({ message: "Deleted" });
           }
+          return resolve({});
         }
       }
     }
@@ -170,6 +172,7 @@ function mockFetch(path, options) {
             setStore('subtasks', subtasks);
             return resolve(subtasks[idx]);
           }
+          return resolve({});
         }
         if (method === 'DELETE') {
           if (idx !== -1) {
@@ -177,6 +180,7 @@ function mockFetch(path, options) {
             setStore('subtasks', subtasks);
             return resolve({ message: "Deleted" });
           }
+          return resolve({});
         }
       }
     }
@@ -242,6 +246,7 @@ function mockFetch(path, options) {
             setStore('goals', goals);
             return resolve(goals[idx]);
           }
+          return resolve({});
         }
         if (method === 'DELETE') {
           if (idx !== -1) {
@@ -249,6 +254,7 @@ function mockFetch(path, options) {
             setStore('goals', goals);
             return resolve({ message: "Deleted" });
           }
+          return resolve({});
         }
       }
     }
@@ -267,17 +273,30 @@ function mockFetch(path, options) {
     // Events
     if (parts[0] === 'events') {
       var events = getStore('events', []);
-      if (method === 'GET') return resolve(events);
-      if (method === 'POST') {
-        var newEvent = {
-          id: "e_" + Date.now(),
-          name: body.name,
-          date: body.date,
-          time: body.time || "09:00"
-        };
-        events.push(newEvent);
-        setStore('events', events);
-        return resolve(newEvent);
+      if (parts.length === 1) {
+        if (method === 'GET') return resolve(events);
+        if (method === 'POST') {
+          var newEvent = {
+            id: "e_" + Date.now(),
+            name: body.name,
+            date: body.date,
+            time: body.time || "09:00"
+          };
+          events.push(newEvent);
+          setStore('events', events);
+          return resolve(newEvent);
+        }
+      } else if (parts.length === 2) {
+        var id = parts[1];
+        var idx = events.findIndex(function(e) { return e.id === id; });
+        if (method === 'DELETE') {
+          if (idx !== -1) {
+            events.splice(idx, 1);
+            setStore('events', events);
+            return resolve({ message: "Deleted" });
+          }
+          return resolve({});
+        }
       }
     }
 
@@ -366,6 +385,7 @@ function apiFetch(path, options) {
       console.warn("Server unavailable. Auto-activating client-side offline mock mode.");
       localStorage.setItem('pm-use-mock', 'true');
       window.location.reload();
+      return;
     }
     throw err;
   });

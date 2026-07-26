@@ -2932,9 +2932,9 @@
             var oldStatus = task.status;
             task.status = newStatus;
             showToast('Task moved');
-            API.patch('/tasks/' + taskId, { status: newStatus }).catch(function () {
+            API.patch('/tasks/' + taskId, { status: newStatus }).catch(function (err) {
+              if (!localStorage.getItem('pm-use-mock')) return;
               task.status = oldStatus;
-              showToast('Failed to save task position', 'error');
               refreshCurrentView();
             });
           }
