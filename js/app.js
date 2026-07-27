@@ -549,7 +549,11 @@
       btn.addEventListener('click', (e) => { e.stopPropagation(); archiveProject(btn.dataset.projectId); });
     });
     container.querySelectorAll('.delete-project-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => { e.stopPropagation(); if (confirm('Delete this project and all its tasks?')) deleteProject(btn.dataset.projectId); });
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showConfirmDialog({ title: 'Delete project?', message: 'This deletes the project and all of its tasks. This can\'t be undone.', confirmLabel: 'Delete', danger: true })
+          .then(function (ok) { if (ok) deleteProject(btn.dataset.projectId); });
+      });
     });
     renderArchivedProjects(container);
   }
@@ -785,7 +789,8 @@
     });
     document.getElementById('bulk-delete-tasks')?.addEventListener('click', () => {
       if (selectedTaskIds.length === 0) return;
-      if (confirm(`Delete ${selectedTaskIds.length} selected task(s)?`)) {
+      showConfirmDialog({ title: 'Delete tasks?', message: `Delete ${selectedTaskIds.length} selected task(s)? This can't be undone.`, confirmLabel: 'Delete', danger: true }).then(function (ok) {
+      if (ok) {
         var ids = selectedTaskIds.slice();
         Promise.all(ids.map(function (id) { return API.del('/tasks/' + id); })).then(function () {
           var d = getData();
@@ -795,6 +800,7 @@
           refreshCurrentView();
         }).catch(function () { showToast('Failed to delete tasks', 'error'); });
       }
+      });
     });
     document.getElementById('bulk-clear-tasks')?.addEventListener('click', () => {
       selectedTaskIds = [];
@@ -1087,7 +1093,11 @@
       btn.addEventListener('click', (e) => { e.stopPropagation(); openTeamDrawerEdit(btn.dataset.memberId); });
     });
     container.querySelectorAll('.delete-member-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => { e.stopPropagation(); if (confirm('Remove this team member?')) deleteTeamMember(btn.dataset.memberId); });
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showConfirmDialog({ title: 'Remove team member?', confirmLabel: 'Remove', danger: true })
+          .then(function (ok) { if (ok) deleteTeamMember(btn.dataset.memberId); });
+      });
     });
   }
 
@@ -2402,11 +2412,12 @@
     updateTimerDisplay();
 
     document.getElementById('add-subtask-btn')?.addEventListener('click', () => {
-      const text = prompt('Enter subtask name:');
-      if (text && text.trim()) {
-        subtasks.push({ text: text.trim(), done: false });
+      showConfirmDialog({ title: 'New subtask', input: { placeholder: 'Subtask name' }, confirmLabel: 'Add' }).then(function (text) {
+      if (text) {
+        subtasks.push({ text: text, done: false });
         renderSubtasks();
       }
+      });
     });
 
     document.getElementById('add-comment-btn')?.addEventListener('click', () => {
@@ -2651,7 +2662,8 @@
       }).catch(function (err) { showToast(err.message || 'Failed to update event', 'error'); });
     });
     document.getElementById('edit-event-delete')?.addEventListener('click', function () {
-      if (confirm('Delete this event?')) { closeDrawer(); deleteEvent(eventId); }
+      showConfirmDialog({ title: 'Delete event?', confirmLabel: 'Delete', danger: true })
+        .then(function (ok) { if (ok) { closeDrawer(); deleteEvent(eventId); } });
     });
   }
 
@@ -2817,7 +2829,8 @@
     setTimeout(() => document.getElementById('edit-member-name')?.focus(), 100);
     document.getElementById('edit-member-cancel')?.addEventListener('click', closeDrawer);
     document.getElementById('edit-member-delete')?.addEventListener('click', () => {
-      if (confirm('Remove this team member?')) { deleteTeamMember(memberId); closeDrawer(); }
+      showConfirmDialog({ title: 'Remove team member?', confirmLabel: 'Remove', danger: true })
+        .then(function (ok) { if (ok) { deleteTeamMember(memberId); closeDrawer(); } });
     });
     document.getElementById('edit-member-submit')?.addEventListener('click', () => {
       const name = document.getElementById('edit-member-name')?.value?.trim();
@@ -3279,7 +3292,8 @@
       try {
         var data = JSON.parse(reader.result);
         if (!data.projects || !data.tasks) { showToast('Invalid backup file', 'error'); return; }
-        if (!confirm('This will replace all current data. Continue?')) return;
+        showConfirmDialog({ title: 'Replace all data?', message: 'This will replace all current data with the contents of this backup.', confirmLabel: 'Import', danger: true }).then(function (ok) {
+        if (!ok) return;
         showToast('Importing data...', 'info');
         clearAllDataSilent();
         var chain = Promise.resolve();
@@ -3314,6 +3328,7 @@
           showToast('Import complete!', 'success');
           loadAllData().then(function () { refreshCurrentView(); });
         }).catch(function () { showToast('Import failed', 'error'); });
+        });
       } catch { showToast('Invalid file format', 'error'); }
     };
     reader.readAsText(file);
@@ -3329,24 +3344,30 @@
   }
 
   function clearAllData() {
-    if (!confirm('Delete ALL data? This cannot be undone.')) return;
-    if (!confirm('Are you absolutely sure? All projects, tasks, members and events will be permanently deleted.')) return;
-    Promise.all([
-      API.del('/projects'),
-      API.del('/tasks'),
-      API.del('/team'),
-      API.del('/events'),
-    ]).then(function () {
-      state.projects = [];
-      state.tasks = [];
-      state.team = [];
-      state.events = [];
-      localStorage.removeItem('pm-last-page');
-      localStorage.removeItem('pm-last-project');
-      localStorage.removeItem('pm-read-notifs');
-      showToast('All data cleared.', 'success');
-      refreshCurrentView();
-    }).catch(function () { showToast('Failed to clear data', 'error'); });
+    showConfirmDialog({
+      title: 'Delete all data?',
+      message: 'All projects, tasks, team members and events will be permanently deleted. This cannot be undone.',
+      confirmLabel: 'Delete everything',
+      danger: true,
+    }).then(function (ok) {
+      if (!ok) return;
+      Promise.all([
+        API.del('/projects'),
+        API.del('/tasks'),
+        API.del('/team'),
+        API.del('/events'),
+      ]).then(function () {
+        state.projects = [];
+        state.tasks = [];
+        state.team = [];
+        state.events = [];
+        localStorage.removeItem('pm-last-page');
+        localStorage.removeItem('pm-last-project');
+        localStorage.removeItem('pm-read-notifs');
+        showToast('All data cleared.', 'success');
+        refreshCurrentView();
+      }).catch(function () { showToast('Failed to clear data', 'error'); });
+    });
   }
 
   function renderActivityFeed(container) {
@@ -3528,6 +3549,49 @@
         t.style.transitionDelay = (i * 0.03) + 's';
       });
     }, 250);
+  }
+
+  function showConfirmDialog(opts) {
+    opts = opts || {};
+    var withInput = !!opts.input;
+    return new Promise(function (resolve) {
+      var overlay = document.createElement('div');
+      overlay.className = 'confirm-dialog-overlay';
+      overlay.innerHTML =
+        '<div class="confirm-dialog-backdrop"></div>' +
+        '<div class="confirm-dialog' + (opts.danger ? ' confirm-dialog-danger' : '') + '" role="alertdialog" aria-modal="true" aria-labelledby="confirm-dialog-title">' +
+          (opts.title ? '<h3 class="confirm-dialog-title" id="confirm-dialog-title">' + opts.title + '</h3>' : '') +
+          (opts.message ? '<p class="confirm-dialog-message">' + opts.message + '</p>' : '') +
+          (withInput ? '<input class="input confirm-dialog-input" type="text" placeholder="' + (opts.input.placeholder || '') + '">' : '') +
+          '<div class="confirm-dialog-actions">' +
+            '<button type="button" class="btn btn-ghost" data-action="cancel">' + (opts.cancelLabel || 'Cancel') + '</button>' +
+            '<button type="button" class="btn ' + (opts.danger ? 'btn-danger' : 'btn-primary') + '" data-action="confirm">' + (opts.confirmLabel || 'Confirm') + '</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(overlay);
+      requestAnimationFrame(function () { overlay.classList.add('active'); });
+
+      var input = overlay.querySelector('.confirm-dialog-input');
+      if (input) setTimeout(function () { input.focus(); }, 60);
+
+      function close(result) {
+        document.removeEventListener('keydown', onKey);
+        overlay.classList.remove('active');
+        overlay.classList.add('exiting');
+        setTimeout(function () { overlay.remove(); }, 200);
+        resolve(result);
+      }
+      function confirmValue() { return withInput ? (input.value.trim() || null) : true; }
+      function cancelValue() { return withInput ? null : false; }
+      function onKey(e) {
+        if (e.key === 'Escape') close(cancelValue());
+        else if (e.key === 'Enter' && (!withInput || document.activeElement === input)) close(confirmValue());
+      }
+      overlay.querySelector('[data-action="cancel"]').addEventListener('click', function () { close(cancelValue()); });
+      overlay.querySelector('[data-action="confirm"]').addEventListener('click', function () { close(confirmValue()); });
+      overlay.querySelector('.confirm-dialog-backdrop').addEventListener('click', function () { close(cancelValue()); });
+      document.addEventListener('keydown', onKey);
+    });
   }
 
   function showUndoToast(message, undoAction, duration) {

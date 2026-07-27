@@ -350,7 +350,7 @@
                 <button class="filter-chip" data-filter="inprogress">In Progress</button>
                 <button class="filter-chip" data-filter="done">Done</button>
               </div>
-              <select class="task-sort-select" id="tasks-sort" style="padding:6px 10px;border:1px solid var(--hairline);border-radius:var(--radius-md);background:var(--bg-secondary);color:var(--text-primary);font-size:var(--text-sm);cursor:pointer;">
+              <select class="task-sort-select" id="tasks-sort">
                 <option value="due-asc">Due Date (soonest)</option>
                 <option value="due-desc">Due Date (latest)</option>
                 <option value="priority">Priority</option>
@@ -572,7 +572,7 @@
                       <div class="settings-list-item-title">Webhook URL</div>
                       <div class="settings-list-item-desc">POST JSON events on project/task changes</div>
                     </div>
-                    <input type="url" id="webhook-url-input" placeholder="https://hooks.example.com/events" style="flex:1;max-width:300px;padding:6px 10px;border:1px solid var(--hairline);border-radius:var(--radius-md);background:var(--bg-secondary);color:var(--text-primary);font-size:var(--text-sm);">
+                    <input type="url" class="input" id="webhook-url-input" placeholder="https://hooks.example.com/events" style="flex:1;max-width:300px;">
                     <button class="btn btn-primary btn-sm" id="webhook-save-btn">Save</button>
                   </div>
                   <div class="settings-list-item">
