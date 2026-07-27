@@ -108,7 +108,7 @@
   --duration-slower: 500ms;
   --duration-slowest: 800ms;
   /* Premium Effects */
-  --glass-blur: blur(20px) saturate(1.2);
+  --glass-blur: none; /* ponytail: blur(20px) on always-on surfaces = repaint storms */
   --glass-border: rgba(255, 255, 255, 0.1);
   --accent-glow: 0 0 24px rgba(139, 92, 246, 0.3), 0 0 8px rgba(139, 92, 246, 0.12);
   /* Gradient borders */
@@ -917,16 +917,13 @@ button {
 .top-nav {
   height: var(--topnav-height);
   border-bottom: 1px solid var(--hairline);
-  background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
-  backdrop-filter: blur(20px) saturate(1.3);
-  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  background: var(--bg-primary);
   display: flex;
   align-items: center;
   padding: 0 var(--space-6);
   gap: var(--space-4);
   flex-shrink: 0;
   z-index: var(--z-topnav);
-  will-change: transform;
   position: relative;
 }
 
@@ -1152,7 +1149,6 @@ button {
 .reveal {
   opacity: 0;
   transform: translateY(10px);
-  will-change: transform, opacity;
 }
 
 .page.active .reveal {
@@ -1348,7 +1344,6 @@ button {
   overflow: hidden;
   box-shadow: var(--shadow-xs);
   contain: layout style paint;
-  will-change: transform;
 }
 
 .stat-card::before {
@@ -9018,7 +9013,6 @@ kbd, .kbd-shortcut, .sidebar-kbd-hint kbd {
   transition: transform 0.35s var(--ease-out-expo),
               box-shadow 0.4s var(--ease-out-expo),
               border-color 0.3s var(--ease-out-expo);
-  will-change: transform;
 }
 
 /* Shimmer sweep for primary CTAs */
@@ -9237,9 +9231,8 @@ input:focus, textarea:focus, select:focus,
 .glow-orb {
   position: absolute;
   border-radius: 50%;
-  will-change: transform;
-  opacity: 0.25;
-  animation: orbFloat 20s ease-in-out infinite alternate;
+  opacity: 0.2;
+  /* ponytail: static, was infinite animation + parallax = constant compositing */
 }
 
 .glow-orb-1 {
@@ -9272,11 +9265,7 @@ input:focus, textarea:focus, select:focus,
   100% { transform: translate3d(0, 0, 0) scale(1); }
 }
 
-/* Glassmorphism — lighter blur, no !important */
-.sidebar, .top-nav {
-  backdrop-filter: blur(12px) saturate(1.2);
-  -webkit-backdrop-filter: blur(12px) saturate(1.2);
-}
+/* Glassmorphism removed — backdrop blur on permanent chrome repaints every scroll */
 
 /* Page Transition Surface */
 .page-transition-overlay {

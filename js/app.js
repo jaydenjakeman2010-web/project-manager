@@ -3871,46 +3871,8 @@
     }
 
     function initPremiumInteractions() {
-      var magneticEls = null;
-      var magneticSelectors = '.btn-primary, .stat-card, .project-card';
-      var orbs = null;
-      var ticking = false;
-      var refreshTimer = 0;
-
-      document.addEventListener('mousemove', function(e) {
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(function() {
-          ticking = false;
-          if (!magneticEls || ++refreshTimer > 120) {
-            magneticEls = document.querySelectorAll(magneticSelectors);
-            orbs = document.querySelectorAll('.glow-orb');
-            refreshTimer = 0;
-          }
-          for (var i = 0; i < magneticEls.length; i++) {
-            var el = magneticEls[i];
-            if (!el || !el.getBoundingClientRect) continue;
-            var rect = el.getBoundingClientRect();
-            var deltaX = e.clientX - rect.left - rect.width / 2;
-            var deltaY = e.clientY - rect.top - rect.height / 2;
-            var distance = deltaX * deltaX + deltaY * deltaY;
-            if (distance < 6400) {
-              el.style.transform = 'translate(' + (deltaX * 0.12) + 'px, ' + (deltaY * 0.12) + 'px)';
-            } else {
-              el.style.transform = '';
-            }
-          }
-          if (orbs.length) {
-            var x = (e.clientX / window.innerWidth - 0.5) * 20;
-            var y = (e.clientY / window.innerHeight - 0.5) * 20;
-            for (var j = 0; j < orbs.length; j++) {
-              var factor = (j + 1) * 0.6;
-              orbs[j].style.transform = 'translate3d(' + (x * factor) + 'px, ' + (y * factor) + 'px, 0)';
-            }
-          }
-        });
-      });
-
+      // ponytail: magnetic-hover mousemove removed — getBoundingClientRect on every
+      // card per mousemove frame = layout thrash. Re-add behind pointer:fine only if missed.
       document.addEventListener('mousedown', function(e) {
         var target = e.target.closest('.btn, .onboarding-btn');
         if (!target) return;
