@@ -183,7 +183,7 @@ router.patch('/:id', validate(updateSchema), async (req, res) => {
       params.push(req.userId);
       accessCheck = 't.user_id = $' + params.length;
     }
-    var tidx = params.length + 1;
+    var tidx = idx;
 
     const { rows } = await db.query(
       `UPDATE tasks t SET ${setClauses.join(', ')} FROM projects p WHERE t.project_id = p.id AND t.id = $${tidx} AND ${accessCheck}
