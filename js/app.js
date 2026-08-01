@@ -1,6 +1,6 @@
 (function () {
-  const COLORS = ['#7C3AED', '#0284C7', '#8B5CF6', '#38BDF8', '#6D28D9', '#0EA5E9', '#D97706', '#DC2626'];
-  const PRIORITY_COLORS = { low: '#059669', medium: '#D97706', high: '#DC2626' };
+  const COLORS = ['#0C7C6B', '#0E9FA8', '#99DDC8', '#E08A2E', '#2FB39E', '#085E4F', '#B96F1D', '#DC2626'];
+  const PRIORITY_COLORS = { low: '#0C9D6E', medium: '#E08A2E', high: '#DC2626' };
 
   var state = { user: null, projects: [], tasks: [], team: [], events: [] };
 
@@ -2915,6 +2915,7 @@
         card.classList.remove('dragging');
         draggedCard = null;
         columns.forEach(col => {
+          col.classList.remove('drag-over');
           const count = col.querySelectorAll('.kanban-card').length;
           const countEl = col.parentElement.querySelector('.kanban-count');
           if (countEl) countEl.textContent = count;
@@ -2927,6 +2928,7 @@
       column.addEventListener('dragover', (e) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
+        column.classList.add('drag-over');
         if (dragRAF) return;
         dragRAF = requestAnimationFrame(function() {
           dragRAF = null;
@@ -2937,8 +2939,10 @@
           }
         });
       });
+      column.addEventListener('dragleave', () => column.classList.remove('drag-over'));
       column.addEventListener('drop', (e) => {
         e.preventDefault();
+        column.classList.remove('drag-over');
         if (!draggedCard) return;
         const taskId = draggedCard.dataset.taskId;
         const newStatus = column.dataset.status;
@@ -3306,7 +3310,7 @@
         clearAllDataSilent();
         var chain = Promise.resolve();
         data.projects.forEach(function (p) {
-          chain = chain.then(function () { return API.post('/projects', { name: p.name, color: p.color || '#7C3AED' }); });
+          chain = chain.then(function () { return API.post('/projects', { name: p.name, color: p.color || '#0C7C6B' }); });
         });
         chain = chain.then(function () { return API.get('/projects'); }).then(function (newProjects) {
           var pmap = {};
@@ -3324,7 +3328,7 @@
         });
         if (data.team) {
           data.team.forEach(function (m) {
-            chain = chain.then(function () { return API.post('/team', { name: m.name, role: m.role || 'Member', color: m.color || '#7C3AED' }).catch(function () {}); });
+            chain = chain.then(function () { return API.post('/team', { name: m.name, role: m.role || 'Member', color: m.color || '#0C7C6B' }).catch(function () {}); });
           });
         }
         if (data.events) {
