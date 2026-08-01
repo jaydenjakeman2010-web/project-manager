@@ -39,6 +39,12 @@
     return d.toLocaleDateString('en-US', opts);
   }
 
+  function formatActivityTime(d) {
+    var date = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    var time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date + ', ' + time;
+  }
+
   function dueDatePart(dateStr) {
     return dateStr ? dateStr.slice(0, 10) : '';
   }
@@ -643,7 +649,7 @@
       if (!logs || logs.length === 0) { feed.innerHTML = '<p style="font-size:var(--text-sm);color:var(--text-tertiary);padding:var(--space-3) 0;text-align:center;">No activity yet</p>'; return; }
       feed.innerHTML = '<div class="activity-feed">' + logs.map(function (a) {
         var d = new Date(a.createdAt);
-        return '<div class="activity-item"><div class="activity-icon" style="background:var(--bg-tertiary);color:var(--text-secondary);font-size:12px;">' + (a.type === 'task-completed' ? '✓' : a.type === 'task-created' ? '+' : a.type === 'task-deleted' ? '✕' : '•') + '</div><div class="activity-content"><div class="activity-text">' + a.description + '</div><div class="activity-time">' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</div></div></div>';
+        return '<div class="activity-item"><div class="activity-icon" style="background:var(--bg-tertiary);color:var(--text-secondary);font-size:12px;">' + (a.type === 'task-completed' ? '✓' : a.type === 'task-created' ? '+' : a.type === 'task-deleted' ? '✕' : '•') + '</div><div class="activity-content"><div class="activity-text">' + a.description + '</div><div class="activity-time">' + formatActivityTime(d) + '</div></div></div>';
       }).join('') + '</div>';
     }).catch(function () {});
   }
@@ -3399,7 +3405,7 @@
       };
       container.innerHTML = logs.slice(0, 8).map(function (a) {
         var d = new Date(a.createdAt);
-        var timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        var timeStr = formatActivityTime(d);
         return '<div class="activity-item"><div class="activity-icon" style="background:var(--bg-tertiary);color:var(--text-secondary);">' + (icons[a.type] || icons['default']) + '</div><div class="activity-content"><div class="activity-text">' + a.description + '</div><div class="activity-time">' + timeStr + '</div></div></div>';
       }).join('');
     }).catch(function () {

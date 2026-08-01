@@ -525,7 +525,6 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 .widget,
-.section,
 .analytics-card,
 .project-card,
 .project-card-large {
@@ -568,7 +567,8 @@ input[type="checkbox"], input[type="radio"] {
   width: 40px;
   height: 3px;
   border-radius: 0 0 3px 3px;
-  background: linear-gradient(90deg, var(--primary-light), var(--accent-light));
+  background: linear-gradient(90deg, var(--primary), var(--accent-dark));
+  opacity: 0.55;
 }
 
 /* ---------- Responsive organisation ---------- */

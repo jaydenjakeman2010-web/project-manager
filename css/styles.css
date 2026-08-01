@@ -1493,8 +1493,9 @@ button {
   left: 0;
   width: 48px;
   height: 2px;
-  background: linear-gradient(90deg, var(--primary-light), var(--primary), var(--accent));
+  background: linear-gradient(90deg, var(--primary), var(--accent));
   border-radius: 1px;
+  opacity: 0.7;
   transition: width 0.6s var(--ease-out-expo) 0.35s;
 }
 
