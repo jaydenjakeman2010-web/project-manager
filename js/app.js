@@ -22,6 +22,15 @@
     return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   }
 
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   function memberAvatarHtml(m, extraStyle) {
     var style = extraStyle || '';
     if (m && m.photo) {
@@ -210,6 +219,41 @@
   }
 
   function getData() { return state; }
+
+  function getTaskViewPreferences() {
+    if (window.UiState) return window.UiState.readTaskViewPreferences(window.localStorage);
+    return { filter: 'all', sort: 'due-asc' };
+  }
+
+  function saveTaskViewPreferences(filter, sort) {
+    if (window.UiState) window.UiState.writeTaskViewPreferences(window.localStorage, { filter: filter, sort: sort });
+  }
+
+  function restoreTaskViewPreferences() {
+    const preferences = getTaskViewPreferences();
+    const sort = document.getElementById('tasks-sort');
+    const filter = document.querySelector('#tasks-filter-bar .filter-chip[data-filter="' + preferences.filter + '"]');
+    if (sort) sort.value = preferences.sort;
+    if (filter) {
+      document.querySelectorAll('#tasks-filter-bar .filter-chip').forEach(function (chip) { chip.classList.remove('active'); });
+      filter.classList.add('active');
+    }
+  }
+
+  function updateTaskFilterReset() {
+    const button = document.getElementById('tasks-reset-filters');
+    if (!button) return;
+    const filter = document.querySelector('#tasks-filter-bar .filter-chip.active')?.dataset.filter || 'all';
+    const sort = document.getElementById('tasks-sort')?.value || 'due-asc';
+    const search = document.getElementById('tasks-search')?.value.trim();
+    button.hidden = !search && filter === 'all' && sort === 'due-asc';
+  }
+
+  function updateProjectsFilterReset() {
+    const button = document.getElementById('projects-reset-search');
+    const search = document.getElementById('projects-search')?.value.trim();
+    if (button) button.hidden = !search;
+  }
 
   function saveData() {
     var indicator = document.getElementById('save-indicator');
@@ -430,15 +474,24 @@
     const data = getData();
     const container = document.getElementById('command-palette-projects');
     if (!container) return;
+    let html = '';
     if (data.projects.length > 0) {
-      let h = '<div class="command-group-title">Projects</div>';
+      html += '<div class="command-group-title">Projects</div>';
       data.projects.forEach(p => {
-        h += `<div class="command-item" data-project-id="${p.id}"><div class="sidebar-dot" style="background:${p.color};width:12px;height:12px;"></div><span>${p.name}</span></div>`;
+        const name = escapeHtml(p.name);
+        html += `<div class="command-item" data-project-id="${escapeHtml(p.id)}" data-search="${name}"><div class="sidebar-dot" style="background:${p.color};width:12px;height:12px;"></div><span>${name}</span></div>`;
       });
-      container.innerHTML = h;
-    } else {
-      container.innerHTML = '';
     }
+    if (data.tasks.length > 0) {
+      html += '<div class="command-group-title">Tasks</div>';
+      data.tasks.forEach(task => {
+        const project = data.projects.find(p => p.id === task.projectId);
+        const taskName = escapeHtml(task.name);
+        const projectName = escapeHtml(project?.name || 'Unassigned');
+        html += `<div class="command-item command-task-item" data-task-id="${escapeHtml(task.id)}" data-search="${taskName} ${projectName}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg><span class="command-item-label">${taskName}</span><span class="command-item-meta">${projectName}</span></div>`;
+      });
+    }
+    container.innerHTML = html;
   }
 
   var EMPTY_ICONS = {
@@ -484,6 +537,10 @@
     });
     const totalTasks = data.tasks.length;
     const rate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const openTasks = totalTasks - completedTasks;
+    const pulseMessage = overdueCount > 0 ? 'Clear overdue work first.' : dueToday > 0 ? 'You have work due today.' : 'No urgent deadlines right now.';
+
+    var workPulseHtml = '<section class="work-pulse anim-fade-up" aria-labelledby="work-pulse-title"><div class="work-pulse-intro"><span class="eyebrow-label">Work pulse</span><h2 id="work-pulse-title">Keep the week moving</h2><p>' + pulseMessage + '</p><button class="work-pulse-link" id="work-pulse-review" type="button">Review tasks<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button></div><div class="work-pulse-metrics"><div class="work-pulse-metric overdue"><span class="work-pulse-label">Overdue</span><strong>' + overdueCount + '</strong><span>needs attention</span></div><div class="work-pulse-metric today"><span class="work-pulse-label">Due today</span><strong>' + dueToday + '</strong><span>scheduled for today</span></div><div class="work-pulse-metric complete"><span class="work-pulse-label">Open work</span><strong>' + openTasks + '</strong><span>' + rate + '% complete</span></div></div></section>';
 
     var bannerHtml = '';
     if (urgentTasks.length > 0) {
@@ -492,7 +549,7 @@
       bannerHtml = '<div class="dashboard-banner ' + (isOverdue ? 'overdue' : 'due-today') + '"><div class="dashboard-banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div><div class="dashboard-banner-content"><span class="dashboard-banner-title">' + (isOverdue ? 'Task Overdue' : 'Due Today') + '</span><span class="dashboard-banner-desc">' + task.name + '</span></div><button class="btn btn-sm btn-primary dashboard-banner-btn" data-task-id="' + task.id + '">View Task</button></div>';
     }
 
-    var html = bannerHtml + '<div class="stats-row anim-stagger"><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Total Projects</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + data.projects.length + '">0</span></div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Total Tasks</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + totalTasks + '">0</span></div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Completion Rate</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + rate + '">0</span>%</div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Team Members</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + data.team.length + '">0</span></div></div></div>';
+    var html = bannerHtml + '<div class="stats-row anim-stagger"><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Total Projects</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + data.projects.length + '">0</span></div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Total Tasks</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + totalTasks + '">0</span></div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Completion Rate</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + rate + '">0</span>%</div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Team Members</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + data.team.length + '">0</span></div></div></div>' + workPulseHtml;
 
     if (overdueCount > 0 || dueToday > 0) {
       html += '<div class="quick-actions"><div class="section-header"><h2 class="section-title">Quick Actions</h2></div><div class="quick-actions-grid">';
@@ -528,6 +585,9 @@
     });
     document.getElementById('wg-invite')?.addEventListener('click', function () {
       navigateTo('team'); openTeamDrawerCreate();
+    });
+    document.getElementById('work-pulse-review')?.addEventListener('click', function () {
+      navigateTo('tasks');
     });
   }
 
@@ -1546,10 +1606,11 @@
       flashLoadingBar();
 
     document.querySelectorAll('.sidebar-item').forEach(function (i) { i.classList.remove('active'); });
-    var sidebarTarget = document.querySelector('.sidebar-item[data-page="' + pageId + '"]');
+    var navigationPageId = pageId === 'project-detail' ? 'projects' : pageId;
+    var sidebarTarget = document.querySelector('.sidebar-item[data-page="' + navigationPageId + '"]');
     if (sidebarTarget) sidebarTarget.classList.add('active');
     document.querySelectorAll('.nav-item-mobile').forEach(function (i) { i.classList.remove('active'); });
-    var mobileTarget = document.querySelector('.nav-item-mobile[data-page="' + pageId + '"]');
+    var mobileTarget = document.querySelector('.nav-item-mobile[data-page="' + navigationPageId + '"]');
     if (mobileTarget) mobileTarget.classList.add('active');
 
     updateBreadcrumbs(pageId);
@@ -1717,8 +1778,27 @@
     const trigger = document.getElementById('cmdk-trigger');
     const backdrop = overlay?.querySelector('.command-palette-backdrop');
     const input = overlay?.querySelector('.command-palette-input');
-    let focusedIndex = 0;
-    function openCmdk() { overlay?.classList.add('active'); overlay.style.display = 'flex'; focusedIndex = 0; setTimeout(() => input?.focus(), 50); }
+     let focusedIndex = 0;
+     function getVisibleItems() {
+       return Array.from(overlay?.querySelectorAll('.command-item') || []).filter(function (item) {
+         return item.style.display !== 'none';
+       });
+     }
+
+     function resetCommandSearch() {
+       overlay?.querySelectorAll('.command-item').forEach(function (item) { item.style.display = ''; item.classList.remove('focused'); });
+       overlay?.querySelectorAll('.command-group-title').forEach(function (group) { group.style.display = ''; });
+       const empty = overlay?.querySelector('.command-empty-state');
+       if (empty) empty.hidden = true;
+       focusedIndex = 0;
+     }
+
+     function openCmdk() {
+       resetCommandSearch();
+       overlay?.classList.add('active');
+       if (overlay) overlay.style.display = 'flex';
+       setTimeout(() => input?.focus(), 50);
+     }
     function animateClose(el, callback) {
       if (!el) return;
       el.classList.add('exiting');
@@ -1755,7 +1835,7 @@
       if (e.key === 'Escape') { closeCmdk(); closeDrawer(); }
     });
     input?.addEventListener('keydown', (e) => {
-      const items = overlay?.querySelectorAll('.command-item');
+       const items = getVisibleItems();
       if (!items?.length) return;
       if (e.key === 'ArrowDown') { e.preventDefault(); items.forEach(i => i.classList.remove('focused')); focusedIndex = Math.min(focusedIndex + 1, items.length - 1); items[focusedIndex]?.classList.add('focused'); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); items.forEach(i => i.classList.remove('focused')); focusedIndex = Math.max(focusedIndex - 1, 0); items[focusedIndex]?.classList.add('focused'); }
@@ -1770,29 +1850,45 @@
         var items = overlay.querySelectorAll('.command-item');
         var visibleCount = 0;
         for (var i = 0; i < items.length; i++) {
-          var text = items[i].querySelector('span')?.textContent.toLowerCase() || '';
-          var isVisible = text.includes(q);
+           var text = items[i].dataset.search || items[i].textContent || '';
+           var isVisible = window.UiState ? window.UiState.matchesCommandQuery({ label: text }, q) : text.toLowerCase().includes(q);
           items[i].style.display = isVisible ? '' : 'none';
           if (isVisible) {
             items[i].style.animation = 'none';
             items[i].offsetHeight;
             items[i].style.animation = 'revealIn 0.3s var(--ease-out) both';
             items[i].style.animationDelay = (visibleCount * 30) + 'ms';
-            visibleCount++;
-          }
-        }
-      });
+             visibleCount++;
+           }
+         }
+         overlay.querySelectorAll('.command-group-title').forEach(function (group) {
+           var next = group.nextElementSibling;
+           var hasVisibleItem = false;
+           while (next && !next.classList.contains('command-group-title')) {
+             if (next.classList.contains('command-item') && next.style.display !== 'none') hasVisibleItem = true;
+             next = next.nextElementSibling;
+           }
+           group.style.display = hasVisibleItem ? '' : 'none';
+         });
+         var empty = overlay.querySelector('.command-empty-state');
+         if (empty) empty.hidden = visibleCount > 0;
+         focusedIndex = 0;
+         getVisibleItems()[0]?.classList.add('focused');
+       });
     });
 
     overlay?.addEventListener('click', (e) => {
-      const item = e.target.closest('.command-item');
-      if (!item) return;
-      const action = item.dataset.action;
-      const projectId = item.dataset.projectId;
-      closeCmdk();
-      if (projectId) {
-        navigateTo('project-detail', projectId);
-      } else if (action === 'create-task') {
+       const item = e.target.closest('.command-item');
+       if (!item) return;
+       const action = item.dataset.action;
+       const projectId = item.dataset.projectId;
+       const taskId = item.dataset.taskId;
+       closeCmdk();
+       if (projectId) {
+         navigateTo('project-detail', projectId);
+       } else if (taskId) {
+         openTaskDrawerEdit(taskId);
+       } else if (action === 'create-task') {
         const data = getData();
         if (data.projects.length > 0) openTaskDrawerCreate(data.projects[0].id);
         else { showToast('Create a project first'); navigateTo('projects'); }
@@ -4110,21 +4206,39 @@
       var tasksSearchInput = document.getElementById('tasks-search');
       var tasksSearchTerm = '';
       var tasksFilterDebounced = debounce(function () { filterTasksUI(tasksSearchTerm); }, 80);
-      tasksSearchInput?.addEventListener('input', function () {
-        var val = this.value.toLowerCase();
-        if (val === tasksSearchTerm) return;
-        tasksSearchTerm = val;
-        tasksFilterDebounced();
-      });
-      document.getElementById('tasks-sort')?.addEventListener('change', function () { renderTasks(); if (tasksSearchTerm) setTimeout(function () { filterTasksUI(tasksSearchTerm); }, 0); });
-      document.querySelectorAll('#tasks-filter-bar .filter-chip').forEach(function (chip) {
-        chip.addEventListener('click', function () {
-          document.querySelectorAll('#tasks-filter-bar .filter-chip').forEach(function (c) { c.classList.remove('active'); });
-          chip.classList.add('active');
-          renderTasks();
-          if (tasksSearchTerm) filterTasksUI(tasksSearchTerm);
-        });
-      });
+       tasksSearchInput?.addEventListener('input', function () {
+         var val = this.value.toLowerCase();
+         if (val === tasksSearchTerm) return;
+         tasksSearchTerm = val;
+         tasksFilterDebounced();
+         updateTaskFilterReset();
+       });
+       document.getElementById('tasks-sort')?.addEventListener('change', function () {
+         saveTaskViewPreferences(document.querySelector('#tasks-filter-bar .filter-chip.active')?.dataset.filter || 'all', this.value);
+         renderTasks();
+         if (tasksSearchTerm) setTimeout(function () { filterTasksUI(tasksSearchTerm); }, 0);
+         updateTaskFilterReset();
+       });
+       document.querySelectorAll('#tasks-filter-bar .filter-chip').forEach(function (chip) {
+         chip.addEventListener('click', function () {
+           document.querySelectorAll('#tasks-filter-bar .filter-chip').forEach(function (c) { c.classList.remove('active'); });
+           chip.classList.add('active');
+           saveTaskViewPreferences(chip.dataset.filter, document.getElementById('tasks-sort')?.value || 'due-asc');
+           renderTasks();
+           if (tasksSearchTerm) filterTasksUI(tasksSearchTerm);
+           updateTaskFilterReset();
+         });
+       });
+       document.getElementById('tasks-reset-filters')?.addEventListener('click', function () {
+         if (tasksSearchInput) tasksSearchInput.value = '';
+         tasksSearchTerm = '';
+         document.querySelectorAll('#tasks-filter-bar .filter-chip').forEach(function (chip) { chip.classList.toggle('active', chip.dataset.filter === 'all'); });
+         var sort = document.getElementById('tasks-sort');
+         if (sort) sort.value = 'due-asc';
+         saveTaskViewPreferences('all', 'due-asc');
+         renderTasks();
+         updateTaskFilterReset();
+       });
       document.getElementById('gantt-btn')?.addEventListener('click', function () { openGanttView(currentProjectId); });
     document.getElementById('auto-prioritize-btn')?.addEventListener('click', function () { autoPrioritizeTasks(); });
     document.getElementById('auto-schedule-btn')?.addEventListener('click', function () { autoScheduleTasks(); });
@@ -4133,19 +4247,27 @@
       var projectsFilterDebounced = debounce(function () { filterProjectsUI(projectsSearchTerm); }, 80);
       projectsSearchInput?.addEventListener('input', function () {
         var val = this.value.toLowerCase();
-        if (val === projectsSearchTerm) return;
-        projectsSearchTerm = val;
-        projectsFilterDebounced();
-      });
+         if (val === projectsSearchTerm) return;
+         projectsSearchTerm = val;
+         projectsFilterDebounced();
+         updateProjectsFilterReset();
+       });
+       document.getElementById('projects-reset-search')?.addEventListener('click', function () {
+         if (projectsSearchInput) projectsSearchInput.value = '';
+         projectsSearchTerm = '';
+         filterProjectsUI('');
+         updateProjectsFilterReset();
+       });
       document.getElementById('user-menu-trigger')?.addEventListener('click', function (e) { e.stopPropagation(); toggleUserMenu(); });
       document.getElementById('workspace-switcher')?.addEventListener('click', function (e) { e.stopPropagation(); toggleWorkspaceDropdown(); });
-      document.querySelector('.sidebar-kbd-hint')?.addEventListener('click', function () {
-        document.getElementById('command-palette')?.classList.add('active');
-        document.getElementById('command-palette').style.display = 'flex';
-        setTimeout(function () { document.querySelector('.command-palette-input')?.focus(); }, 50);
-      });
+       document.querySelector('.sidebar-kbd-hint')?.addEventListener('click', function () {
+         document.getElementById('cmdk-trigger')?.click();
+       });
 
-      if (state.user) {
+       restoreTaskViewPreferences();
+       updateTaskFilterReset();
+       updateProjectsFilterReset();
+       if (state.user) {
         updateUserInfo();
         updateProjectCount();
         updateCommandPaletteProjects();
