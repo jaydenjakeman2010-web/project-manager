@@ -72,7 +72,7 @@ function mockFetch(path, options) {
           var newProj = {
             id: "p_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
             name: body.name,
-            color: body.color || "#0E7A60",
+            color: body.color || "#5148D8",
             archived: false,
             createdAt: new Date().toISOString()
           };
@@ -213,7 +213,7 @@ function mockFetch(path, options) {
           id: "m_" + Date.now(),
           name: body.name,
           role: body.role || "Member",
-          color: body.color || "#059669",
+            color: body.color || "#147A63",
           createdAt: new Date().toISOString()
         };
         team.push(newMember);
