@@ -9,7 +9,7 @@ const router = Router();
 const updateSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   email: z.string().email().optional().nullable(),
-  photo_url: z.string().url().optional().nullable(),
+  photo_url: z.string().regex(/^(https?:\/\/|data:image\/)/).optional().nullable(),
 });
 
 router.use(requireAuth);

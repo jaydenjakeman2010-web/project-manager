@@ -11,14 +11,14 @@ const createSchema = z.object({
   name: z.string().min(1).max(200),
   role: z.enum(['Owner', 'Admin', 'Member']).optional(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  photo_url: z.string().url().optional().nullable(),
+  photo_url: z.string().regex(/^(https?:\/\/|data:image\/)/).optional().nullable(),
 });
 
 const updateSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   role: z.enum(['Owner', 'Admin', 'Member']).optional(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  photo_url: z.string().url().optional().nullable(),
+  photo_url: z.string().regex(/^(https?:\/\/|data:image\/)/).optional().nullable(),
 });
 
 router.use(requireAuth);
