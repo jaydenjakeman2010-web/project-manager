@@ -72,7 +72,7 @@ function mockFetch(path, options) {
           var newProj = {
             id: "p_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
             name: body.name,
-            color: body.color || "#0C7C6B",
+            color: body.color || "#0E7A60",
             archived: false,
             createdAt: new Date().toISOString()
           };
