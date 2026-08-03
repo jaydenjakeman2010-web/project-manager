@@ -502,6 +502,7 @@
     chart: '<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>',
     search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
     rocket: '<path d="M17.42 10.28A7.5 7.5 0 0 1 22 14.5v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4a7.5 7.5 0 0 1 4.58-4.22"/><circle cx="12" cy="10" r="3"/><path d="M12 2v4"/><path d="M12 16v2"/>',
+    target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
   };
 
   function renderEmptyState(title, desc, btnText, btnId, iconType, secondaryBtn) {
@@ -4427,11 +4428,26 @@
         items.map(function (g) { return goalsItemHtml(g, true); }).join('') +
         '</ul>';
 
-      var emptyHtml = goalsState.items.length === 0
-        ? '<div class="goals-empty goals-page-empty"><p>' + (goalsState.date === todayKey() ? 'No goals for today yet' : 'Nothing planned for this day') + '</p><span>Type a goal above and hit Add to get started.</span></div>'
-        : (items.length === 0 ? '<div class="goals-empty goals-page-empty"><p>No ' + (goalsState.filter === 'done' ? 'completed' : 'open') + ' goals</p><span>Try a different filter.</span></div>' : '');
+      var emptyHtml = '';
+      if (goalsState.items.length === 0) {
+        var isToday = goalsState.date === todayKey();
+        emptyHtml = renderEmptyState(
+          isToday ? 'No goals for today yet' : 'Nothing planned for this day',
+          isToday ? 'Set a few intentions and check them off as the day unfolds.' : 'This day is a clean slate. Add a goal to change that.',
+          isToday ? 'Add a goal' : null,
+          'goals-empty-add',
+          'target'
+        );
+      } else if (items.length === 0) {
+        emptyHtml = '<div class="goals-empty goals-page-empty"><p>No ' + (goalsState.filter === 'done' ? 'completed' : 'open') + ' goals</p><span>Try a different filter.</span></div>';
+      }
 
       area.innerHTML = hero + filter + addRow + listHtml + emptyHtml;
+
+      document.getElementById('goals-empty-add')?.addEventListener('click', function () {
+        var input = document.getElementById('goals-page-add-input');
+        if (input) input.focus();
+      });
 
       var ring = document.getElementById('goals-hero-ring-fill');
       if (ring) {

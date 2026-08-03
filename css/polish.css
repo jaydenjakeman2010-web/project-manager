@@ -2332,4 +2332,18 @@ body::after {
 
 @media (max-width: 480px) {
   .setup-guide { padding: 34px 24px 28px; border-radius: 20px; }
+}.goals-empty-icon {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  color: var(--accent-dark);
+  background: var(--primary-bg);
+}
+
+.goals-page-empty .empty-state {
+  margin-top: 4px;
 }
