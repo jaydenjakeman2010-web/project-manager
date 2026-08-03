@@ -558,7 +558,20 @@
       bannerHtml = '<div class="dashboard-banner ' + (isOverdue ? 'overdue' : 'due-today') + '"><div class="dashboard-banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div><div class="dashboard-banner-content"><span class="dashboard-banner-title">' + (isOverdue ? 'Task Overdue' : 'Due Today') + '</span><span class="dashboard-banner-desc">' + task.name + '</span></div><button class="btn btn-sm btn-primary dashboard-banner-btn" data-task-id="' + task.id + '">View Task</button></div>';
     }
 
-    var html = bannerHtml + '<section class="overview-strip anim-fade-up" aria-label="Overview"><div class="overview-metric overdue"><span class="overview-label">Overdue</span><strong>' + overdueCount + '</strong></div><div class="overview-metric today"><span class="overview-label">Due today</span><strong>' + dueToday + '</strong></div><div class="overview-metric"><span class="overview-label">Open tasks</span><strong>' + openTasks + '</strong></div><div class="overview-metric complete"><span class="overview-label">Completion</span><strong>' + rate + '%</strong></div><div class="overview-metric"><span class="overview-label">Projects</span><strong>' + data.projects.length + '</strong></div><div class="overview-metric"><span class="overview-label">Team</span><strong>' + data.team.length + '</strong></div></section>';
+    var metricDefs = [
+      { cls: 'metric-danger', icon: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>', label: 'Overdue', value: overdueCount, caption: overdueCount > 0 ? 'needs attention' : 'all caught up', go: 'tasks' },
+      { cls: 'metric-warning', icon: '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>', label: 'Due today', value: dueToday, caption: dueToday > 0 ? 'scheduled for today' : 'nothing due today', go: 'tasks' },
+      { cls: 'metric-neutral', icon: '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>', label: 'Open tasks', value: openTasks, caption: 'not yet done', go: 'tasks' },
+      { cls: 'metric-success', icon: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>', label: 'Completion', value: rate + '%', caption: 'of all tasks done', go: 'tasks' },
+      { cls: 'metric-primary', icon: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>', label: 'Projects', value: data.projects.length, caption: 'active', go: 'projects' },
+      { cls: 'metric-info', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'Team', value: data.team.length, caption: 'members', go: 'team' }
+    ];
+    var stripHtml = '<section class="overview-strip anim-fade-up" aria-label="Overview">';
+    metricDefs.forEach(function(m) {
+      stripHtml += '<button class="overview-metric ' + m.cls + '" type="button" data-go="' + m.go + '" aria-label="' + m.label + ': ' + m.value + '"><span class="overview-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + m.icon + '</svg></span><span class="overview-body"><span class="overview-label">' + m.label + '</span><span class="overview-value">' + m.value + '</span><span class="overview-caption">' + m.caption + '</span></span></button>';
+    });
+    stripHtml += '</section>';
+    var html = bannerHtml + stripHtml;
 
     if (data.projects.length === 1 && totalTasks === 0 && data.team.length === 0) {
       html += '<div class="welcome-guide"><div class="welcome-guide-content"><div class="welcome-guide-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><div><h3 class="welcome-guide-title">Your project is ready</h3><p class="welcome-guide-desc">Add tasks, invite team members, and set deadlines to bring your project to life.</p></div></div><div class="welcome-guide-steps"><div class="welcome-guide-step" id="wg-add-task"><div class="welcome-guide-step-number">1</div><div><strong>Add a task</strong><p>Create your first task with a due date and priority.</p></div></div><div class="welcome-guide-step" id="wg-invite"><div class="welcome-guide-step-number">2</div><div><strong>Invite your team</strong><p>Add team members and assign them tasks.</p></div></div></div></div>';
@@ -615,6 +628,9 @@
     });
     document.getElementById('wg-invite')?.addEventListener('click', function () {
       navigateTo('team'); openTeamDrawerCreate();
+    });
+    container.querySelectorAll('.overview-metric').forEach(function (el) {
+      el.addEventListener('click', function () { navigateTo(el.dataset.go); });
     });
     container.querySelectorAll('.upcoming-item').forEach(function (el) {
       el.addEventListener('click', function () { openTaskDrawerEdit(el.dataset.taskId); });
@@ -1687,7 +1703,7 @@
       oldPage.classList.add('exiting');
 
       newPage.classList.add('active');
-      switchPage(pageId);
+      try { switchPage(pageId); } catch (err) { console.warn('switchPage(' + pageId + ') failed:', err); }
       addRevealClasses(newPage);
       newPage.classList.add('entering');
 
@@ -1697,12 +1713,13 @@
       }, 500);
     } else if (newPage) {
       newPage.classList.add('active');
-      switchPage(pageId);
+      try { switchPage(pageId); } catch (err) { console.warn('switchPage(' + pageId + ') failed:', err); }
       addRevealClasses(newPage);
       newPage.classList.add('entering');
       setTimeout(finishTransition, 450);
     } else {
       pageTransitionActive = false;
+      completeLoadingBar();
     }
   }
 
@@ -4147,96 +4164,6 @@
       }).catch(function () {});
     }
 
-    function formatDuration(ms) {
-      var totalSec = Math.floor(ms / 1000);
-      if (totalSec < 60) return 'a moment';
-      var m = Math.floor(totalSec / 60);
-      var h = Math.floor(m / 60);
-      m = m % 60;
-      if (h > 0) return h + 'h ' + m + 'm';
-      return m + 'm';
-    }
-
-    function showWelcomeBack() {
-      if (sessionStorage.getItem('pm-welcome-shown')) return;
-      var data = getData();
-      if (!data.user) return;
-      var overlay = document.getElementById('welcome-back');
-      var card = document.getElementById('welcome-back-card');
-      if (!overlay || !card) return;
-      var hiddenAt = parseInt(sessionStorage.getItem('pm-tab-hidden-at'), 10);
-      var durationStr = hiddenAt ? formatDuration(Date.now() - hiddenAt) : '';
-      var hour = new Date().getHours();
-      var timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-      var name = data.user.name ? data.user.name.split(' ')[0] : 'there';
-      var today = new Date().toISOString().split('T')[0];
-      var overdueCount = data.tasks.filter(function (t) { return t.status !== 'done' && t.dueDate && t.dueDate.slice(0, 10) < today; }).length;
-      var dueTodayCount = data.tasks.filter(function (t) { return t.dueDate && t.dueDate.slice(0, 10) === today; }).length;
-      var openCount = data.tasks.filter(function (t) { return t.status !== 'done'; }).length;
-      var totalTasks = data.tasks.length;
-      var doneCount = data.tasks.filter(function (t) { return t.status === 'done'; }).length;
-      var completionRate = totalTasks > 0 ? Math.round(doneCount / totalTasks * 100) : 0;
-
-      sessionStorage.setItem('pm-welcome-shown', 'true');
-
-      var awayLine = durationStr ? '<p class="wb-away">You were away for <strong>' + durationStr + '</strong></p>' : '';
-      var projectsLine = data.projects.length > 0 ? '<p class="wb-projects">' + data.projects.length + ' project' + (data.projects.length !== 1 ? 's' : '') + ' waiting</p>' : '';
-
-      card.innerHTML =
-        '<div class="wb-logo-wrap"><svg class="wb-logo" width="40" height="40" viewBox="0 0 36 36" fill="none"><rect x="0.5" y="0.5" width="35" height="35" rx="9" fill="var(--primary)"/><path d="M13 27V10h5q3.5 0 5.5 1.7t2 4.8v0.5q0 3.1-2 4.8t-5.5 1.7H17v3.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>' +
-        '<h2 class="wb-greeting">' + timeGreeting + ', ' + name + '</h2>' +
-        awayLine +
-        projectsLine +
-        '<div class="wb-stats"><div class="wb-stat"><div class="wb-stat-value">' + openCount + '</div><div class="wb-stat-label">Open</div></div><div class="wb-stat sep"></div><div class="wb-stat"><div class="wb-stat-value">' + (overdueCount > 0 ? overdueCount : '0') + '</div><div class="wb-stat-label' + (overdueCount > 0 ? ' warn' : '') + '">Overdue</div></div><div class="wb-stat sep"></div><div class="wb-stat"><div class="wb-stat-value">' + completionRate + '%</div><div class="wb-stat-label">Done</div></div></div>' +
-        '<button class="wb-dismiss" id="wb-dismiss">Continue</button>';
-
-      overlay.style.display = 'flex';
-      requestAnimationFrame(function () {
-        overlay.classList.add('active');
-      });
-
-      var timer = setTimeout(dismissWelcomeBack, 5000);
-
-      document.getElementById('wb-dismiss')?.addEventListener('click', function () {
-        clearTimeout(timer);
-        dismissWelcomeBack();
-      });
-    }
-
-    function dismissWelcomeBack() {
-      var overlay = document.getElementById('welcome-back');
-      var card = document.getElementById('welcome-back-card');
-      if (!overlay || !overlay.classList.contains('active')) return;
-      overlay.classList.remove('active');
-      card?.classList.add('exiting');
-      setTimeout(function () {
-        overlay.style.display = 'none';
-        card?.classList.remove('exiting');
-      }, 300);
-    }
-
-    function initWelcomeBack() {
-      var booted = sessionStorage.getItem('pm-booted');
-      if (!booted) {
-        sessionStorage.setItem('pm-booted', 'true');
-      }
-      document.addEventListener('visibilitychange', function () {
-        if (document.visibilityState === 'hidden') {
-          sessionStorage.setItem('pm-tab-hidden-at', Date.now());
-        } else if (document.visibilityState === 'visible') {
-          var booted = sessionStorage.getItem('pm-booted');
-          var hiddenAt = sessionStorage.getItem('pm-tab-hidden-at');
-          var shown = sessionStorage.getItem('pm-welcome-shown');
-          if (booted && hiddenAt && !shown) {
-            var elapsed = Date.now() - parseInt(hiddenAt, 10);
-            if (elapsed > 3000) {
-              showWelcomeBack();
-            }
-          }
-        }
-      });
-    }
-
     var goalsState = { date: '', items: [], filter: 'all' };
 
     function goalsKey() {
@@ -4271,10 +4198,23 @@
       try { localStorage.setItem(goalsKey(), JSON.stringify(map)); } catch (e) {}
     }
 
+    function normalizeGoalItems(items) {
+      if (!Array.isArray(items)) return [];
+      return items.filter(function (g) { return g && typeof g === 'object'; }).map(function (g) {
+        return {
+          id: String(g.id || 'g' + Date.now() + Math.random().toString(36).slice(2, 7)),
+          text: typeof g.text === 'string' ? g.text : '',
+          done: !!g.done,
+          carried: !!g.carried
+        };
+      });
+    }
+
     function migrateGoalsMap(map) {
-      if (map && map.date && Array.isArray(map.items) && !map[todayKey()] && !map[map.date]) {
+      if (!map || typeof map !== 'object' || Array.isArray(map)) return (map && typeof map === 'object') ? map : {};
+      if (map.date && !map[todayKey()] && !map[map.date]) {
         var legacy = {};
-        legacy[map.date] = map.items;
+        legacy[map.date] = Array.isArray(map.items) ? map.items : [];
         return legacy;
       }
       return map;
@@ -4290,12 +4230,12 @@
       if (!map[date]) {
         var prev = prevDayWithItems(map, date);
         var carried = prev
-          ? map[prev].filter(function (g) { return !g.done; }).map(function (g) { return { id: g.id, text: g.text, done: false, carried: true }; })
+          ? normalizeGoalItems(map[prev]).filter(function (g) { return !g.done; }).map(function (g) { return { id: g.id, text: g.text, done: false, carried: true }; })
           : [];
         map[date] = carried;
         saveGoalsMap(map);
       }
-      return map[date];
+      return normalizeGoalItems(map[date]);
     }
 
     function loadGoals(date) {
@@ -4320,8 +4260,8 @@
       var map = migrateGoalsMap(getGoalsMap());
       var streak = 0;
       var d = todayKey();
-      if (!map[d] || !map[d].some(function (g) { return g.done; })) d = shiftDate(d, -1);
-      while (map[d] && map[d].some(function (g) { return g.done; })) { streak++; d = shiftDate(d, -1); }
+      if (!Array.isArray(map[d]) || !map[d].some(function (g) { return g.done; })) d = shiftDate(d, -1);
+      while (Array.isArray(map[d]) && map[d].some(function (g) { return g.done; })) { streak++; d = shiftDate(d, -1); }
       return streak;
     }
 
@@ -4371,6 +4311,18 @@
     }
 
     function renderGoalsPage() {
+      try {
+        renderGoalsPageInner();
+      } catch (err) {
+        console.warn('renderGoalsPage failed:', err);
+        var area = document.getElementById('goals-page-content');
+        if (area) area.innerHTML = '<div class="goals-page-empty">' + renderEmptyState('Goals are taking a moment', 'Something went wrong loading your goals. Please try again.', null, '', 'target') + '</div>';
+        completeLoadingBar();
+        updateGoalsBadge();
+      }
+    }
+
+    function renderGoalsPageInner() {
       var area = document.getElementById('goals-page-content');
       if (!area) return;
       loadGoals(goalsState.date || todayKey());
@@ -4681,7 +4633,7 @@
       var today = todayKey();
       if (seen !== today) {
         localStorage.setItem('pm-goals-last-seen', today);
-        openDailyGoals();
+        try { openDailyGoals(); } catch (err) { console.warn('openDailyGoals failed:', err); }
       }
     }
 
@@ -4790,7 +4742,6 @@
         }
       }
 
-      initWelcomeBack();
       maybeShowSetupGuide();
     }
 

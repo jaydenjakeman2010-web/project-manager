@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   /* Primary - Forest green (grounded, warm) */
   --primary: #C74A1F;
   --primary-light: #F26B42;
@@ -4355,7 +4355,7 @@ button {
   margin-bottom: var(--space-6);
 }
 
-/* â”€â”€ Profile Picture Component â”€â”€ */
+/* ── Profile Picture Component ── */
 .profile-picture-zone {
   display: flex;
   flex-direction: column;
@@ -5095,7 +5095,7 @@ button {
   animation: cmdkSlideOut 0.25s var(--ease-out-expo) forwards;
 }
 
-/* â”€â”€ Confirm dialog (replaces native confirm()/prompt()) â”€â”€ */
+/* ── Confirm dialog (replaces native confirm()/prompt()) ── */
 .confirm-dialog-overlay {
   position: fixed;
   inset: 0;
@@ -5901,7 +5901,7 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
 .toast-info .toast-progress-bar { background: white; }
 .toast-default .toast-progress-bar { background: var(--text-primary); }
 
-/* â”€â”€ Status Dock â”€â”€ */
+/* ── Status Dock ── */
 .status-dock {
   position: fixed;
   bottom: 20px;
@@ -6389,7 +6389,7 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
 .anim-stagger.visible > *:nth-child(20) { transition-delay: 950ms; }
 .anim-stagger.visible > * { opacity: 1; transform: translateY(0); }
 
-/* â”€â”€ Page Transition Overlay â”€â”€ */
+/* ── Page Transition Overlay ── */
 .page-transition-overlay {
   position: fixed;
   inset: 0;
@@ -6404,7 +6404,7 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
   opacity: 0.4;
 }
 
-/* â”€â”€ Scroll Entrance Observer â”€â”€ */
+/* ── Scroll Entrance Observer ── */
 .scroll-entrance {
   opacity: 0;
   transform: translateY(24px);
@@ -6449,7 +6449,7 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
   transform: scale(1);
 }
 
-/* â”€â”€ Counter Entrance â”€â”€ */
+/* ── Counter Entrance ── */
 @keyframes countUp {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
@@ -6459,7 +6459,7 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
   animation: countUp 0.5s var(--ease-out-expo) both;
 }
 
-/* â”€â”€ Micro-interaction Utilities â”€â”€ */
+/* ── Micro-interaction Utilities ── */
 .hover-lift {
   transition: transform 0.2s var(--ease-spring), box-shadow 0.2s var(--ease-spring);
 }
@@ -6484,7 +6484,7 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
   box-shadow: var(--shadow-accent-strong);
 }
 
-/* â”€â”€ Content Fade Sequence â”€â”€ */
+/* ── Content Fade Sequence ── */
 .content-fade > *:nth-child(1) { animation: fadeIn 0.4s var(--ease-out) 0ms both; }
 .content-fade > *:nth-child(2) { animation: fadeIn 0.4s var(--ease-out) 80ms both; }
 .content-fade > *:nth-child(3) { animation: fadeIn 0.4s var(--ease-out) 160ms both; }
@@ -6494,7 +6494,7 @@ kbd, .command-item kbd, kbd.kbd, .kbd {
 .content-fade > *:nth-child(7) { animation: fadeIn 0.4s var(--ease-out) 480ms both; }
 .content-fade > *:nth-child(8) { animation: fadeIn 0.4s var(--ease-out) 560ms both; }
 
-/* â”€â”€ Page Enter Enhancement â”€â”€ */
+/* ── Page Enter Enhancement ── */
 @keyframes pageContentEnter {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -8452,7 +8452,7 @@ mark.search-match {
   border-radius: var(--radius-sm);
 }
 
-/* â”€â”€ Multi-Layer Surface System â”€â”€ */
+/* ── Multi-Layer Surface System ── */
 .surface-base { background: var(--bg-primary); }
 .surface-raised { background: var(--sidebar-bg); }
 .surface-card { background: var(--bg-elevated); border: 1px solid var(--border); }
@@ -8482,7 +8482,7 @@ mark.search-match {
   pointer-events: none;
 }
 
-/* â”€â”€ Premium Tag Pills â”€â”€ */
+/* ── Premium Tag Pills ── */
 .tag-pill {
   display: inline-flex;
   align-items: center;
@@ -8507,7 +8507,7 @@ mark.search-match {
 
 .tag-pill-group { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 4px; }
 
-/* â”€â”€ Avatar Stack â”€â”€ */
+/* ── Avatar Stack ── */
 .avatar-stack-compact {
   display: flex;
   align-items: center;
@@ -8536,7 +8536,7 @@ mark.search-match {
 .avatar-stack-compact .avatar-compact:first-child { margin-left: 0; }
 .avatar-stack-compact:hover .avatar-compact { margin-left: -2px; }
 
-/* â”€â”€ Subtask / Attachment Progress â”€â”€ */
+/* ── Subtask / Attachment Progress ── */
 .progress-dot {
   display: inline-flex;
   align-items: center;
@@ -8551,7 +8551,7 @@ mark.search-match {
 .progress-dot .count-total { color: var(--text-tertiary); }
 .progress-dot.complete .count-done { color: var(--success); }
 
-/* â”€â”€ Kanban Card Enhancement â”€â”€ */
+/* ── Kanban Card Enhancement ── */
 .kanban-card {
   position: relative;
   overflow: hidden;
@@ -8591,7 +8591,7 @@ mark.search-match {
   gap: 6px;
 }
 
-/* â”€â”€ Interactive Tooltip â”€â”€ */
+/* ── Interactive Tooltip ── */
 [data-tooltip] {
   position: relative;
   cursor: pointer;
@@ -8655,7 +8655,7 @@ mark.search-match {
   transition-delay: 0.4s;
 }
 
-/* â”€â”€ Undo Toast â”€â”€ */
+/* ── Undo Toast ── */
 .toast-container {
   top: calc(var(--topnav-height) + var(--space-3) + 8px);
   right: var(--space-6);
@@ -8713,7 +8713,7 @@ mark.search-match {
   text-align: center;
 }
 
-/* â”€â”€ Task item enriched metadata â”€â”€ */
+/* ── Task item enriched metadata ── */
 .task-item-meta-bar {
   display: flex;
   align-items: center;
@@ -8727,12 +8727,12 @@ mark.search-match {
   flex-wrap: wrap;
 }
 
-/* â”€â”€ Quick transition utility â”€â”€ */
+/* ── Quick transition utility ── */
 .transition-all { transition: all 0.15s ease-out; }
 .transition-fast { transition: all 0.1s ease-out; }
 .transition-transform { transition: transform 0.15s var(--ease-spring); }
 
-/* â”€â”€ Optimistic check animation â”€â”€ */
+/* ── Optimistic check animation ── */
 @keyframes optimisticCheck {
   0% { transform: scale(1); }
   30% { transform: scale(1.3); }
@@ -8747,7 +8747,7 @@ mark.search-match {
   transition: opacity 0.2s ease;
 }
 
-/* â”€â”€ Sound toggle in settings â”€â”€ */
+/* ── Sound toggle in settings ── */
 .sound-toggle-row {
   display: flex;
   align-items: center;
@@ -8770,7 +8770,7 @@ mark.search-match {
   color: var(--text-tertiary);
 }
 
-/* â”€â”€ Enhanced Confetti â”€â”€ */
+/* ── Enhanced Confetti ── */
 @keyframes confettiFall {
   0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
   100% { transform: translateY(100vh) rotate(720deg) scale(0.5); opacity: 0; }
@@ -8780,7 +8780,7 @@ mark.search-match {
   pointer-events: none;
 }
 
-/* â”€â”€ Bento Grid Refinements â”€â”€ */
+/* ── Bento Grid Refinements ── */
 .glass-card {
   background: var(--bg-elevated-glass);
   backdrop-filter: var(--glass-blur);
@@ -8788,194 +8788,6 @@ mark.search-match {
   border: 1px solid var(--glass-border);
 }
 
-/* â”€â”€ Welcome Back Overlay â”€â”€ */
-.welcome-back-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: calc(var(--z-modal) + 10);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-6);
-}
-
-.welcome-back-overlay.active {
-  display: flex;
-}
-
-.welcome-back-backdrop {
-  position: absolute;
-  inset: 0;
-  background: var(--surface-overlay);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: opacity 0.5s var(--ease-out-expo);
-  opacity: 0;
-}
-
-.welcome-back-overlay.active .welcome-back-backdrop {
-  opacity: 1;
-}
-
-.welcome-back-card {
-  position: relative;
-  width: 100%;
-  max-width: 380px;
-  background: var(--surface-modal);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-8) var(--space-7) var(--space-7);
-  box-shadow: var(--shadow-2xl), var(--shadow-glass), var(--shadow-glow);
-  transition: opacity 0.45s var(--ease-out-expo), transform 0.45s var(--ease-out-expo);
-  opacity: 0;
-  transform: translateY(16px);
-  text-align: center;
-}
-
-.welcome-back-overlay.active .welcome-back-card {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.welcome-back-card.exiting {
-  opacity: 0;
-  transform: translateY(-8px) scale(0.97);
-  transition: opacity 0.25s var(--ease-in-out), transform 0.25s var(--ease-in-out);
-}
-
-.wb-logo-wrap {
-  margin: 0 auto var(--space-5);
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 28px rgba(199, 74, 31, 0.25);
-}
-
-.wb-logo-wrap svg {
-  width: 36px;
-  height: 36px;
-}
-
-.wb-greeting {
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.03em;
-  margin-bottom: var(--space-1);
-}
-
-.wb-away {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-  margin-bottom: var(--space-1);
-}
-
-.wb-away strong {
-  color: var(--text-secondary);
-  font-weight: var(--weight-semibold);
-}
-
-.wb-projects {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-6);
-}
-
-.wb-stats {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  margin-bottom: var(--space-6);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--hairline);
-  overflow: hidden;
-}
-
-.wb-stat {
-  flex: 1;
-  padding: var(--space-4) var(--space-2);
-  text-align: center;
-}
-
-.wb-stat.sep {
-  flex: 0 0 1px;
-  padding: 0;
-  background: var(--hairline);
-  height: 40px;
-  align-self: center;
-}
-
-.wb-stat-value {
-  font-size: var(--text-xl);
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  margin-bottom: 4px;
-}
-
-.wb-stat-label {
-  font-size: 10px;
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: var(--weight-semibold);
-}
-
-.wb-stat-label.warn {
-  color: var(--danger);
-}
-
-.wb-dismiss {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  font-weight: var(--weight-semibold);
-  color: white;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: transform 0.2s var(--ease-out-expo), box-shadow 0.2s var(--ease-out-expo);
-  letter-spacing: 0.01em;
-}
-
-.wb-dismiss:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-accent);
-}
-
-.wb-dismiss:active {
-  transform: translateY(0) scale(0.97);
-}
-
-@media (max-width: 640px) {
-  .welcome-back-card {
-    max-width: 100%;
-    padding: var(--space-6) var(--space-5);
-  }
-  .wb-stat {
-    padding: var(--space-3) var(--space-1);
-  }
-  .wb-stat-value {
-    font-size: var(--text-lg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .welcome-back-card,
-  .welcome-back-backdrop {
-    transition: none;
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .glow-orb,
@@ -9081,7 +8893,7 @@ kbd, .kbd-shortcut, .sidebar-kbd-hint kbd {
   box-shadow: 0 2px 8px rgba(199, 74, 31, 0.2) !important;
 }
 
-/* Focus ring â€“ precision glow */
+/* Focus ring – precision glow */
 input:focus, textarea:focus, select:focus,
 .top-nav-search:focus-within {
   border-color: var(--primary) !important;
@@ -9104,7 +8916,7 @@ input:focus, textarea:focus, select:focus,
               0 4px 12px rgba(199, 74, 31, 0.08) !important;
 }
 
-/* Sidebar active pill â€” refined indicator */
+/* Sidebar active pill — refined indicator */
 .sidebar-item.active {
   background: linear-gradient(90deg,
     var(--primary-bg) 0%, transparent 100%);
@@ -9212,7 +9024,7 @@ input:focus, textarea:focus, select:focus,
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-/* Skeleton shimmer â€“ smooth */
+/* Skeleton shimmer – smooth */
 .skeleton {
   background: linear-gradient(90deg,
     var(--bg-tertiary) 25%,
@@ -9243,7 +9055,7 @@ input:focus, textarea:focus, select:focus,
   }
 }
 
-/* GEMINI-STYLE AMBIENT SYSTEM â€” optimized for 60fps */
+/* GEMINI-STYLE AMBIENT SYSTEM — optimized for 60fps */
 
 .ambient-glow {
   position: fixed;
@@ -9292,7 +9104,7 @@ input:focus, textarea:focus, select:focus,
   100% { transform: translate3d(0, 0, 0) scale(1); }
 }
 
-/* Glassmorphism removed â€” backdrop blur on permanent chrome repaints every scroll */
+/* Glassmorphism removed — backdrop blur on permanent chrome repaints every scroll */
 
 /* Page Transition Surface */
 .page-transition-overlay {
