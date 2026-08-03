@@ -1,5 +1,5 @@
 (function () {
-  const COLORS = ['#5148D8', '#7B74E8', '#147A63', '#2A73B6', '#8A62C7', '#A86B12', '#6C72D9', '#3D35A4'];
+  const COLORS = ['#1E3A8A', '#0EA5E9', '#2563EB', '#60A5FA', '#38BDF8', '#7DD3FC', '#1E40AF', '#0C4A6E'];
   const PRIORITY_COLORS = { low: '#147A63', medium: '#A86B12', high: '#C24156' };
 
   var state = { user: null, projects: [], tasks: [], team: [], events: [] };
@@ -3412,7 +3412,7 @@
         clearAllDataSilent();
         var chain = Promise.resolve();
         data.projects.forEach(function (p) {
-          chain = chain.then(function () { return API.post('/projects', { name: p.name, color: p.color || '#5148D8' }); });
+          chain = chain.then(function () { return API.post('/projects', { name: p.name, color: p.color || '#1E3A8A' }); });
         });
         chain = chain.then(function () { return API.get('/projects'); }).then(function (newProjects) {
           var pmap = {};
@@ -3430,7 +3430,7 @@
         });
         if (data.team) {
           data.team.forEach(function (m) {
-            chain = chain.then(function () { return API.post('/team', { name: m.name, role: m.role || 'Member', color: m.color || '#5148D8' }).catch(function () {}); });
+            chain = chain.then(function () { return API.post('/team', { name: m.name, role: m.role || 'Member', color: m.color || '#1E3A8A' }).catch(function () {}); });
           });
         }
         if (data.events) {

@@ -66,7 +66,7 @@ input[type="checkbox"], input[type="radio"] {
   height: 3px;
   border-radius: 3px;
   background: linear-gradient(90deg, var(--primary), var(--accent));
-  box-shadow: 0 0 12px rgba(139, 135, 255, 0.35);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
 }
 
 .page-subtitle {
@@ -130,7 +130,7 @@ input[type="checkbox"], input[type="radio"] {
 
 .sidebar-item.active::before {
   background: linear-gradient(180deg, var(--primary-light), var(--primary));
-  box-shadow: 0 0 10px rgba(139, 135, 255, 0.5);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
   width: 3px;
 }
 
@@ -201,7 +201,7 @@ input[type="checkbox"], input[type="radio"] {
 .btn-primary, .onboarding-btn, .top-nav-quick-create {
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18),
-              0 2px 8px rgba(81, 72, 216, 0.25);
+              0 2px 8px rgba(30, 58, 138, 0.25);
   border: none;
   color: #fff;
 }
@@ -211,21 +211,21 @@ input[type="checkbox"], input[type="radio"] {
 [data-theme="dark"] .top-nav-quick-create {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary-dark));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14),
-              0 2px 10px rgba(139, 135, 255, 0.25), 0 0 20px rgba(153, 221, 200, 0.08);
+              0 2px 10px rgba(56, 189, 248, 0.25), 0 0 20px rgba(153, 221, 200, 0.08);
 }
 
 .btn-primary:hover:not(:disabled), .onboarding-btn:hover:not(:disabled),
 .top-nav-quick-create:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18),
-              0 6px 16px rgba(81, 72, 216, 0.35);
+              0 6px 16px rgba(30, 58, 138, 0.35);
 }
 
 .btn-primary:active:not(:disabled), .onboarding-btn:active:not(:disabled),
 .top-nav-quick-create:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12),
-              0 2px 6px rgba(81, 72, 216, 0.25);
+              0 2px 6px rgba(30, 58, 138, 0.25);
 }
 
 .btn-ghost {
@@ -346,7 +346,7 @@ input[type="checkbox"], input[type="radio"] {
 .filter-chip.active {
   background: var(--primary);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(81, 72, 216, 0.3);
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
 }
 
 /* ---------- Overlays & popovers ---------- */
@@ -389,7 +389,7 @@ input[type="checkbox"], input[type="radio"] {
 
 .onboarding-logo-icon {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-  box-shadow: 0 8px 24px rgba(81, 72, 216, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(30, 58, 138, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .onboarding-title {
@@ -425,7 +425,7 @@ input[type="checkbox"], input[type="radio"] {
 
 .fab-mobile {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-  box-shadow: 0 6px 20px rgba(81, 72, 216, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 20px rgba(30, 58, 138, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 /* ---------- Motion discipline ---------- */
@@ -438,35 +438,35 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 /* ============================================================
-   SIGNAL PALETTE — single indigo accent, neutral canvas
+   SIGNAL PALETTE — navy anchor, sky signal
    ============================================================ */
 
 :root {
-  --bg-primary: #F8F9FC;
-  --bg-secondary: #F1F3F8;
-  --bg-tertiary: #E6E9F1;
+  --bg-primary: #F6F8FC;
+  --bg-secondary: #EDF1FA;
+  --bg-tertiary: #E1E8F5;
   --bg-elevated: #FFFFFF;
-  --bg-hover: #ECEEF6;
-  --bg-active: #DEE2F0;
-  --text-primary: #16192B;
-  --text-secondary: #5A6279;
-  --text-tertiary: #7E869E;
+  --bg-hover: #E9EEF9;
+  --bg-active: #D9E3F6;
+  --text-primary: #0F1833;
+  --text-secondary: #566280;
+  --text-tertiary: #7A86A6;
   --text-inverse: #FFFFFF;
-  --border: #D9DEE9;
-  --border-light: #E6E9F1;
-  --border-strong: #BBC3D6;
-  --divider: #D9DEE9;
-  --hairline: rgba(22, 25, 43, 0.08);
-  --sidebar-bg: #EEF0F7;
-  --sidebar-border: #DDE2EE;
-  --primary: #5148D8;
-  --primary-light: #B8BDFF;
-  --primary-dark: #3D35A4;
-  --primary-bg: rgba(81, 72, 216, 0.09);
-  --primary-subtle: rgba(81, 72, 216, 0.05);
-  --accent: #5148D8;
-  --accent-light: #B8BDFF;
-  --accent-dark: #3D35A4;
+  --border: #D7DFF0;
+  --border-light: #E4EAF6;
+  --border-strong: #B7C4E0;
+  --divider: #D7DFF0;
+  --hairline: rgba(15, 24, 51, 0.08);
+  --sidebar-bg: #EDF1FA;
+  --sidebar-border: #DAE2F2;
+  --primary: #1E3A8A;
+  --primary-light: #A3B8EC;
+  --primary-dark: #14295F;
+  --primary-bg: rgba(30, 58, 138, 0.09);
+  --primary-subtle: rgba(30, 58, 138, 0.05);
+  --accent: #0EA5E9;
+  --accent-light: #7DD3FC;
+  --accent-dark: #0369A1;
   --success: #147A63;
   --success-bg: rgba(20, 122, 99, 0.1);
   --warning: #A86B12;
@@ -476,52 +476,52 @@ input[type="checkbox"], input[type="radio"] {
   --info: #2A73B6;
   --info-bg: rgba(42, 115, 182, 0.1);
   --surface-modal: #FFFFFF;
-  --surface-overlay: rgba(15, 18, 32, 0.48);
-  --sidebar-bg-glass: rgba(238, 240, 247, 0.9);
+  --surface-overlay: rgba(10, 20, 45, 0.5);
+  --sidebar-bg-glass: rgba(237, 241, 250, 0.9);
   --bg-elevated-glass: rgba(255, 255, 255, 0.96);
-  --shadow-accent: 0 4px 20px rgba(81, 72, 216, 0.2), 0 0 0 1px rgba(81, 72, 216, 0.05);
-  --shadow-accent-strong: 0 8px 40px rgba(81, 72, 216, 0.28), 0 0 0 1px rgba(81, 72, 216, 0.08);
-  --shadow-gold: 0 4px 20px rgba(81, 72, 216, 0.18), 0 0 0 1px rgba(81, 72, 216, 0.05);
-  --shadow-gold-strong: 0 8px 40px rgba(81, 72, 216, 0.26), 0 0 0 1px rgba(81, 72, 216, 0.08);
-  --shadow-glow: 0 0 60px rgba(81, 72, 216, 0.1), 0 0 20px rgba(81, 72, 216, 0.04);
-  --shadow-glow-accent: 0 0 40px rgba(81, 72, 216, 0.1), 0 0 12px rgba(81, 72, 216, 0.05);
-  --surface-shadow: 0 1px 2px rgba(36, 42, 74, 0.05), 0 10px 28px rgba(36, 42, 74, 0.04);
-  --surface-shadow-hover: 0 12px 30px rgba(36, 42, 74, 0.1), 0 2px 4px rgba(36, 42, 74, 0.05);
-  --shadow-md: 0 4px 12px -2px rgba(36, 42, 74, 0.08), 0 2px 4px -2px rgba(36, 42, 74, 0.04);
-  --shadow-lg: 0 12px 28px -6px rgba(36, 42, 74, 0.12), 0 4px 8px -4px rgba(36, 42, 74, 0.06);
-  --shadow-xl: 0 24px 48px -10px rgba(36, 42, 74, 0.16), 0 8px 16px -6px rgba(36, 42, 74, 0.07);
-  --focus-ring: 0 0 0 3px rgba(81, 72, 216, 0.18);
-  --focus-ring-dark: 0 0 0 3px rgba(139, 135, 255, 0.28);
+  --shadow-accent: 0 4px 20px rgba(30, 58, 138, 0.2), 0 0 0 1px rgba(30, 58, 138, 0.05);
+  --shadow-accent-strong: 0 8px 40px rgba(30, 58, 138, 0.28), 0 0 0 1px rgba(30, 58, 138, 0.08);
+  --shadow-gold: 0 4px 20px rgba(30, 58, 138, 0.18), 0 0 0 1px rgba(30, 58, 138, 0.05);
+  --shadow-gold-strong: 0 8px 40px rgba(30, 58, 138, 0.26), 0 0 0 1px rgba(30, 58, 138, 0.08);
+  --shadow-glow: 0 0 60px rgba(30, 58, 138, 0.1), 0 0 20px rgba(30, 58, 138, 0.04);
+  --shadow-glow-accent: 0 0 40px rgba(14, 165, 233, 0.14), 0 0 12px rgba(14, 165, 233, 0.07);
+  --surface-shadow: 0 1px 2px rgba(15, 24, 51, 0.05), 0 10px 28px rgba(15, 24, 51, 0.04);
+  --surface-shadow-hover: 0 12px 30px rgba(15, 24, 51, 0.1), 0 2px 4px rgba(15, 24, 51, 0.05);
+  --shadow-md: 0 4px 12px -2px rgba(15, 24, 51, 0.08), 0 2px 4px -2px rgba(15, 24, 51, 0.04);
+  --shadow-lg: 0 12px 28px -6px rgba(15, 24, 51, 0.12), 0 4px 8px -4px rgba(15, 24, 51, 0.06);
+  --shadow-xl: 0 24px 48px -10px rgba(15, 24, 51, 0.16), 0 8px 16px -6px rgba(15, 24, 51, 0.07);
+  --focus-ring: 0 0 0 3px rgba(30, 58, 138, 0.18);
+  --focus-ring-dark: 0 0 0 3px rgba(56, 189, 248, 0.28);
   --gradient-border: linear-gradient(135deg, var(--primary-light) 0%, transparent 42%, transparent 58%, var(--accent-light) 100%);
-  --gradient-border-subtle: linear-gradient(135deg, rgba(81, 72, 216, 0.14) 0%, transparent 42%, transparent 58%, rgba(81, 72, 216, 0.14) 100%);
+  --gradient-border-subtle: linear-gradient(135deg, rgba(30, 58, 138, 0.14) 0%, transparent 42%, transparent 58%, rgba(14, 165, 233, 0.14) 100%);
 }
 
 [data-theme="dark"] {
-  --bg-primary: #10131F;
-  --bg-secondary: #161A29;
-  --bg-tertiary: #1F2437;
-  --bg-elevated: #1A1F30;
-  --bg-hover: #262C44;
-  --bg-active: #2E3654;
-  --text-primary: #F4F5FF;
-  --text-secondary: #AEB6D0;
-  --text-tertiary: #7D86A4;
-  --text-inverse: #10131F;
-  --border: #2B3350;
-  --border-light: #232A44;
-  --border-strong: #414C6C;
-  --divider: #2B3350;
-  --hairline: rgba(244, 245, 255, 0.09);
-  --sidebar-bg: #111524;
-  --sidebar-border: #212A43;
-  --primary: #8B87FF;
-  --primary-light: #C6C9FF;
-  --primary-dark: #5B54D5;
-  --primary-bg: rgba(139, 135, 255, 0.14);
-  --primary-subtle: rgba(139, 135, 255, 0.08);
-  --accent: #8B87FF;
-  --accent-light: #C6C9FF;
-  --accent-dark: #5B54D5;
+  --bg-primary: #070D1F;
+  --bg-secondary: #0C1428;
+  --bg-tertiary: #131F3B;
+  --bg-elevated: #0E1830;
+  --bg-hover: #182640;
+  --bg-active: #1F3154;
+  --text-primary: #F0F5FF;
+  --text-secondary: #A9B6D4;
+  --text-tertiary: #7684A6;
+  --text-inverse: #070D1F;
+  --border: #223052;
+  --border-light: #1A2745;
+  --border-strong: #33466E;
+  --divider: #223052;
+  --hairline: rgba(240, 245, 255, 0.09);
+  --sidebar-bg: #080F22;
+  --sidebar-border: #1C2A49;
+  --primary: #38BDF8;
+  --primary-light: #7DD3FC;
+  --primary-dark: #0284C7;
+  --primary-bg: rgba(56, 189, 248, 0.14);
+  --primary-subtle: rgba(56, 189, 248, 0.08);
+  --accent: #38BDF8;
+  --accent-light: #7DD3FC;
+  --accent-dark: #0284C7;
   --success: #62D5B2;
   --success-bg: rgba(98, 213, 178, 0.14);
   --warning: #F4C66C;
@@ -530,25 +530,25 @@ input[type="checkbox"], input[type="radio"] {
   --danger-bg: rgba(255, 137, 154, 0.14);
   --info: #7FCBFF;
   --info-bg: rgba(127, 203, 255, 0.14);
-  --surface-modal: #1A1F30;
-  --surface-overlay: rgba(5, 7, 14, 0.68);
-  --sidebar-bg-glass: rgba(17, 21, 36, 0.94);
-  --bg-elevated-glass: rgba(26, 31, 48, 0.97);
-  --shadow-accent: 0 4px 20px rgba(139, 135, 255, 0.2), 0 0 0 1px rgba(139, 135, 255, 0.06);
-  --shadow-accent-strong: 0 8px 40px rgba(139, 135, 255, 0.3), 0 0 0 1px rgba(139, 135, 255, 0.1);
-  --shadow-gold: 0 4px 20px rgba(139, 135, 255, 0.18), 0 0 0 1px rgba(139, 135, 255, 0.06);
-  --shadow-gold-strong: 0 8px 40px rgba(139, 135, 255, 0.28), 0 0 0 1px rgba(139, 135, 255, 0.1);
-  --shadow-glow: 0 0 60px rgba(139, 135, 255, 0.12), 0 0 20px rgba(139, 135, 255, 0.05);
-  --shadow-glow-accent: 0 0 40px rgba(139, 135, 255, 0.12), 0 0 12px rgba(139, 135, 255, 0.06);
+  --surface-modal: #0E1830;
+  --surface-overlay: rgba(3, 7, 18, 0.7);
+  --sidebar-bg-glass: rgba(8, 15, 34, 0.94);
+  --bg-elevated-glass: rgba(14, 24, 48, 0.97);
+  --shadow-accent: 0 4px 20px rgba(56, 189, 248, 0.2), 0 0 0 1px rgba(56, 189, 248, 0.06);
+  --shadow-accent-strong: 0 8px 40px rgba(56, 189, 248, 0.3), 0 0 0 1px rgba(56, 189, 248, 0.1);
+  --shadow-gold: 0 4px 20px rgba(56, 189, 248, 0.18), 0 0 0 1px rgba(56, 189, 248, 0.06);
+  --shadow-gold-strong: 0 8px 40px rgba(56, 189, 248, 0.28), 0 0 0 1px rgba(56, 189, 248, 0.1);
+  --shadow-glow: 0 0 60px rgba(56, 189, 248, 0.12), 0 0 20px rgba(56, 189, 248, 0.05);
+  --shadow-glow-accent: 0 0 40px rgba(56, 189, 248, 0.12), 0 0 12px rgba(56, 189, 248, 0.06);
   --surface-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 30px rgba(0, 0, 0, 0.18);
   --surface-shadow-hover: 0 16px 36px rgba(0, 0, 0, 0.28), 0 2px 5px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.36), 0 2px 4px -2px rgba(0, 0, 0, 0.22);
   --shadow-lg: 0 12px 28px -6px rgba(0, 0, 0, 0.48), 0 4px 8px -4px rgba(0, 0, 0, 0.3);
   --shadow-xl: 0 24px 48px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -6px rgba(0, 0, 0, 0.38);
-  --focus-ring: 0 0 0 3px rgba(139, 135, 255, 0.3);
-  --focus-ring-dark: 0 0 0 3px rgba(197, 199, 255, 0.25);
+  --focus-ring: 0 0 0 3px rgba(56, 189, 248, 0.3);
+  --focus-ring-dark: 0 0 0 3px rgba(125, 211, 252, 0.25);
   --gradient-border: linear-gradient(135deg, var(--primary-light) 0%, transparent 42%, transparent 58%, var(--accent-light) 100%);
-  --gradient-border-subtle: linear-gradient(135deg, rgba(139, 135, 255, 0.16) 0%, transparent 42%, transparent 58%, rgba(139, 135, 255, 0.16) 100%);
+  --gradient-border-subtle: linear-gradient(135deg, rgba(56, 189, 248, 0.16) 0%, transparent 42%, transparent 58%, rgba(56, 189, 248, 0.16) 100%);
 }
 
 ::selection {
@@ -558,20 +558,20 @@ input[type="checkbox"], input[type="radio"] {
 
 body::before {
   background-image:
-    radial-gradient(ellipse 60% 50% at 12% 20%, rgba(81, 72, 216, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 60% at 88% 65%, rgba(81, 72, 216, 0.05) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 12% 20%, rgba(30, 58, 138, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 88% 65%, rgba(30, 58, 138, 0.05) 0%, transparent 55%),
     radial-gradient(ellipse 40% 40% at 50% 85%, rgba(42, 115, 182, 0.04) 0%, transparent 50%);
 }
 
 [data-theme="dark"] body::before {
   background-image:
-    radial-gradient(ellipse 60% 50% at 12% 20%, rgba(139, 135, 255, 0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 60% at 88% 65%, rgba(139, 135, 255, 0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 12% 20%, rgba(56, 189, 248, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 88% 65%, rgba(56, 189, 248, 0.07) 0%, transparent 55%),
     radial-gradient(ellipse 40% 40% at 50% 85%, rgba(127, 203, 255, 0.06) 0%, transparent 50%);
 }
 
 .sidebar-logo-mark {
-  filter: drop-shadow(0 2px 6px rgba(81, 72, 216, 0.24));
+  filter: drop-shadow(0 2px 6px rgba(30, 58, 138, 0.24));
 }
 
 .sidebar-item.active::before {
@@ -589,7 +589,7 @@ body::before {
 .top-nav-quick-create,
 .fab-mobile {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-  box-shadow: 0 5px 16px rgba(81, 72, 216, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  box-shadow: 0 5px 16px rgba(30, 58, 138, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .btn-primary:hover:not(:disabled),
@@ -597,12 +597,12 @@ body::before {
 .top-nav-quick-create:hover:not(:disabled),
 .fab-mobile:hover {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  box-shadow: 0 9px 22px rgba(81, 72, 216, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  box-shadow: 0 9px 22px rgba(30, 58, 138, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .onboarding-logo-icon {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-  box-shadow: 0 8px 24px rgba(81, 72, 216, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(30, 58, 138, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .tag-bug { background: var(--danger-bg); color: var(--danger); }
@@ -610,7 +610,7 @@ body::before {
 .tag-feature { background: var(--primary-bg); color: var(--primary); }
 .tag-enhancement { background: var(--success-bg); color: var(--success); }
 .tag-docs { background: var(--info-bg); color: var(--info); }
-.tag-design { background: rgba(81, 72, 216, 0.12); color: var(--accent-dark); }
+.tag-design { background: rgba(30, 58, 138, 0.12); color: var(--accent-dark); }
 
 /* ============================================================
     SIGNAL THEME — indigo focus, coral energy
@@ -622,19 +622,19 @@ body::before {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(81, 72, 216, 0.25);
+  background: rgba(30, 58, 138, 0.25);
   border-radius: 4px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(81, 72, 216, 0.4);
+  background: rgba(30, 58, 138, 0.4);
 }
 
 /* Project cards — mint glow lift */
 .project-card:hover,
 .project-card-large:hover {
   border-color: rgba(153, 221, 200, 0.55);
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(81, 72, 216, 0.08);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(30, 58, 138, 0.08);
 }
 
 /* Section header organisation — tighter, aligned rhythm */
@@ -668,7 +668,7 @@ body::before {
 }
 
 .kanban-card:hover {
-  border-color: rgba(81, 72, 216, 0.3);
+  border-color: rgba(30, 58, 138, 0.3);
   box-shadow: var(--shadow-md);
 }
 
@@ -827,7 +827,7 @@ body::after {
 
 .sidebar-item.active {
   background: var(--primary-bg);
-  box-shadow: inset 0 0 0 1px rgba(81, 72, 216, 0.11);
+  box-shadow: inset 0 0 0 1px rgba(30, 58, 138, 0.11);
 }
 
 .sidebar-item.active::before {
@@ -889,12 +889,12 @@ body::after {
   padding-inline: 14px;
   border-radius: 10px;
   background: var(--primary);
-  box-shadow: 0 4px 12px rgba(81, 72, 216, 0.18);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.18);
 }
 
 .top-nav-quick-create:hover {
   background: var(--primary-dark);
-  box-shadow: 0 7px 18px rgba(81, 72, 216, 0.24);
+  box-shadow: 0 7px 18px rgba(30, 58, 138, 0.24);
 }
 
 .page {
@@ -943,14 +943,14 @@ body::after {
 .onboarding-btn,
 .top-nav-quick-create {
   background: var(--primary);
-  box-shadow: 0 4px 12px rgba(81, 72, 216, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .btn-primary:hover:not(:disabled),
 .onboarding-btn:hover:not(:disabled),
 .top-nav-quick-create:hover:not(:disabled) {
   background: var(--primary-dark);
-  box-shadow: 0 7px 18px rgba(81, 72, 216, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: 0 7px 18px rgba(30, 58, 138, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .stats-row {
