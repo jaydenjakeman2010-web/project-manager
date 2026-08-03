@@ -4578,8 +4578,8 @@
         if (down) { goalsMove(down.dataset.id, 1); return; }
       });
 
-      var pageList = document.getElementById('goals-page-list');
       document.addEventListener('click', function (e) {
+        var pageList = document.getElementById('goals-page-list');
         if (!pageList || !pageList.contains(e.target)) return;
         var check = e.target.closest('.goals-check');
         var del = e.target.closest('.goals-delete');
