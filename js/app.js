@@ -307,11 +307,11 @@
     if (si) si.value = data.user.name;
     updateRemovePhotoVisibility(hasPhoto);
     document.getElementById('ws-dropdown-name') && (document.getElementById('ws-dropdown-name').textContent = data.user.name);
-    document.getElementById('ws-dropdown-email') && (document.getElementById('ws-dropdown-email').textContent = data.user.email || '');
+    document.getElementById('ws-dropdown-email') && (document.getElementById('ws-dropdown-email').textContent = data.user.email || (data.user.username ? '@' + data.user.username : ''));
     var wda = document.getElementById('ws-dropdown-avatar');
     if (wda) { wda.textContent = hasPhoto ? '' : initials; wda.style.backgroundImage = hasPhoto ? 'url(' + data.user.photo + ')' : ''; wda.style.backgroundSize = hasPhoto ? 'cover' : ''; wda.style.backgroundPosition = hasPhoto ? 'center' : ''; }
     document.getElementById('user-dropdown-name') && (document.getElementById('user-dropdown-name').textContent = data.user.name);
-    document.getElementById('user-dropdown-email') && (document.getElementById('user-dropdown-email').textContent = data.user.email || '');
+    document.getElementById('user-dropdown-email') && (document.getElementById('user-dropdown-email').textContent = data.user.email || (data.user.username ? '@' + data.user.username : ''));
     var uda = document.getElementById('user-dropdown-avatar');
     if (uda) { uda.textContent = hasPhoto ? '' : initials; uda.style.backgroundImage = hasPhoto ? 'url(' + data.user.photo + ')' : ''; uda.style.backgroundSize = hasPhoto ? 'cover' : ''; uda.style.backgroundPosition = hasPhoto ? 'center' : ''; }
   }
@@ -3446,7 +3446,7 @@
         clearAllDataSilent();
         var chain = Promise.resolve();
         data.projects.forEach(function (p) {
-          chain = chain.then(function () { return API.post('/projects', { name: p.name, color: p.color || '#1E3A8A' }); });
+          chain = chain.then(function () { return API.post('/projects', { name: p.name, color: p.color || '#2F5B3A' }); });
         });
         chain = chain.then(function () { return API.get('/projects'); }).then(function (newProjects) {
           var pmap = {};
@@ -3464,7 +3464,7 @@
         });
         if (data.team) {
           data.team.forEach(function (m) {
-            chain = chain.then(function () { return API.post('/team', { name: m.name, role: m.role || 'Member', color: m.color || '#1E3A8A' }).catch(function () {}); });
+            chain = chain.then(function () { return API.post('/team', { name: m.name, role: m.role || 'Member', color: m.color || '#2F5B3A' }).catch(function () {}); });
           });
         }
         if (data.events) {
@@ -3580,7 +3580,7 @@
       var initials = getInitials(data.user.name);
       if (uda) { uda.textContent = hasPhoto ? '' : initials; uda.style.backgroundImage = hasPhoto ? 'url(' + data.user.photo + ')' : ''; uda.style.backgroundSize = hasPhoto ? 'cover' : ''; uda.style.backgroundPosition = hasPhoto ? 'center' : ''; }
       document.getElementById('user-dropdown-name').textContent = data.user.name;
-      document.getElementById('user-dropdown-email').textContent = data.user.email || '';
+      document.getElementById('user-dropdown-email').textContent = data.user.email || (data.user.username ? '@' + data.user.username : '');
     }
     const isOpen = dropdown.style.display === 'block';
     dropdown.style.display = isOpen ? 'none' : 'block';
@@ -3606,7 +3606,7 @@
       var initials = getInitials(data.user.name);
       if (wda) { wda.textContent = hasPhoto ? '' : initials; wda.style.backgroundImage = hasPhoto ? 'url(' + data.user.photo + ')' : ''; wda.style.backgroundSize = hasPhoto ? 'cover' : ''; wda.style.backgroundPosition = hasPhoto ? 'center' : ''; }
       document.getElementById('ws-dropdown-name').textContent = data.user.name;
-      document.getElementById('ws-dropdown-email').textContent = data.user.email || '';
+      document.getElementById('ws-dropdown-email').textContent = data.user.email || (data.user.username ? '@' + data.user.username : '');
     }
     const isOpen = dropdown.style.display === 'block';
     dropdown.style.display = isOpen ? 'none' : 'block';
