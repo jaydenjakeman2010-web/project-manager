@@ -1613,13 +1613,15 @@
     });
   }
 
+  var goalsPageRenderer = null;
+
   function switchPage(pageId) {
     switch (pageId) {
       case 'dashboard': renderDashboard(); break;
       case 'projects': renderProjects(); break;
       case 'project-detail': renderProjectDetail(currentProjectId); break;
       case 'tasks': renderTasks(); break;
-      case 'goals': renderGoalsPage(); break;
+      case 'goals': if (goalsPageRenderer) goalsPageRenderer(); break;
       case 'calendar': renderCalendar(); break;
       case 'team': renderTeam(); break;
       case 'analytics': renderAnalytics(); break;
@@ -4321,6 +4323,8 @@
         updateGoalsBadge();
       }
     }
+
+    goalsPageRenderer = renderGoalsPage;
 
     function renderGoalsPageInner() {
       var area = document.getElementById('goals-page-content');
