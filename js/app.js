@@ -1,6 +1,6 @@
-(function () {
-  const COLORS = ['#2F5B3A', '#B98A2E', '#5C8F68', '#A3C4A0', '#8A6419', '#E3C37F', '#3E7A4E', '#4E7D6C'];
-  const PRIORITY_COLORS = { low: '#147A63', medium: '#A86B12', high: '#C24156' };
+﻿(function () {
+  const COLORS = ['#DA5427', '#F26B42', '#B04315', '#4ADE80', '#2FA85A', '#FFB295', '#C74A1F', '#64C98C'];
+  const PRIORITY_COLORS = { low: '#2E9E58', medium: '#B0703A', high: '#D6453D' };
 
   var state = { user: null, projects: [], tasks: [], team: [], events: [] };
 
@@ -741,7 +741,7 @@
       if (!logs || logs.length === 0) { feed.innerHTML = '<p style="font-size:var(--text-sm);color:var(--text-tertiary);padding:var(--space-3) 0;text-align:center;">No activity yet</p>'; return; }
       feed.innerHTML = '<div class="activity-feed">' + logs.map(function (a) {
         var d = new Date(a.createdAt);
-        return '<div class="activity-item"><div class="activity-icon" style="background:var(--bg-tertiary);color:var(--text-secondary);font-size:12px;">' + (a.type === 'task-completed' ? '✓' : a.type === 'task-created' ? '+' : a.type === 'task-deleted' ? '✕' : '•') + '</div><div class="activity-content"><div class="activity-text">' + a.description + '</div><div class="activity-time">' + formatActivityTime(d) + '</div></div></div>';
+        return '<div class="activity-item"><div class="activity-icon" style="background:var(--bg-tertiary);color:var(--text-secondary);font-size:12px;">' + (a.type === 'task-completed' ? 'âœ“' : a.type === 'task-created' ? '+' : a.type === 'task-deleted' ? 'âœ•' : 'â€¢') + '</div><div class="activity-content"><div class="activity-text">' + a.description + '</div><div class="activity-time">' + formatActivityTime(d) + '</div></div></div>';
       }).join('') + '</div>';
     }).catch(function () {});
   }
@@ -3447,7 +3447,7 @@
         clearAllDataSilent();
         var chain = Promise.resolve();
         data.projects.forEach(function (p) {
-          chain = chain.then(function () { return API.post('/projects', { name: p.name, color: p.color || '#2F5B3A' }); });
+          chain = chain.then(function () { return API.post('/projects', { name: p.name, color: p.color || '#DA5427' }); });
         });
         chain = chain.then(function () { return API.get('/projects'); }).then(function (newProjects) {
           var pmap = {};
@@ -3465,7 +3465,7 @@
         });
         if (data.team) {
           data.team.forEach(function (m) {
-            chain = chain.then(function () { return API.post('/team', { name: m.name, role: m.role || 'Member', color: m.color || '#2F5B3A' }).catch(function () {}); });
+            chain = chain.then(function () { return API.post('/team', { name: m.name, role: m.role || 'Member', color: m.color || '#DA5427' }).catch(function () {}); });
           });
         }
         if (data.events) {
@@ -4109,7 +4109,7 @@
     }
 
     function initPremiumInteractions() {
-      // ponytail: magnetic-hover mousemove removed — getBoundingClientRect on every
+      // ponytail: magnetic-hover mousemove removed â€” getBoundingClientRect on every
       // card per mousemove frame = layout thrash. Re-add behind pointer:fine only if missed.
       document.addEventListener('mousedown', function(e) {
         var target = e.target.closest('.btn, .onboarding-btn');

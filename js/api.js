@@ -1,4 +1,4 @@
-var API_BASE = (function () {
+﻿var API_BASE = (function () {
   var server = localStorage.getItem('pm-server') || '';
   return server.replace(/\/+$/, '') + '/api';
 })();
@@ -29,7 +29,7 @@ function camelizeKeys(obj) {
   return obj;
 }
 
-// ── Client-Side Mock Database ──
+// â”€â”€ Client-Side Mock Database â”€â”€
 function mockFetch(path, options) {
   return new Promise(function (resolve, reject) {
     var body = null;
@@ -72,7 +72,7 @@ function mockFetch(path, options) {
           var newProj = {
             id: "p_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
             name: body.name,
-            color: body.color || "#5148D8",
+            color: body.color || "#DA5427",
             archived: false,
             createdAt: new Date().toISOString()
           };
@@ -213,7 +213,7 @@ function mockFetch(path, options) {
           id: "m_" + Date.now(),
           name: body.name,
           role: body.role || "Member",
-            color: body.color || "#147A63",
+            color: body.color || "#2E9E58",
           createdAt: new Date().toISOString()
         };
         team.push(newMember);

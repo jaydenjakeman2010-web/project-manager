@@ -1,5 +1,5 @@
-/* ============================================================
-   POLISH LAYER — loaded after styles.css, wins cascade ties.
+﻿/* ============================================================
+   POLISH LAYER â€” loaded after styles.css, wins cascade ties.
    Visual upgrade only; layout structure untouched.
    ============================================================ */
 
@@ -41,7 +41,7 @@ input[type="checkbox"], input[type="radio"] {
   accent-color: var(--primary);
 }
 
-/* Static ambient — replaces animated orbs, zero repaint cost */
+/* Static ambient â€” replaces animated orbs, zero repaint cost */
 .ambient-glow {
   opacity: 1;
 }
@@ -66,7 +66,7 @@ input[type="checkbox"], input[type="radio"] {
   height: 3px;
   border-radius: 3px;
   background: linear-gradient(90deg, var(--primary), var(--accent));
-  box-shadow: 0 0 12px rgba(143, 191, 152, 0.35);
+  box-shadow: 0 0 12px rgba(218, 84, 39, 0.35);
 }
 
 .page-subtitle {
@@ -130,7 +130,7 @@ input[type="checkbox"], input[type="radio"] {
 
 .sidebar-item.active::before {
   background: linear-gradient(180deg, var(--primary-light), var(--primary));
-  box-shadow: 0 0 10px rgba(143, 191, 152, 0.5);
+  box-shadow: 0 0 10px rgba(218, 84, 39, 0.5);
   width: 3px;
 }
 
@@ -201,7 +201,7 @@ input[type="checkbox"], input[type="radio"] {
 .btn-primary, .onboarding-btn, .top-nav-quick-create {
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18),
-              0 2px 8px rgba(47, 91, 58, 0.25);
+              0 2px 8px rgba(199, 74, 31, 0.25);
   border: none;
   color: #fff;
 }
@@ -211,21 +211,21 @@ input[type="checkbox"], input[type="radio"] {
 [data-theme="dark"] .top-nav-quick-create {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary-dark));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14),
-              0 2px 10px rgba(143, 191, 152, 0.25), 0 0 20px rgba(153, 221, 200, 0.08);
+              0 2px 10px rgba(218, 84, 39, 0.25), 0 0 20px rgba(74, 222, 128, 0.08);
 }
 
 .btn-primary:hover:not(:disabled), .onboarding-btn:hover:not(:disabled),
 .top-nav-quick-create:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18),
-              0 6px 16px rgba(47, 91, 58, 0.35);
+              0 6px 16px rgba(199, 74, 31, 0.35);
 }
 
 .btn-primary:active:not(:disabled), .onboarding-btn:active:not(:disabled),
 .top-nav-quick-create:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12),
-              0 2px 6px rgba(47, 91, 58, 0.25);
+              0 2px 6px rgba(199, 74, 31, 0.25);
 }
 
 .btn-ghost {
@@ -346,7 +346,7 @@ input[type="checkbox"], input[type="radio"] {
 .filter-chip.active {
   background: var(--primary);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(47, 91, 58, 0.3);
+  box-shadow: 0 2px 8px rgba(199, 74, 31, 0.3);
 }
 
 /* ---------- Overlays & popovers ---------- */
@@ -389,7 +389,7 @@ input[type="checkbox"], input[type="radio"] {
 
 .onboarding-logo-icon {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-  box-shadow: 0 8px 24px rgba(47, 91, 58, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(199, 74, 31, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .onboarding-title {
@@ -425,7 +425,7 @@ input[type="checkbox"], input[type="radio"] {
 
 .fab-mobile {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-  box-shadow: 0 6px 20px rgba(47, 91, 58, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 20px rgba(199, 74, 31, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 /* ---------- Motion discipline ---------- */
@@ -438,117 +438,118 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 /* ============================================================
-   SIGNAL PALETTE — forest green anchor, warm amber signal
+   SIGNAL PALETTE â€” BridgeMind scheme: near-black canvas,
+   burnt-orange signal, green secondary, peach text accents
    ============================================================ */
 
 :root {
-  --bg-primary: #FAF8F2;
-  --bg-secondary: #F4F0E6;
-  --bg-tertiary: #ECE5D6;
+  --bg-primary: #FAF9F6;
+  --bg-secondary: #F4F2EC;
+  --bg-tertiary: #EAE7DF;
   --bg-elevated: #FFFFFF;
-  --bg-hover: #F1EBDD;
-  --bg-active: #E6DEC9;
-  --text-primary: #22271C;
-  --text-secondary: #5C6052;
-  --text-tertiary: #8A8C7C;
+  --bg-hover: #F0EDE6;
+  --bg-active: #E3DFD4;
+  --text-primary: #191817;
+  --text-secondary: #5B5955;
+  --text-tertiary: #89867E;
   --text-inverse: #FFFFFF;
-  --border: #E1DAC8;
-  --border-light: #ECE5D5;
-  --border-strong: #C6BCA2;
-  --divider: #E1DAC8;
-  --hairline: rgba(34, 39, 28, 0.08);
-  --sidebar-bg: #F2EDE1;
-  --sidebar-border: #E5DCC9;
-  --primary: #2F5B3A;
-  --primary-light: #A3C4A0;
-  --primary-dark: #1E3D27;
-  --primary-bg: rgba(47, 91, 58, 0.09);
-  --primary-subtle: rgba(47, 91, 58, 0.05);
-  --accent: #B98A2E;
-  --accent-light: #E3C37F;
-  --accent-dark: #8A6419;
-  --success: #3E7A4E;
-  --success-bg: rgba(62, 122, 78, 0.11);
-  --warning: #A8702A;
-  --warning-bg: rgba(168, 112, 42, 0.11);
-  --danger: #BF4F3A;
-  --danger-bg: rgba(191, 79, 58, 0.11);
-  --info: #4E7D6C;
-  --info-bg: rgba(78, 125, 108, 0.12);
+  --border: #E3DFD6;
+  --border-light: #ECE9E1;
+  --border-strong: #CEC9BC;
+  --divider: #E3DFD6;
+  --hairline: rgba(25, 24, 23, 0.08);
+  --sidebar-bg: #F1EFE9;
+  --sidebar-border: #E5E1D8;
+  --primary: #C74A1F;
+  --primary-light: #F26B42;
+  --primary-dark: #A03C12;
+  --primary-bg: rgba(199, 74, 31, 0.10);
+  --primary-subtle: rgba(199, 74, 31, 0.05);
+  --accent: #2E9E58;
+  --accent-light: #6BC98C;
+  --accent-dark: #1F7A40;
+  --success: #2E9E58;
+  --success-bg: rgba(46, 158, 88, 0.11);
+  --warning: #B0703A;
+  --warning-bg: rgba(176, 112, 58, 0.11);
+  --danger: #D6453D;
+  --danger-bg: rgba(214, 69, 61, 0.11);
+  --info: #3E8E5C;
+  --info-bg: rgba(62, 142, 92, 0.12);
   --surface-modal: #FFFFFF;
-  --surface-overlay: rgba(31, 35, 24, 0.5);
-  --sidebar-bg-glass: rgba(242, 237, 225, 0.9);
+  --surface-overlay: rgba(15, 15, 15, 0.5);
+  --sidebar-bg-glass: rgba(241, 239, 233, 0.9);
   --bg-elevated-glass: rgba(255, 255, 255, 0.96);
-  --shadow-accent: 0 4px 20px rgba(47, 91, 58, 0.2), 0 0 0 1px rgba(47, 91, 58, 0.05);
-  --shadow-accent-strong: 0 8px 40px rgba(47, 91, 58, 0.28), 0 0 0 1px rgba(47, 91, 58, 0.08);
-  --shadow-gold: 0 4px 20px rgba(185, 138, 46, 0.18), 0 0 0 1px rgba(185, 138, 46, 0.05);
-  --shadow-gold-strong: 0 8px 40px rgba(185, 138, 46, 0.26), 0 0 0 1px rgba(185, 138, 46, 0.08);
-  --shadow-glow: 0 0 60px rgba(47, 91, 58, 0.1), 0 0 20px rgba(47, 91, 58, 0.04);
-  --shadow-glow-accent: 0 0 40px rgba(185, 138, 46, 0.14), 0 0 12px rgba(185, 138, 46, 0.07);
-  --surface-shadow: 0 1px 2px rgba(34, 39, 28, 0.05), 0 10px 28px rgba(34, 39, 28, 0.04);
-  --surface-shadow-hover: 0 12px 30px rgba(34, 39, 28, 0.1), 0 2px 4px rgba(34, 39, 28, 0.05);
-  --shadow-md: 0 4px 12px -2px rgba(34, 39, 28, 0.08), 0 2px 4px -2px rgba(34, 39, 28, 0.04);
-  --shadow-lg: 0 12px 28px -6px rgba(34, 39, 28, 0.12), 0 4px 8px -4px rgba(34, 39, 28, 0.06);
-  --shadow-xl: 0 24px 48px -10px rgba(34, 39, 28, 0.16), 0 8px 16px -6px rgba(34, 39, 28, 0.07);
-  --focus-ring: 0 0 0 3px rgba(47, 91, 58, 0.18);
-  --focus-ring-dark: 0 0 0 3px rgba(47, 91, 58, 0.28);
+  --shadow-accent: 0 4px 20px rgba(199, 74, 31, 0.2), 0 0 0 1px rgba(199, 74, 31, 0.05);
+  --shadow-accent-strong: 0 8px 40px rgba(199, 74, 31, 0.28), 0 0 0 1px rgba(199, 74, 31, 0.08);
+  --shadow-gold: 0 4px 20px rgba(199, 74, 31, 0.18), 0 0 0 1px rgba(199, 74, 31, 0.05);
+  --shadow-gold-strong: 0 8px 40px rgba(199, 74, 31, 0.26), 0 0 0 1px rgba(199, 74, 31, 0.08);
+  --shadow-glow: 0 0 60px rgba(199, 74, 31, 0.1), 0 0 20px rgba(199, 74, 31, 0.04);
+  --shadow-glow-accent: 0 0 40px rgba(46, 158, 88, 0.14), 0 0 12px rgba(46, 158, 88, 0.07);
+  --surface-shadow: 0 1px 2px rgba(15, 15, 15, 0.05), 0 10px 28px rgba(15, 15, 15, 0.04);
+  --surface-shadow-hover: 0 12px 30px rgba(15, 15, 15, 0.1), 0 2px 4px rgba(15, 15, 15, 0.05);
+  --shadow-md: 0 4px 12px -2px rgba(15, 15, 15, 0.08), 0 2px 4px -2px rgba(15, 15, 15, 0.04);
+  --shadow-lg: 0 12px 28px -6px rgba(15, 15, 15, 0.12), 0 4px 8px -4px rgba(15, 15, 15, 0.06);
+  --shadow-xl: 0 24px 48px -10px rgba(15, 15, 15, 0.16), 0 8px 16px -6px rgba(15, 15, 15, 0.07);
+  --focus-ring: 0 0 0 3px rgba(199, 74, 31, 0.18);
+  --focus-ring-dark: 0 0 0 3px rgba(199, 74, 31, 0.28);
   --gradient-border: linear-gradient(135deg, var(--primary-light) 0%, transparent 42%, transparent 58%, var(--accent-light) 100%);
-  --gradient-border-subtle: linear-gradient(135deg, rgba(47, 91, 58, 0.14) 0%, transparent 42%, transparent 58%, rgba(185, 138, 46, 0.14) 100%);
+  --gradient-border-subtle: linear-gradient(135deg, rgba(199, 74, 31, 0.14) 0%, transparent 42%, transparent 58%, rgba(46, 158, 88, 0.14) 100%);
 }
 
 [data-theme="dark"] {
-  --bg-primary: #12160F;
-  --bg-secondary: #181D14;
-  --bg-tertiary: #20271A;
-  --bg-elevated: #1A2116;
-  --bg-hover: #252E1E;
-  --bg-active: #2F3A26;
-  --text-primary: #F0F2E8;
-  --text-secondary: #B3B7A2;
-  --text-tertiary: #848A72;
-  --text-inverse: #12160F;
-  --border: #2E3724;
-  --border-light: #252E1D;
-  --border-strong: #424E33;
-  --divider: #2E3724;
-  --hairline: rgba(240, 242, 232, 0.09);
-  --sidebar-bg: #141910;
-  --sidebar-border: #232B1A;
-  --primary: #8FBF98;
-  --primary-light: #B8D9B6;
-  --primary-dark: #5C8F68;
-  --primary-bg: rgba(143, 191, 152, 0.14);
-  --primary-subtle: rgba(143, 191, 152, 0.08);
-  --accent: #DDAE4E;
-  --accent-light: #F0D294;
-  --accent-dark: #B3832E;
-  --success: #7FC79A;
-  --success-bg: rgba(127, 199, 154, 0.14);
-  --warning: #E3C07E;
-  --warning-bg: rgba(227, 192, 126, 0.14);
-  --danger: #EE8E78;
-  --danger-bg: rgba(238, 142, 120, 0.14);
-  --info: #7FB0A0;
-  --info-bg: rgba(127, 176, 160, 0.15);
-  --surface-modal: #1A2116;
-  --surface-overlay: rgba(6, 8, 4, 0.7);
-  --sidebar-bg-glass: rgba(20, 25, 16, 0.94);
-  --bg-elevated-glass: rgba(26, 33, 22, 0.97);
-  --shadow-accent: 0 4px 20px rgba(143, 191, 152, 0.2), 0 0 0 1px rgba(143, 191, 152, 0.06);
-  --shadow-accent-strong: 0 8px 40px rgba(143, 191, 152, 0.3), 0 0 0 1px rgba(143, 191, 152, 0.1);
-  --shadow-gold: 0 4px 20px rgba(221, 174, 78, 0.18), 0 0 0 1px rgba(221, 174, 78, 0.06);
-  --shadow-gold-strong: 0 8px 40px rgba(221, 174, 78, 0.28), 0 0 0 1px rgba(221, 174, 78, 0.1);
-  --shadow-glow: 0 0 60px rgba(143, 191, 152, 0.12), 0 0 20px rgba(143, 191, 152, 0.05);
-  --shadow-glow-accent: 0 0 40px rgba(221, 174, 78, 0.12), 0 0 12px rgba(221, 174, 78, 0.06);
+  --bg-primary: #0F0F0F;
+  --bg-secondary: #141417;
+  --bg-tertiary: #1C1C20;
+  --bg-elevated: #17171A;
+  --bg-hover: #202024;
+  --bg-active: #27272A;
+  --text-primary: #FAFAFA;
+  --text-secondary: #B4B4B8;
+  --text-tertiary: #75757B;
+  --text-inverse: #0F0F0F;
+  --border: #26262B;
+  --border-light: #1E1E22;
+  --border-strong: #3B3B41;
+  --divider: #26262B;
+  --hairline: rgba(255, 255, 255, 0.09);
+  --sidebar-bg: #0C0C0D;
+  --sidebar-border: #1C1C20;
+  --primary: #DA5427;
+  --primary-light: #F26B42;
+  --primary-dark: #B04315;
+  --primary-bg: rgba(218, 84, 39, 0.15);
+  --primary-subtle: rgba(218, 84, 39, 0.08);
+  --accent: #4ADE80;
+  --accent-light: #86E8A8;
+  --accent-dark: #2FA85A;
+  --success: #4ADE80;
+  --success-bg: rgba(74, 222, 128, 0.14);
+  --warning: #FFB295;
+  --warning-bg: rgba(255, 178, 149, 0.14);
+  --danger: #F2554E;
+  --danger-bg: rgba(242, 85, 78, 0.14);
+  --info: #64C98C;
+  --info-bg: rgba(100, 201, 140, 0.15);
+  --surface-modal: #17171A;
+  --surface-overlay: rgba(0, 0, 0, 0.7);
+  --sidebar-bg-glass: rgba(12, 12, 13, 0.94);
+  --bg-elevated-glass: rgba(23, 23, 26, 0.97);
+  --shadow-accent: 0 4px 20px rgba(218, 84, 39, 0.2), 0 0 0 1px rgba(218, 84, 39, 0.06);
+  --shadow-accent-strong: 0 8px 40px rgba(218, 84, 39, 0.3), 0 0 0 1px rgba(218, 84, 39, 0.1);
+  --shadow-gold: 0 4px 20px rgba(218, 84, 39, 0.18), 0 0 0 1px rgba(218, 84, 39, 0.06);
+  --shadow-gold-strong: 0 8px 40px rgba(218, 84, 39, 0.28), 0 0 0 1px rgba(218, 84, 39, 0.1);
+  --shadow-glow: 0 0 60px rgba(218, 84, 39, 0.12), 0 0 20px rgba(218, 84, 39, 0.05);
+  --shadow-glow-accent: 0 0 40px rgba(74, 222, 128, 0.12), 0 0 12px rgba(74, 222, 128, 0.06);
   --surface-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 30px rgba(0, 0, 0, 0.18);
   --surface-shadow-hover: 0 16px 36px rgba(0, 0, 0, 0.28), 0 2px 5px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.36), 0 2px 4px -2px rgba(0, 0, 0, 0.22);
   --shadow-lg: 0 12px 28px -6px rgba(0, 0, 0, 0.48), 0 4px 8px -4px rgba(0, 0, 0, 0.3);
   --shadow-xl: 0 24px 48px -10px rgba(0, 0, 0, 0.6), 0 8px 16px -6px rgba(0, 0, 0, 0.38);
-  --focus-ring: 0 0 0 3px rgba(143, 191, 152, 0.3);
-  --focus-ring-dark: 0 0 0 3px rgba(143, 191, 152, 0.25);
+  --focus-ring: 0 0 0 3px rgba(218, 84, 39, 0.3);
+  --focus-ring-dark: 0 0 0 3px rgba(218, 84, 39, 0.25);
   --gradient-border: linear-gradient(135deg, var(--primary-light) 0%, transparent 42%, transparent 58%, var(--accent-light) 100%);
-  --gradient-border-subtle: linear-gradient(135deg, rgba(143, 191, 152, 0.16) 0%, transparent 42%, transparent 58%, rgba(221, 174, 78, 0.16) 100%);
+  --gradient-border-subtle: linear-gradient(135deg, rgba(218, 84, 39, 0.16) 0%, transparent 42%, transparent 58%, rgba(74, 222, 128, 0.16) 100%);
 }
 
 ::selection {
@@ -558,20 +559,20 @@ input[type="checkbox"], input[type="radio"] {
 
 body::before {
   background-image:
-    radial-gradient(ellipse 60% 50% at 12% 20%, rgba(47, 91, 58, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 60% at 88% 65%, rgba(47, 91, 58, 0.05) 0%, transparent 55%),
-    radial-gradient(ellipse 40% 40% at 50% 85%, rgba(78, 125, 108, 0.04) 0%, transparent 50%);
+    radial-gradient(ellipse 60% 50% at 12% 20%, rgba(199, 74, 31, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 88% 65%, rgba(199, 74, 31, 0.05) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 50% 85%, rgba(62, 142, 92, 0.04) 0%, transparent 50%);
 }
 
 [data-theme="dark"] body::before {
   background-image:
-    radial-gradient(ellipse 60% 50% at 12% 20%, rgba(143, 191, 152, 0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 60% at 88% 65%, rgba(143, 191, 152, 0.07) 0%, transparent 55%),
-    radial-gradient(ellipse 40% 40% at 50% 85%, rgba(127, 176, 160, 0.06) 0%, transparent 50%);
+    radial-gradient(ellipse 60% 50% at 12% 20%, rgba(218, 84, 39, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 60% at 88% 65%, rgba(218, 84, 39, 0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 50% 85%, rgba(100, 201, 140, 0.06) 0%, transparent 50%);
 }
 
 .sidebar-logo-mark {
-  filter: drop-shadow(0 2px 6px rgba(47, 91, 58, 0.24));
+  filter: drop-shadow(0 2px 6px rgba(199, 74, 31, 0.24));
 }
 
 .sidebar-item.active::before {
@@ -589,7 +590,7 @@ body::before {
 .top-nav-quick-create,
 .fab-mobile {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-  box-shadow: 0 5px 16px rgba(47, 91, 58, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  box-shadow: 0 5px 16px rgba(199, 74, 31, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .btn-primary:hover:not(:disabled),
@@ -597,12 +598,12 @@ body::before {
 .top-nav-quick-create:hover:not(:disabled),
 .fab-mobile:hover {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  box-shadow: 0 9px 22px rgba(47, 91, 58, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  box-shadow: 0 9px 22px rgba(199, 74, 31, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .onboarding-logo-icon {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-  box-shadow: 0 8px 24px rgba(47, 91, 58, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(199, 74, 31, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .tag-bug { background: var(--danger-bg); color: var(--danger); }
@@ -610,34 +611,34 @@ body::before {
 .tag-feature { background: var(--primary-bg); color: var(--primary); }
 .tag-enhancement { background: var(--success-bg); color: var(--success); }
 .tag-docs { background: var(--info-bg); color: var(--info); }
-.tag-design { background: rgba(47, 91, 58, 0.12); color: var(--accent-dark); }
+.tag-design { background: rgba(199, 74, 31, 0.12); color: var(--accent-dark); }
 
 /* ============================================================
-    SIGNAL THEME — indigo focus, coral energy
+    SIGNAL THEME â€” indigo focus, coral energy
    ============================================================ */
 
 ::selection {
-  background: rgba(153, 221, 200, 0.45);
+  background: rgba(74, 222, 128, 0.45);
   color: var(--text-primary);
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(47, 91, 58, 0.25);
+  background: rgba(199, 74, 31, 0.25);
   border-radius: 4px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(47, 91, 58, 0.4);
+  background: rgba(199, 74, 31, 0.4);
 }
 
-/* Project cards — mint glow lift */
+/* Project cards â€” mint glow lift */
 .project-card:hover,
 .project-card-large:hover {
-  border-color: rgba(153, 221, 200, 0.55);
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(47, 91, 58, 0.08);
+  border-color: rgba(74, 222, 128, 0.55);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(199, 74, 31, 0.08);
 }
 
-/* Section header organisation — tighter, aligned rhythm */
+/* Section header organisation â€” tighter, aligned rhythm */
 .section-header {
   margin-bottom: var(--space-4);
 }
@@ -655,12 +656,12 @@ body::before {
 }
 
 .kanban-column:hover {
-  border-color: rgba(153, 221, 200, 0.4);
+  border-color: rgba(74, 222, 128, 0.4);
 }
 
 .kanban-column.drag-over {
   border-color: var(--primary-light);
-  box-shadow: 0 0 0 3px rgba(153, 221, 200, 0.25);
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
 }
 
 .kanban-card {
@@ -668,7 +669,7 @@ body::before {
 }
 
 .kanban-card:hover {
-  border-color: rgba(47, 91, 58, 0.3);
+  border-color: rgba(199, 74, 31, 0.3);
   box-shadow: var(--shadow-md);
 }
 
@@ -746,13 +747,13 @@ body::before {
 }
 
 /* ============================================================
-   FINAL REFINEMENT — clear hierarchy, quiet surfaces, fast scan
+   FINAL REFINEMENT â€” clear hierarchy, quiet surfaces, fast scan
    ============================================================ */
 
 :root {
   --content-max-width: 1560px;
-  --surface-shadow: 0 1px 2px rgba(9, 47, 36, 0.04), 0 10px 28px rgba(9, 47, 36, 0.035);
-  --surface-shadow-hover: 0 12px 30px rgba(9, 47, 36, 0.08), 0 2px 4px rgba(9, 47, 36, 0.04);
+  --surface-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 28px rgba(0, 0, 0, 0.035);
+  --surface-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
   --control-height: 38px;
 }
 
@@ -787,7 +788,7 @@ body::after {
 .sidebar {
   background: var(--sidebar-bg);
   border-right-color: var(--sidebar-border);
-  box-shadow: 8px 0 24px rgba(9, 47, 36, 0.025);
+  box-shadow: 8px 0 24px rgba(0, 0, 0, 0.025);
 }
 
 .sidebar::before,
@@ -827,7 +828,7 @@ body::after {
 
 .sidebar-item.active {
   background: var(--primary-bg);
-  box-shadow: inset 0 0 0 1px rgba(47, 91, 58, 0.11);
+  box-shadow: inset 0 0 0 1px rgba(199, 74, 31, 0.11);
 }
 
 .sidebar-item.active::before {
@@ -875,7 +876,7 @@ body::after {
   padding-inline: 15px;
   background: var(--bg-elevated);
   border-color: var(--border-light);
-  box-shadow: 0 1px 2px rgba(9, 47, 36, 0.025);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.025);
 }
 
 .top-nav-search:hover {
@@ -889,12 +890,12 @@ body::after {
   padding-inline: 14px;
   border-radius: 10px;
   background: var(--primary);
-  box-shadow: 0 4px 12px rgba(47, 91, 58, 0.18);
+  box-shadow: 0 4px 12px rgba(199, 74, 31, 0.18);
 }
 
 .top-nav-quick-create:hover {
   background: var(--primary-dark);
-  box-shadow: 0 7px 18px rgba(47, 91, 58, 0.24);
+  box-shadow: 0 7px 18px rgba(199, 74, 31, 0.24);
 }
 
 .page {
@@ -943,14 +944,14 @@ body::after {
 .onboarding-btn,
 .top-nav-quick-create {
   background: var(--primary);
-  box-shadow: 0 4px 12px rgba(47, 91, 58, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 12px rgba(199, 74, 31, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .btn-primary:hover:not(:disabled),
 .onboarding-btn:hover:not(:disabled),
 .top-nav-quick-create:hover:not(:disabled) {
   background: var(--primary-dark);
-  box-shadow: 0 7px 18px rgba(47, 91, 58, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  box-shadow: 0 7px 18px rgba(199, 74, 31, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .stats-row {
@@ -1339,7 +1340,7 @@ body::after {
   border-color: var(--border);
   border-radius: 18px;
   background: var(--bg-elevated);
-  box-shadow: 0 24px 70px rgba(6, 28, 22, 0.24);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
@@ -1402,7 +1403,7 @@ body::after {
 .task-drawer {
   width: min(560px, 94vw);
   border-left-color: var(--border);
-  box-shadow: -18px 0 50px rgba(6, 28, 22, 0.13);
+  box-shadow: -18px 0 50px rgba(0, 0, 0, 0.13);
 }
 
 .task-drawer-header {
@@ -1632,7 +1633,7 @@ body::after {
 }
 
 /* ============================================================
-   DAILY GOALS — first-load-of-day planning overlay
+   DAILY GOALS â€” first-load-of-day planning overlay
    ============================================================ */
 .goals-overlay {
   position: fixed;
@@ -1930,7 +1931,7 @@ body::after {
   .goals-delete { opacity: 1; }
 }
 /* ============================================================
-   DAILY GOALS PAGE — full-page planner + QoL controls
+   DAILY GOALS PAGE â€” full-page planner + QoL controls
    ============================================================ */
 
 /* ---- Item chrome shared with overlay ---- */
@@ -2207,7 +2208,7 @@ body::after {
 }
 
 /* ============================================================
-   SETUP GUIDE — first-project onboarding after signup
+   SETUP GUIDE â€” first-project onboarding after signup
    ============================================================ */
 
 .setup-guide-overlay {
