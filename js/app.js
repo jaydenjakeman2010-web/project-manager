@@ -523,24 +523,32 @@
     }
 
     const today = new Date().toISOString().split('T')[0];
+    const weekEnd = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
     var urgentTasks = [];
     var completedTasks = 0;
     var overdueCount = 0;
     var dueToday = 0;
+    var openTasks = 0;
+    var upcoming = [];
     data.tasks.forEach(function(t) {
       if (t.status === 'done') { completedTasks++; return; }
+      openTasks++;
       if (!t.dueDate) return;
       var d = dueDatePart(t.dueDate);
       if (d <= today) urgentTasks.push(t);
       if (d < today) overdueCount++;
       if (d === today) dueToday++;
+      if (d <= weekEnd) upcoming.push(t);
     });
     const totalTasks = data.tasks.length;
     const rate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-    const openTasks = totalTasks - completedTasks;
-    const pulseMessage = overdueCount > 0 ? 'Clear overdue work first.' : dueToday > 0 ? 'You have work due today.' : 'No urgent deadlines right now.';
-
-    var workPulseHtml = '<section class="work-pulse anim-fade-up" aria-labelledby="work-pulse-title"><div class="work-pulse-intro"><span class="eyebrow-label">Work pulse</span><h2 id="work-pulse-title">Keep the week moving</h2><p>' + pulseMessage + '</p><button class="work-pulse-link" id="work-pulse-review" type="button">Review tasks<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button></div><div class="work-pulse-metrics"><div class="work-pulse-metric overdue"><span class="work-pulse-label">Overdue</span><strong>' + overdueCount + '</strong><span>needs attention</span></div><div class="work-pulse-metric today"><span class="work-pulse-label">Due today</span><strong>' + dueToday + '</strong><span>scheduled for today</span></div><div class="work-pulse-metric complete"><span class="work-pulse-label">Open work</span><strong>' + openTasks + '</strong><span>' + rate + '% complete</span></div></div></section>';
+    upcoming.sort(function (a, b) {
+      var da = dueDatePart(a.dueDate), db = dueDatePart(b.dueDate);
+      var oa = da < today ? 0 : 1, ob = db < today ? 0 : 1;
+      if (oa !== ob) return oa - ob;
+      return da < db ? -1 : da > db ? 1 : 0;
+    });
+    const upcomingShown = upcoming.slice(0, 6);
 
     var bannerHtml = '';
     if (urgentTasks.length > 0) {
@@ -549,26 +557,47 @@
       bannerHtml = '<div class="dashboard-banner ' + (isOverdue ? 'overdue' : 'due-today') + '"><div class="dashboard-banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div><div class="dashboard-banner-content"><span class="dashboard-banner-title">' + (isOverdue ? 'Task Overdue' : 'Due Today') + '</span><span class="dashboard-banner-desc">' + task.name + '</span></div><button class="btn btn-sm btn-primary dashboard-banner-btn" data-task-id="' + task.id + '">View Task</button></div>';
     }
 
-    var html = bannerHtml + '<div class="stats-row anim-stagger"><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Total Projects</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + data.projects.length + '">0</span></div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Total Tasks</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + totalTasks + '">0</span></div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Completion Rate</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + rate + '">0</span>%</div></div><div class="stat-card anim-fade-up"><div class="stat-card-header"><span class="stat-card-label">Team Members</span></div><div class="stat-card-value"><span class="stat-counter" data-target="' + data.team.length + '">0</span></div></div></div>' + workPulseHtml;
+    var html = bannerHtml + '<section class="overview-strip anim-fade-up" aria-label="Overview"><div class="overview-metric overdue"><span class="overview-label">Overdue</span><strong>' + overdueCount + '</strong></div><div class="overview-metric today"><span class="overview-label">Due today</span><strong>' + dueToday + '</strong></div><div class="overview-metric"><span class="overview-label">Open tasks</span><strong>' + openTasks + '</strong></div><div class="overview-metric complete"><span class="overview-label">Completion</span><strong>' + rate + '%</strong></div><div class="overview-metric"><span class="overview-label">Projects</span><strong>' + data.projects.length + '</strong></div><div class="overview-metric"><span class="overview-label">Team</span><strong>' + data.team.length + '</strong></div></section>';
 
-    if (overdueCount > 0 || dueToday > 0) {
-      html += '<div class="quick-actions"><div class="section-header"><h2 class="section-title">Quick Actions</h2></div><div class="quick-actions-grid">';
-      if (overdueCount > 0) html += '<div class="quick-action-card danger"><div class="quick-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div><div><strong>' + overdueCount + ' overdue</strong> tasks need attention</div></div>';
-      if (dueToday > 0) html += '<div class="quick-action-card warning"><div class="quick-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div><div><strong>' + dueToday + ' tasks</strong> due today</div></div>';
-      html += '</div></div>';
-    } else if (data.projects.length === 1 && totalTasks === 0 && data.team.length === 0) {
+    if (data.projects.length === 1 && totalTasks === 0 && data.team.length === 0) {
       html += '<div class="welcome-guide"><div class="welcome-guide-content"><div class="welcome-guide-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><div><h3 class="welcome-guide-title">Your project is ready</h3><p class="welcome-guide-desc">Add tasks, invite team members, and set deadlines to bring your project to life.</p></div></div><div class="welcome-guide-steps"><div class="welcome-guide-step" id="wg-add-task"><div class="welcome-guide-step-number">1</div><div><strong>Add a task</strong><p>Create your first task with a due date and priority.</p></div></div><div class="welcome-guide-step" id="wg-invite"><div class="welcome-guide-step-number">2</div><div><strong>Invite your team</strong><p>Add team members and assign them tasks.</p></div></div></div></div>';
     }
 
-    html += '<div class="dashboard-grid"><div class="dashboard-main"><div class="section"><div class="section-header"><h2 class="section-title">Your Projects</h2></div><div class="project-cards-grid">';
+    var upcomingHtml = '<div class="section"><div class="section-header"><h2 class="section-title">Upcoming tasks</h2><button class="section-link" id="upcoming-view-all" type="button">View all<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button></div>';
+    if (upcomingShown.length === 0) {
+      upcomingHtml += '<p class="upcoming-empty">No tasks due in the next 7 days.</p>';
+    } else {
+      upcomingHtml += '<div class="upcoming-list">';
+      upcomingShown.forEach(function(t) {
+        var proj = data.projects.find(function(pr) { return pr.id === t.projectId; });
+        var assignee = t.assigneeId ? data.team.find(function(m) { return m.id === t.assigneeId; }) : null;
+        var ud = dueDatePart(t.dueDate);
+        var chip = ud < today ? '<span class="badge badge-danger upcoming-chip">Overdue</span>' : ud === today ? '<span class="badge badge-warning upcoming-chip">Today</span>' : '<span class="badge badge-neutral upcoming-chip">' + formatDueDate(t.dueDate) + '</span>';
+        upcomingHtml += '<button class="upcoming-item" data-task-id="' + t.id + '" type="button"><span class="upcoming-dot" style="background:' + (proj ? proj.color : 'var(--primary)') + ';"></span><span class="upcoming-name">' + escapeHtml(t.name) + '</span>' + (assignee ? memberAvatarHtml(assignee) : '') + chip + '</button>';
+      });
+      upcomingHtml += '</div>';
+    }
+    upcomingHtml += '</div>';
+    html += '<div class="dashboard-grid"><div class="dashboard-main">' + upcomingHtml + '<div class="section"><div class="section-header"><h2 class="section-title">Your Projects</h2><button class="section-link" id="dash-projects-all" type="button">View all<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button></div><div class="project-cards-grid">';
     var dashStats = getProjectTaskStats(data);
-    data.projects.forEach(function(p, i) {
+    var tier = function (s) { return s.overdue > 0 ? 0 : (s.total > 0 && s.done < s.total ? 1 : 2); };
+    var sortedProjects = data.projects.slice().sort(function (a, b) {
+      var sa = dashStats[a.id] || { total: 0, done: 0, overdue: 0 };
+      var sb = dashStats[b.id] || { total: 0, done: 0, overdue: 0 };
+      var ta = tier(sa), tb = tier(sb);
+      if (ta !== tb) return ta - tb;
+      if (sa.overdue !== sb.overdue) return sb.overdue - sa.overdue;
+      var pa = sa.total > 0 ? sa.done / sa.total : 0, pb = sb.total > 0 ? sb.done / sb.total : 0;
+      if (pa !== pb) return pb - pa;
+      return a.name.localeCompare(b.name);
+    });
+    sortedProjects.forEach(function(p, i) {
       var stats = dashStats[p.id] || { total: 0, done: 0, overdue: 0 };
       var prog = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
       var sLabel = stats.overdue > 0 ? stats.overdue + ' overdue' : (stats.total === 0 ? 'Empty' : prog + '% complete');
       var sClass = stats.overdue > 0 ? 'badge-danger' : (prog === 100 ? 'badge-success' : 'badge-info');
       var sIcon = stats.overdue > 0 ? '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>' : (prog === 100 ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>' : '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>');
-      html += '<article class="project-card" data-project-id="' + p.id + '" style="animation-delay:' + (i * 50) + 'ms;"><div class="project-card-color" style="background:' + p.color + ';"></div><div class="project-card-body"><div class="project-card-header"><h3 class="project-card-title">' + p.name + '</h3><span class="badge ' + sClass + ' project-status-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;">' + sIcon + '</svg>' + sLabel + '</span></div>' + (stats.total > 0 ? '<div class="progress-bar" role="progressbar" aria-valuenow="' + prog + '" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar-fill" style="width:' + prog + '%;background:' + p.color + ';" aria-hidden="true"></div></div>' : '') + '<div class="project-card-meta"><span class="project-card-task-count"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>' + stats.total + ' task' + (stats.total !== 1 ? 's' : '') + '</span>' + (data.team.length > 0 && stats.total > 0 ? '<span class="project-card-members"><div class="avatar-stack" style="display:inline-flex;vertical-align:middle;">' + data.team.slice(0, 3).map(function(m, j) { var inline = 'margin-left:' + (j === 0 ? 0 : '-8px') + ';border:' + (j === 0 ? 'none' : '2px solid var(--bg-primary)') + ';'; if (m.photo) { return '<div class="avatar avatar-xs" style="overflow:hidden;' + inline + '" title="' + m.name + '"><img src="' + m.photo + '" alt="" style="width:100%;height:100%;object-fit:cover;"></div>'; } return '<div class="avatar avatar-xs" style="background:' + (m.color || 'var(--primary)') + ';' + inline + '" title="' + m.name + '">' + m.name.split(' ').map(function(w2) { return w2[0]; }).join('').toUpperCase().slice(0, 2) + '</div>'; }).join('') + (data.team.length > 3 ? '<div class="avatar avatar-xs" style="background:var(--bg-tertiary);color:var(--text-secondary);margin-left:-8px;border:2px solid var(--bg-primary);font-size:9px;">+' + (data.team.length - 3) + '</div>' : '') + '</div></span>' : '') + '</div></div></article>';
+      html += '<article class="project-card' + (stats.overdue > 0 ? ' needs-attention' : '') + '" data-project-id="' + p.id + '" style="animation-delay:' + (i * 50) + 'ms;"><div class="project-card-color" style="background:' + p.color + ';"></div><div class="project-card-body"><div class="project-card-header"><h3 class="project-card-title">' + p.name + '</h3><span class="badge ' + sClass + ' project-status-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;">' + sIcon + '</svg>' + sLabel + '</span></div>' + (stats.total > 0 ? '<div class="progress-bar" role="progressbar" aria-valuenow="' + prog + '" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar-fill" style="width:' + prog + '%;background:' + p.color + ';" aria-hidden="true"></div></div>' : '') + '<div class="project-card-meta"><span class="project-card-task-count"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>' + stats.total + ' task' + (stats.total !== 1 ? 's' : '') + '</span>' + (data.team.length > 0 && stats.total > 0 ? '<span class="project-card-members"><div class="avatar-stack" style="display:inline-flex;vertical-align:middle;">' + data.team.slice(0, 3).map(function(m, j) { var inline = 'margin-left:' + (j === 0 ? 0 : '-8px') + ';border:' + (j === 0 ? 'none' : '2px solid var(--bg-primary)') + ';'; if (m.photo) { return '<div class="avatar avatar-xs" style="overflow:hidden;' + inline + '" title="' + m.name + '"><img src="' + m.photo + '" alt="" style="width:100%;height:100%;object-fit:cover;"></div>'; } return '<div class="avatar avatar-xs" style="background:' + (m.color || 'var(--primary)') + ';' + inline + '" title="' + m.name + '">' + m.name.split(' ').map(function(w2) { return w2[0]; }).join('').toUpperCase().slice(0, 2) + '</div>'; }).join('') + (data.team.length > 3 ? '<div class="avatar avatar-xs" style="background:var(--bg-tertiary);color:var(--text-secondary);margin-left:-8px;border:2px solid var(--bg-primary);font-size:9px;">+' + (data.team.length - 3) + '</div>' : '') + '</div></span>' : '') + '</div></div></article>';
     });
         html += '</div></div></div><div class="dashboard-side"><div class="widget"><div class="widget-header"><h3 class="widget-title">Recent Activity <span class="live-dot"></span></h3></div><div id="dashboard-activity"></div></div><div id="dashboard-goals"></div></div></div>';
     container.innerHTML = html;
@@ -586,9 +615,11 @@
     document.getElementById('wg-invite')?.addEventListener('click', function () {
       navigateTo('team'); openTeamDrawerCreate();
     });
-    document.getElementById('work-pulse-review')?.addEventListener('click', function () {
-      navigateTo('tasks');
+    container.querySelectorAll('.upcoming-item').forEach(function (el) {
+      el.addEventListener('click', function () { openTaskDrawerEdit(el.dataset.taskId); });
     });
+    document.getElementById('upcoming-view-all')?.addEventListener('click', function () { navigateTo('tasks'); });
+    document.getElementById('dash-projects-all')?.addEventListener('click', function () { navigateTo('projects'); });
   }
 
   function renderProjects() {
@@ -1482,7 +1513,7 @@
   function showPageSkeleton(pageId) {
     var page = document.getElementById('page-' + pageId);
     if (!page) return;
-    var contentAreas = { dashboard: 'dashboard-content', projects: 'projects-content', tasks: 'tasks-content', calendar: 'calendar-content', team: 'team-content', analytics: 'analytics-content', settings: null };
+    var contentAreas = { dashboard: 'dashboard-content', projects: 'projects-content', tasks: 'tasks-content', goals: 'goals-page-content', calendar: 'calendar-content', team: 'team-content', analytics: 'analytics-content', settings: null };
     var areaId = contentAreas[pageId];
     if (areaId) {
       var area = document.getElementById(areaId);
@@ -1571,6 +1602,7 @@
       case 'projects': renderProjects(); break;
       case 'project-detail': renderProjectDetail(currentProjectId); break;
       case 'tasks': renderTasks(); break;
+      case 'goals': renderGoalsPage(); break;
       case 'calendar': renderCalendar(); break;
       case 'team': renderTeam(); break;
       case 'analytics': renderAnalytics(); break;
@@ -1904,6 +1936,8 @@
         navigateTo('calendar');
       } else if (action === 'nav-tasks') {
         navigateTo('tasks');
+      } else if (action === 'nav-goals') {
+        navigateTo('goals');
       } else if (action === 'nav-team') {
         navigateTo('team');
       } else if (action === 'nav-analytics') {
@@ -3924,6 +3958,7 @@
         if (e.key === 'd') { e.preventDefault(); navigateTo('dashboard'); }
         if (e.key === 'p') { e.preventDefault(); navigateTo('projects'); }
         if (e.key === 'c') { e.preventDefault(); navigateTo('calendar'); }
+        if (e.key === 'o') { e.preventDefault(); navigateTo('goals'); }
         window._gKeyPending = false;
       }
       if (e.key === 't' && !e.metaKey && !e.ctrlKey) { e.preventDefault(); navigateTo('tasks'); }
@@ -4177,7 +4212,7 @@
       });
     }
 
-    var goalsState = { date: '', items: [] };
+    var goalsState = { date: '', items: [], filter: 'all' };
 
     function goalsKey() {
       var u = getData().user;
@@ -4189,37 +4224,106 @@
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
 
-    function loadGoals() {
-      var key = goalsKey();
-      var stored = null;
-      try { stored = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) {}
-      var today = todayKey();
-      if (stored && stored.date === today) {
-        goalsState.date = today;
-        goalsState.items = Array.isArray(stored.items) ? stored.items : [];
-      } else {
-        var carried = (stored && Array.isArray(stored.items))
-          ? stored.items.filter(function (g) { return !g.done; }).map(function (g) { return { id: g.id, text: g.text, done: false }; })
-          : [];
-        goalsState.date = today;
-        goalsState.items = carried;
-        saveGoals();
+    function shiftDate(dateStr, days) {
+      var d = new Date(dateStr + 'T00:00:00');
+      d.setDate(d.getDate() + days);
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function dateLabel(dateStr) {
+      var d = new Date(dateStr + 'T00:00:00');
+      var label = d.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+      if (dateStr === todayKey()) return 'Today, ' + d.toLocaleDateString([], { month: 'long', day: 'numeric' });
+      if (dateStr === shiftDate(todayKey(), -1)) return 'Yesterday, ' + d.toLocaleDateString([], { month: 'long', day: 'numeric' });
+      return label;
+    }
+
+    function getGoalsMap() {
+      try { return JSON.parse(localStorage.getItem(goalsKey()) || 'null') || {}; } catch (e) { return {}; }
+    }
+
+    function saveGoalsMap(map) {
+      try { localStorage.setItem(goalsKey(), JSON.stringify(map)); } catch (e) {}
+    }
+
+    function migrateGoalsMap(map) {
+      if (map && map.date && Array.isArray(map.items) && !map[todayKey()] && !map[map.date]) {
+        var legacy = {};
+        legacy[map.date] = map.items;
+        return legacy;
       }
+      return map;
+    }
+
+    function prevDayWithItems(map, date) {
+      var keys = Object.keys(map).filter(function (d) { return d < date; }).sort();
+      return keys.length ? keys[keys.length - 1] : null;
+    }
+
+    function ensureDay(date) {
+      var map = migrateGoalsMap(getGoalsMap());
+      if (!map[date]) {
+        var prev = prevDayWithItems(map, date);
+        var carried = prev
+          ? map[prev].filter(function (g) { return !g.done; }).map(function (g) { return { id: g.id, text: g.text, done: false, carried: true }; })
+          : [];
+        map[date] = carried;
+        saveGoalsMap(map);
+      }
+      return map[date];
+    }
+
+    function loadGoals(date) {
+      goalsState.date = date || todayKey();
+      goalsState.items = ensureDay(goalsState.date);
       return goalsState;
     }
 
     function saveGoals() {
-      try {
-        localStorage.setItem(goalsKey(), JSON.stringify({ date: goalsState.date, items: goalsState.items }));
-      } catch (e) {}
+      var map = migrateGoalsMap(getGoalsMap());
+      map[goalsState.date] = goalsState.items;
+      saveGoalsMap(map);
+    }
+
+    function goalsCounts() {
+      var total = goalsState.items.length;
+      var done = goalsState.items.filter(function (g) { return g.done; }).length;
+      return { total: total, done: done, open: total - done, pct: total ? Math.round(done / total * 100) : 0 };
+    }
+
+    function goalsStreak() {
+      var map = migrateGoalsMap(getGoalsMap());
+      var streak = 0;
+      var d = todayKey();
+      if (!map[d] || !map[d].some(function (g) { return g.done; })) d = shiftDate(d, -1);
+      while (map[d] && map[d].some(function (g) { return g.done; })) { streak++; d = shiftDate(d, -1); }
+      return streak;
     }
 
     function updateGoalsBadge() {
       var badge = document.getElementById('goals-badge');
-      if (!badge) return;
-      var open = goalsState.items.filter(function (g) { return !g.done; }).length;
-      if (open > 0) { badge.textContent = open; badge.style.display = ''; }
-      else { badge.style.display = 'none'; }
+      var side = document.getElementById('sidebar-goal-count');
+      var open = goalsCounts().open;
+      if (badge) { if (open > 0) { badge.textContent = open; badge.style.display = ''; } else { badge.style.display = 'none'; } }
+      if (side) side.textContent = open > 0 ? open : '';
+    }
+
+    function goalsItemHtml(g, showCarried) {
+      return '<li class="goals-item' + (g.done ? ' done' : '') + '" data-id="' + g.id + '" draggable="true">' +
+        '<span class="goals-grip" aria-hidden="true"><svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="2.5" cy="2.5" r="1.5"/><circle cx="7.5" cy="2.5" r="1.5"/><circle cx="2.5" cy="8" r="1.5"/><circle cx="7.5" cy="8" r="1.5"/><circle cx="2.5" cy="13.5" r="1.5"/><circle cx="7.5" cy="13.5" r="1.5"/></svg></span>' +
+        '<button class="goals-check" data-id="' + g.id + '" aria-label="' + (g.done ? 'Mark as not done' : 'Mark as done') + '">' +
+        (g.done ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '') +
+        '</button>' +
+        '<span class="goals-text" title="Double-click to edit">' + escapeHtml(g.text) +
+        (showCarried && g.carried ? '<span class="goals-carried">carried over</span>' : '') +
+        '</span>' +
+        '<span class="goals-move"><button class="goals-up" data-id="' + g.id + '" aria-label="Move up"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg></button>' +
+        '<button class="goals-down" data-id="' + g.id + '" aria-label="Move down"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button></span>' +
+        '<button class="goals-edit" data-id="' + g.id + '" aria-label="Edit goal"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg></button>' +
+        '<button class="goals-delete" data-id="' + g.id + '" aria-label="Delete goal">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' +
+        '</button>' +
+        '</li>';
     }
 
     function renderGoals() {
@@ -4228,39 +4332,150 @@
       var countEl = document.getElementById('goals-progress-count');
       var pctEl = document.getElementById('goals-progress-pct');
       var ring = document.getElementById('goals-ring-fill');
-      var total = goalsState.items.length;
-      var done = goalsState.items.filter(function (g) { return g.done; }).length;
-      var pct = total ? Math.round(done / total * 100) : 0;
-      if (countEl) countEl.textContent = done + ' / ' + total;
-      if (pctEl) pctEl.textContent = pct + '%';
+      var c = goalsCounts();
+      if (countEl) countEl.textContent = c.done + ' / ' + c.total;
+      if (pctEl) pctEl.textContent = c.pct + '%';
       var circ = 2 * Math.PI * 38;
       if (ring) {
         ring.style.strokeDasharray = circ;
-        ring.style.strokeDashoffset = circ - (pct / 100) * circ;
+        ring.style.strokeDashoffset = circ - (c.pct / 100) * circ;
       }
-      if (list) {
-        list.innerHTML = goalsState.items.map(function (g) {
-          return '<li class="goals-item' + (g.done ? ' done' : '') + '" data-id="' + g.id + '">' +
-            '<button class="goals-check" data-id="' + g.id + '" aria-label="' + (g.done ? 'Mark as not done' : 'Mark as done') + '">' +
-            (g.done ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '') +
-            '</button>' +
-            '<span class="goals-text">' + escapeHtml(g.text) + '</span>' +
-            '<button class="goals-delete" data-id="' + g.id + '" aria-label="Delete goal">' +
-            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' +
-            '</button>' +
-            '</li>';
-        }).join('');
-      }
-      if (empty) empty.hidden = total > 0;
+      if (list) list.innerHTML = goalsState.items.map(function (g) { return goalsItemHtml(g, false); }).join('');
+      if (empty) empty.hidden = c.total > 0;
       updateGoalsBadge();
+    }
+
+    function renderGoalsPage() {
+      var area = document.getElementById('goals-page-content');
+      if (!area) return;
+      loadGoals(goalsState.date || todayKey());
+      var c = goalsCounts();
+      var streak = goalsStreak();
+      var carriedCount = goalsState.items.filter(function (g) { return g.carried; }).length;
+      var circ = 2 * Math.PI * 52;
+      var nextBtn = document.getElementById('goals-next-day');
+      if (nextBtn) nextBtn.disabled = goalsState.date >= todayKey();
+      var todayBtn = document.getElementById('goals-today-btn');
+      if (todayBtn) todayBtn.classList.toggle('active', goalsState.date === todayKey());
+
+      var items = goalsState.items;
+      if (goalsState.filter === 'open') items = items.filter(function (g) { return !g.done; });
+      if (goalsState.filter === 'done') items = items.filter(function (g) { return g.done; });
+
+      var hero =
+        '<div class="goals-hero">' +
+          '<div class="goals-hero-ring-wrap">' +
+            '<svg class="goals-hero-ring" width="120" height="120" viewBox="0 0 120 120">' +
+              '<circle class="goals-ring-track" cx="60" cy="60" r="52" fill="none" stroke-width="8"/>' +
+              '<circle class="goals-hero-ring-fill" id="goals-hero-ring-fill" cx="60" cy="60" r="52" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="' + circ + '" stroke-dashoffset="' + circ + '"/>' +
+            '</svg>' +
+            '<div class="goals-hero-ring-label"><span class="goals-hero-pct" id="goals-hero-pct">' + c.pct + '%</span><span class="goals-hero-done-label">done</span></div>' +
+          '</div>' +
+          '<div class="goals-hero-info">' +
+            '<div class="goals-hero-date" id="goals-hero-date">' + dateLabel(goalsState.date) + '</div>' +
+            '<div class="goals-hero-stats">' +
+              '<div class="goals-hero-stat"><span id="goals-hero-done">' + c.done + '</span><label>done</label></div>' +
+              '<div class="goals-hero-stat"><span id="goals-hero-open">' + c.open + '</span><label>open</label></div>' +
+              '<div class="goals-hero-stat"><span id="goals-hero-streak">' + streak + '</span><label>day streak</label></div>' +
+            '</div>' +
+            '<div class="goals-hero-note" id="goals-hero-note">' +
+              (carriedCount > 0 && goalsState.date === todayKey() ? '<span class="goals-hero-chip">' + carriedCount + ' carried over from yesterday</span>' : '') +
+              (c.total > 0 && c.done === c.total ? '<span class="goals-hero-chip goals-hero-chip-done">All goals complete</span>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div>';
+
+      var filter =
+        '<div class="goals-page-filter">' +
+          '<button class="goals-filter-chip' + (goalsState.filter === 'all' ? ' active' : '') + '" data-filter="all">All</button>' +
+          '<button class="goals-filter-chip' + (goalsState.filter === 'open' ? ' active' : '') + '" data-filter="open">Open</button>' +
+          '<button class="goals-filter-chip' + (goalsState.filter === 'done' ? ' active' : '') + '" data-filter="done">Done</button>' +
+        '</div>';
+
+      var addRow =
+        '<form class="goals-add goals-page-add" id="goals-page-add-form">' +
+          '<input type="text" class="goals-add-input" id="goals-page-add-input" placeholder="' + (goalsState.date === todayKey() ? 'Add a goal for today...' : 'Add a goal for this day...') + '" maxlength="200" autocomplete="off" spellcheck="false">' +
+          '<button type="submit" class="btn btn-primary goals-add-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add</button>' +
+        '</form>';
+
+      var listHtml =
+        '<ul class="goals-list goals-page-list" id="goals-page-list">' +
+        items.map(function (g) { return goalsItemHtml(g, true); }).join('') +
+        '</ul>';
+
+      var emptyHtml = goalsState.items.length === 0
+        ? '<div class="goals-empty goals-page-empty"><p>' + (goalsState.date === todayKey() ? 'No goals for today yet' : 'Nothing planned for this day') + '</p><span>Type a goal above and hit Add to get started.</span></div>'
+        : (items.length === 0 ? '<div class="goals-empty goals-page-empty"><p>No ' + (goalsState.filter === 'done' ? 'completed' : 'open') + ' goals</p><span>Try a different filter.</span></div>' : '');
+
+      area.innerHTML = hero + filter + addRow + listHtml + emptyHtml;
+
+      var ring = document.getElementById('goals-hero-ring-fill');
+      if (ring) {
+        requestAnimationFrame(function () {
+          ring.style.strokeDasharray = circ;
+          ring.style.strokeDashoffset = circ - (c.pct / 100) * circ;
+        });
+      }
+      updateGoalsBadge();
+    }
+
+    function goalsStartEdit(id) {
+      var li = document.querySelector('.goals-item[data-id="' + id + '"]');
+      if (!li) return;
+      var textEl = li.querySelector('.goals-text');
+      if (!textEl || li.querySelector('.goals-edit-input')) return;
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'goals-edit-input';
+      input.value = textEl.textContent.replace(/carried over/g, '').trim();
+      input.maxLength = 200;
+      textEl.replaceWith(input);
+      input.focus();
+      input.select();
+      function commit(save) {
+        var val = save ? input.value.trim() : null;
+        if (val) {
+          var item = goalsState.items.find(function (g) { return String(g.id) === id; });
+          if (item) { item.text = val; delete item.carried; saveGoals(); }
+        }
+        if (document.querySelector('.page.active')?.id === 'page-goals') renderGoalsPage();
+        else renderGoals();
+      }
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { commit(true); }
+        else if (e.key === 'Escape') { commit(false); }
+      });
+      input.addEventListener('blur', function () { commit(true); });
+    }
+
+    function goalsMove(id, dir) {
+      var idx = goalsState.items.findIndex(function (g) { return String(g.id) === id; });
+      var target = idx + dir;
+      if (idx < 0 || target < 0 || target >= goalsState.items.length) return;
+      var tmp = goalsState.items[idx];
+      goalsState.items[idx] = goalsState.items[target];
+      goalsState.items[target] = tmp;
+      saveGoals();
+      if (document.querySelector('.page.active')?.id === 'page-goals') renderGoalsPage();
+      else renderGoals();
+    }
+
+    function goalsReorder(fromId, toId) {
+      var from = goalsState.items.findIndex(function (g) { return String(g.id) === fromId; });
+      var to = goalsState.items.findIndex(function (g) { return String(g.id) === toId; });
+      if (from < 0 || to < 0 || from === to) return;
+      var item = goalsState.items.splice(from, 1)[0];
+      goalsState.items.splice(to, 0, item);
+      saveGoals();
+      renderGoalsPage();
     }
 
     function openDailyGoals() {
       var overlay = document.getElementById('goals-overlay');
       if (!overlay) return;
-      loadGoals();
+      loadGoals(todayKey());
       var dateEl = document.getElementById('goals-date');
-      if (dateEl) dateEl.textContent = new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+      if (dateEl) dateEl.textContent = dateLabel(todayKey());
       renderGoals();
       overlay.style.display = 'flex';
       requestAnimationFrame(function () { overlay.classList.add('active'); });
@@ -4299,13 +4514,119 @@
         var del = e.target.closest('.goals-delete');
         if (check) {
           var item = goalsState.items.find(function (g) { return String(g.id) === check.dataset.id; });
-          if (item) { item.done = !item.done; saveGoals(); renderGoals(); }
+          if (item) {
+            item.done = !item.done;
+            if (item.done) playSound('complete');
+            saveGoals();
+            renderGoals();
+            if (goalsState.items.length > 0 && goalsState.items.every(function (g) { return g.done; })) showToast('All goals complete', 'success');
+          }
         } else if (del) {
           goalsState.items = goalsState.items.filter(function (g) { return String(g.id) !== del.dataset.id; });
           saveGoals();
           renderGoals();
         }
       });
+
+      document.getElementById('goals-page-open-overlay')?.addEventListener('click', function () {
+        var input = document.getElementById('goals-page-add-input');
+        if (input) input.focus();
+        else openDailyGoals();
+      });
+      document.getElementById('goals-prev-day')?.addEventListener('click', function () {
+        goalsState.date = shiftDate(goalsState.date || todayKey(), -1);
+        renderGoalsPage();
+      });
+      document.getElementById('goals-next-day')?.addEventListener('click', function () {
+        if (goalsState.date >= todayKey()) return;
+        goalsState.date = shiftDate(goalsState.date || todayKey(), 1);
+        renderGoalsPage();
+      });
+      document.getElementById('goals-today-btn')?.addEventListener('click', function () {
+        goalsState.date = todayKey();
+        renderGoalsPage();
+      });
+
+      document.addEventListener('submit', function (e) {
+        if (e.target && e.target.id === 'goals-page-add-form') {
+          e.preventDefault();
+          var input = document.getElementById('goals-page-add-input');
+          var text = input ? input.value.trim() : '';
+          if (!text) return;
+          goalsState.items.push({ id: 'g' + Date.now() + Math.random().toString(36).slice(2, 7), text: text, done: false });
+          saveGoals();
+          renderGoalsPage();
+          if (input) input.value = '';
+          input && input.focus();
+        }
+      });
+
+      document.addEventListener('click', function (e) {
+        var chip = e.target.closest('.goals-filter-chip');
+        if (chip) {
+          goalsState.filter = chip.dataset.filter;
+          renderGoalsPage();
+          return;
+        }
+        var editBtn = e.target.closest('.goals-edit');
+        if (editBtn) { goalsStartEdit(editBtn.dataset.id); return; }
+        var up = e.target.closest('.goals-up');
+        if (up) { goalsMove(up.dataset.id, -1); return; }
+        var down = e.target.closest('.goals-down');
+        if (down) { goalsMove(down.dataset.id, 1); return; }
+      });
+
+      var pageList = document.getElementById('goals-page-list');
+      document.addEventListener('click', function (e) {
+        if (!pageList || !pageList.contains(e.target)) return;
+        var check = e.target.closest('.goals-check');
+        var del = e.target.closest('.goals-delete');
+        if (check) {
+          var item = goalsState.items.find(function (g) { return String(g.id) === check.dataset.id; });
+          if (item) {
+            item.done = !item.done;
+            if (item.done) playSound('complete');
+            saveGoals();
+            renderGoalsPage();
+            if (goalsState.items.length > 0 && goalsState.items.every(function (g) { return g.done; })) showToast('All goals complete', 'success');
+          }
+        } else if (del) {
+          goalsState.items = goalsState.items.filter(function (g) { return String(g.id) !== del.dataset.id; });
+          saveGoals();
+          renderGoalsPage();
+        }
+      });
+      document.addEventListener('dblclick', function (e) {
+        var text = e.target.closest('.goals-text');
+        if (text && text.closest('#goals-page-list')) goalsStartEdit(text.closest('.goals-item').dataset.id);
+      });
+
+      var dragId = null;
+      document.addEventListener('dragstart', function (e) {
+        var item = e.target.closest('.goals-item');
+        if (item) { dragId = item.dataset.id; item.classList.add('goals-dragging'); }
+      });
+      document.addEventListener('dragend', function (e) {
+        var item = e.target.closest('.goals-item');
+        if (item) item.classList.remove('goals-dragging');
+      });
+      document.addEventListener('dragover', function (e) {
+        var item = e.target.closest('.goals-item');
+        if (item && dragId && item.dataset.id !== dragId) { e.preventDefault(); item.classList.add('goals-drag-over'); }
+      });
+      document.addEventListener('dragleave', function (e) {
+        var item = e.target.closest('.goals-item');
+        if (item) item.classList.remove('goals-drag-over');
+      });
+      document.addEventListener('drop', function (e) {
+        var item = e.target.closest('.goals-item');
+        if (item && dragId && item.dataset.id !== dragId) {
+          e.preventDefault();
+          goalsReorder(dragId, item.dataset.id);
+        }
+        dragId = null;
+      });
+
       document.addEventListener('keydown', function (e) {
         var overlay = document.getElementById('goals-overlay');
         if (e.key === 'Escape' && overlay && overlay.classList.contains('active')) closeDailyGoals();
