@@ -1,5 +1,5 @@
 (function () {
-  const COLORS = ['#5148D8', '#D65A51', '#147A63', '#2A73B6', '#8A62C7', '#A86B12', '#6C72D9', '#3D35A4'];
+  const COLORS = ['#5148D8', '#7B74E8', '#147A63', '#2A73B6', '#8A62C7', '#A86B12', '#6C72D9', '#3D35A4'];
   const PRIORITY_COLORS = { low: '#147A63', medium: '#A86B12', high: '#C24156' };
 
   var state = { user: null, projects: [], tasks: [], team: [], events: [] };
@@ -4177,6 +4177,147 @@
       });
     }
 
+    var goalsState = { date: '', items: [] };
+
+    function goalsKey() {
+      var u = getData().user;
+      return 'pm-goals-' + ((u && (u.id || u.email)) || 'anon');
+    }
+
+    function todayKey() {
+      var d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function loadGoals() {
+      var key = goalsKey();
+      var stored = null;
+      try { stored = JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) {}
+      var today = todayKey();
+      if (stored && stored.date === today) {
+        goalsState.date = today;
+        goalsState.items = Array.isArray(stored.items) ? stored.items : [];
+      } else {
+        var carried = (stored && Array.isArray(stored.items))
+          ? stored.items.filter(function (g) { return !g.done; }).map(function (g) { return { id: g.id, text: g.text, done: false }; })
+          : [];
+        goalsState.date = today;
+        goalsState.items = carried;
+        saveGoals();
+      }
+      return goalsState;
+    }
+
+    function saveGoals() {
+      try {
+        localStorage.setItem(goalsKey(), JSON.stringify({ date: goalsState.date, items: goalsState.items }));
+      } catch (e) {}
+    }
+
+    function updateGoalsBadge() {
+      var badge = document.getElementById('goals-badge');
+      if (!badge) return;
+      var open = goalsState.items.filter(function (g) { return !g.done; }).length;
+      if (open > 0) { badge.textContent = open; badge.style.display = ''; }
+      else { badge.style.display = 'none'; }
+    }
+
+    function renderGoals() {
+      var list = document.getElementById('goals-list');
+      var empty = document.getElementById('goals-empty');
+      var countEl = document.getElementById('goals-progress-count');
+      var pctEl = document.getElementById('goals-progress-pct');
+      var ring = document.getElementById('goals-ring-fill');
+      var total = goalsState.items.length;
+      var done = goalsState.items.filter(function (g) { return g.done; }).length;
+      var pct = total ? Math.round(done / total * 100) : 0;
+      if (countEl) countEl.textContent = done + ' / ' + total;
+      if (pctEl) pctEl.textContent = pct + '%';
+      var circ = 2 * Math.PI * 38;
+      if (ring) {
+        ring.style.strokeDasharray = circ;
+        ring.style.strokeDashoffset = circ - (pct / 100) * circ;
+      }
+      if (list) {
+        list.innerHTML = goalsState.items.map(function (g) {
+          return '<li class="goals-item' + (g.done ? ' done' : '') + '" data-id="' + g.id + '">' +
+            '<button class="goals-check" data-id="' + g.id + '" aria-label="' + (g.done ? 'Mark as not done' : 'Mark as done') + '">' +
+            (g.done ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '') +
+            '</button>' +
+            '<span class="goals-text">' + escapeHtml(g.text) + '</span>' +
+            '<button class="goals-delete" data-id="' + g.id + '" aria-label="Delete goal">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' +
+            '</button>' +
+            '</li>';
+        }).join('');
+      }
+      if (empty) empty.hidden = total > 0;
+      updateGoalsBadge();
+    }
+
+    function openDailyGoals() {
+      var overlay = document.getElementById('goals-overlay');
+      if (!overlay) return;
+      loadGoals();
+      var dateEl = document.getElementById('goals-date');
+      if (dateEl) dateEl.textContent = new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+      renderGoals();
+      overlay.style.display = 'flex';
+      requestAnimationFrame(function () { overlay.classList.add('active'); });
+      setTimeout(function () {
+        var input = document.getElementById('goals-add-input');
+        if (input) input.focus();
+      }, 120);
+    }
+
+    function closeDailyGoals() {
+      var overlay = document.getElementById('goals-overlay');
+      if (!overlay || !overlay.classList.contains('active')) return;
+      overlay.classList.remove('active');
+      setTimeout(function () { overlay.style.display = 'none'; }, 260);
+    }
+
+    function initDailyGoals() {
+      document.getElementById('goals-btn')?.addEventListener('click', function () { openDailyGoals(); });
+      document.getElementById('goals-close')?.addEventListener('click', closeDailyGoals);
+      document.getElementById('goals-done')?.addEventListener('click', closeDailyGoals);
+      document.getElementById('goals-backdrop')?.addEventListener('click', closeDailyGoals);
+      document.getElementById('goals-add-form')?.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var input = document.getElementById('goals-add-input');
+        var text = input ? input.value.trim() : '';
+        if (!text) return;
+        goalsState.items.push({ id: 'g' + Date.now() + Math.random().toString(36).slice(2, 7), text: text, done: false });
+        saveGoals();
+        renderGoals();
+        if (input) input.value = '';
+        input && input.focus();
+        updateGoalsBadge();
+      });
+      document.getElementById('goals-list')?.addEventListener('click', function (e) {
+        var check = e.target.closest('.goals-check');
+        var del = e.target.closest('.goals-delete');
+        if (check) {
+          var item = goalsState.items.find(function (g) { return String(g.id) === check.dataset.id; });
+          if (item) { item.done = !item.done; saveGoals(); renderGoals(); }
+        } else if (del) {
+          goalsState.items = goalsState.items.filter(function (g) { return String(g.id) !== del.dataset.id; });
+          saveGoals();
+          renderGoals();
+        }
+      });
+      document.addEventListener('keydown', function (e) {
+        var overlay = document.getElementById('goals-overlay');
+        if (e.key === 'Escape' && overlay && overlay.classList.contains('active')) closeDailyGoals();
+      });
+      var seen = localStorage.getItem('pm-goals-last-seen');
+      var today = todayKey();
+      if (seen !== today) {
+        localStorage.setItem('pm-goals-last-seen', today);
+        openDailyGoals();
+      }
+    }
+
     function bootApp() {
       initNavigation();
       initSidebar();
@@ -4193,6 +4334,7 @@
       initScrollAnimations();
       initPremiumInteractions();
       initTooltips();
+      initDailyGoals();
       initSSE();
       initNotificationsFromAPI();
       document.getElementById('notifications-btn')?.addEventListener('click', function (e) { e.stopPropagation(); toggleNotificationDropdown(); });
