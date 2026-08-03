@@ -4439,10 +4439,16 @@
           'target'
         );
       } else if (items.length === 0) {
-        emptyHtml = '<div class="goals-empty goals-page-empty"><p>No ' + (goalsState.filter === 'done' ? 'completed' : 'open') + ' goals</p><span>Try a different filter.</span></div>';
+        emptyHtml = renderEmptyState(
+          'No ' + (goalsState.filter === 'done' ? 'completed' : 'open') + ' goals',
+          'Try a different filter to see the rest of your list.',
+          null,
+          '',
+          'search'
+        );
       }
 
-      area.innerHTML = hero + filter + addRow + listHtml + emptyHtml;
+      area.innerHTML = hero + filter + addRow + listHtml + (emptyHtml ? '<div class="goals-page-empty">' + emptyHtml + '</div>' : '');
 
       document.getElementById('goals-empty-add')?.addEventListener('click', function () {
         var input = document.getElementById('goals-page-add-input');

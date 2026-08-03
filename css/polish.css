@@ -2347,4 +2347,16 @@ body::after {
 
 .goals-page-empty .empty-state {
   margin-top: 4px;
+}.goals-page-empty .empty-state {
+  padding: 40px 24px;
+  min-height: 200px;
+}
+
+.goals-page-empty .empty-state-icon {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 14px;
+  color: var(--accent-dark);
+  background: var(--primary-bg);
+  border-color: var(--border-light);
 }
