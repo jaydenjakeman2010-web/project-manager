@@ -10,14 +10,17 @@ import email, { isConfigured } from '../email.js';
 
 var router = Router();
 
+var usernamePattern = /^[a-zA-Z0-9_.-]{3,30}$/;
+
 var signupSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100),
-  email: z.string().email('Invalid email address'),
+  username: z.string().regex(usernamePattern, 'Username must be 3-30 characters using letters, numbers, dots, dashes, or underscores'),
+  name: z.string().min(2, 'Name must be at least 2 characters').max(100).optional(),
+  email: z.string().email('Invalid email address').optional(),
   password: z.string().min(8, 'Password must be at least 8 characters').max(128),
 });
 
 var loginSchema = z.object({
-  email: z.string().email(),
+  username: z.string().min(1, 'Username is required'),
   password: z.string().min(1),
   rememberMe: z.boolean().optional(),
 });
@@ -37,29 +40,40 @@ var resetSchema = z.object({
 
 router.post('/signup', validate(signupSchema), async function (req, res) {
   try {
-    var { name, email: emailAddr, password } = req.validatedBody;
+    var { username, name, email: emailAddr, password } = req.validatedBody;
+    var displayName = name || username;
 
-    var { rows: existing } = await db.query(
-      'SELECT id FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1',
-      [emailAddr]
+    var { rows: existingUsername } = await db.query(
+      'SELECT id FROM users WHERE LOWER(username) = LOWER($1) LIMIT 1',
+      [username]
     );
-    if (existing.length > 0) {
-      return res.status(409).json({ error: 'An account with this email already exists.' });
+    if (existingUsername.length > 0) {
+      return res.status(409).json({ error: 'This username is already taken.' });
+    }
+
+    if (emailAddr) {
+      var { rows: existingEmail } = await db.query(
+        'SELECT id FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1',
+        [emailAddr]
+      );
+      if (existingEmail.length > 0) {
+        return res.status(409).json({ error: 'An account with this email already exists.' });
+      }
     }
 
     var passwordHash = await bcrypt.hash(password, 12);
     var canEmail = await isConfigured();
-    var verificationToken = canEmail ? uuid() : null;
-    var expiresAt = canEmail ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null;
+    var verificationToken = emailAddr && canEmail ? uuid() : null;
+    var expiresAt = emailAddr && canEmail ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null;
 
     var { rows } = await db.query(
-      `INSERT INTO users (id, name, email, password_hash, email_verified, verification_token, verification_token_expires_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, name, email`,
-      [uuid(), name, emailAddr.toLowerCase(), passwordHash, !canEmail, verificationToken, expiresAt]
+      `INSERT INTO users (id, name, email, username, password_hash, email_verified, verification_token, verification_token_expires_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id, name, username, email`,
+      [uuid(), displayName, emailAddr ? emailAddr.toLowerCase() : null, username, passwordHash, !verificationToken, verificationToken, expiresAt]
     );
 
-    if (canEmail) {
+    if (emailAddr && canEmail) {
       var baseUrl = process.env.CORS_ORIGIN || 'http://localhost:3001';
       var verifyLink = baseUrl + '/verify?token=' + verificationToken;
       email.sendEmail(
@@ -72,42 +86,42 @@ router.post('/signup', validate(signupSchema), async function (req, res) {
     }
 
     res.status(201).json({
-      message: canEmail ? 'Account created. Check your email for a verification link.' : 'Account created. Welcome!',
+      message: verificationToken ? 'Account created. Check your email for a verification link.' : 'Account created. Welcome!',
       userId: rows[0].id,
     });
   } catch (err) {
     console.error('Signup failed:', err.message);
     console.error('Stack:', err.stack);
-    console.error('Body:', req.validatedBody ? { name: req.validatedBody.name, email: req.validatedBody.email } : 'no body');
+    console.error('Body:', req.validatedBody ? { username: req.validatedBody.username, name: req.validatedBody.name, email: req.validatedBody.email } : 'no body');
     res.status(500).json({ error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error. Check server logs for details.' });
   }
 });
 
 router.post('/login', validate(loginSchema), async function (req, res) {
   try {
-    var { email: emailAddr, password } = req.validatedBody;
+    var { username, password } = req.validatedBody;
 
     var { rows } = await db.query(
-      'SELECT id, name, email, password_hash, email_verified FROM users WHERE LOWER(email) = LOWER($1) LIMIT 1',
-      [emailAddr]
+      'SELECT id, name, username, email, password_hash, email_verified FROM users WHERE LOWER(username) = LOWER($1) OR LOWER(email) = LOWER($1) LIMIT 1',
+      [username]
     );
 
     if (rows.length === 0) {
-      return res.status(400).json({ error: 'No account found with this email. Please sign up first.' });
+      return res.status(400).json({ error: 'No account found with this username. Please sign up first.' });
     }
 
     var user = rows[0];
 
     var passwordMatch = await bcrypt.compare(password, user.password_hash);
     if (!passwordMatch) {
-      return res.status(400).json({ error: 'Invalid email or password.' });
+      return res.status(400).json({ error: 'Invalid username or password.' });
     }
 
     if (!user.email_verified && await isConfigured()) {
       return res.status(403).json({ error: 'Please verify your email before signing in.' });
     }
 
-    var token = signToken({ sub: user.id, email: user.email }, req.validatedBody.rememberMe === false ? { expiresIn: '1d' } : undefined);
+    var token = signToken({ sub: user.id, email: user.email, username: user.username }, req.validatedBody.rememberMe === false ? { expiresIn: '1d' } : undefined);
     res.json({ token: token, userId: user.id });
   } catch (err) {
     console.error('Login failed:', err.message);
@@ -217,7 +231,7 @@ router.post('/reset', validate(resetSchema), async function (req, res) {
 router.get('/me', requireAuth, async function (req, res) {
   try {
     var { rows } = await db.query(
-      'SELECT id, name, email, photo_url, created_at FROM users WHERE id = $1 LIMIT 1',
+      'SELECT id, name, username, email, photo_url, created_at FROM users WHERE id = $1 LIMIT 1',
       [req.userId]
     );
     if (rows.length === 0) {

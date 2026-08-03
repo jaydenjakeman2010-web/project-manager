@@ -1,5 +1,5 @@
 (function () {
-  const COLORS = ['#1E3A8A', '#0EA5E9', '#2563EB', '#60A5FA', '#38BDF8', '#7DD3FC', '#1E40AF', '#0C4A6E'];
+  const COLORS = ['#2F5B3A', '#B98A2E', '#5C8F68', '#A3C4A0', '#8A6419', '#E3C37F', '#3E7A4E', '#4E7D6C'];
   const PRIORITY_COLORS = { low: '#147A63', medium: '#A86B12', high: '#C24156' };
 
   var state = { user: null, projects: [], tasks: [], team: [], events: [] };
@@ -4073,6 +4073,30 @@
       if (el) { el.style.display = ''; el.textContent = msg; }
     }
 
+    function maybeShowSetupGuide() {
+      var guide = document.getElementById('setup-guide');
+      if (!guide || !state.user) return;
+      if (state.projects.length > 0) return;
+      var skipKey = 'pm-setup-skipped-' + state.user.id;
+      if (localStorage.getItem(skipKey)) return;
+      var firstName = (state.user.name || state.user.username || '').split(' ')[0];
+      var title = document.getElementById('setup-guide-title');
+      if (title && firstName) title.textContent = 'Welcome, ' + firstName;
+      guide.style.display = '';
+      requestAnimationFrame(function () { guide.classList.add('visible'); });
+      document.getElementById('setup-create-project')?.addEventListener('click', function () {
+        guide.classList.remove('visible');
+        setTimeout(function () { guide.style.display = 'none'; }, 350);
+        localStorage.removeItem(skipKey);
+        openProjectDrawerCreate();
+      });
+      document.getElementById('setup-skip')?.addEventListener('click', function () {
+        guide.classList.remove('visible');
+        setTimeout(function () { guide.style.display = 'none'; }, 350);
+        localStorage.setItem(skipKey, '1');
+      });
+    }
+
     function hideAuthError(id) {
       var el = document.getElementById(id);
       if (el) el.style.display = 'none';
@@ -4745,6 +4769,7 @@
       }
 
       initWelcomeBack();
+      maybeShowSetupGuide();
     }
 
     var onboarding = document.getElementById('onboarding');
@@ -4781,13 +4806,13 @@
     });
 
     document.getElementById('login-submit')?.addEventListener('click', function () {
-      var email = document.getElementById('login-email')?.value?.trim();
+      var username = document.getElementById('login-username')?.value?.trim();
       var password = document.getElementById('login-password')?.value;
       var rememberMe = document.getElementById('login-remember')?.checked !== false;
-      if (!email || !password) { showAuthError('login-error', 'Please enter your email and password.'); return; }
+      if (!username || !password) { showAuthError('login-error', 'Please enter your username and password.'); return; }
       hideAuthError('login-error');
       setAuthLoading('login-submit', true);
-      Auth.login(email, password, rememberMe).then(function () {
+      Auth.login(username, password, rememberMe).then(function () {
         showAuth('auth-loading');
         loadAllData().then(function () {
           onboarding?.classList.add('hidden');
@@ -4802,16 +4827,26 @@
     document.getElementById('login-password')?.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('login-submit')?.click(); });
 
     document.getElementById('signup-submit')?.addEventListener('click', function () {
+      var username = document.getElementById('signup-username')?.value?.trim();
       var name = document.getElementById('signup-name')?.value?.trim();
-      var email = document.getElementById('signup-email')?.value?.trim();
       var password = document.getElementById('signup-password')?.value;
-      if (!name || !email || !password) { showAuthError('signup-error', 'Please fill in all fields.'); return; }
+      if (!username || !password) { showAuthError('signup-error', 'Please enter a username and password.'); return; }
+      if (username.length < 3) { showAuthError('signup-error', 'Username must be at least 3 characters.'); return; }
+      if (!/^[a-zA-Z0-9_.-]+$/.test(username)) { showAuthError('signup-error', 'Username can only contain letters, numbers, dots, dashes, and underscores.'); return; }
       if (password.length < 8) { showAuthError('signup-error', 'Password must be at least 8 characters.'); return; }
       hideAuthError('signup-error');
       setAuthLoading('signup-submit', true);
-      Auth.signup(name, email, password).then(function () {
-        setAuthLoading('signup-submit', false);
-        showAuth('auth-verify');
+      Auth.signup(username, password, name).then(function () {
+        Auth.login(username, password, true).then(function () {
+          showAuth('auth-loading');
+          loadAllData().then(function () {
+            onboarding?.classList.add('hidden');
+            bootApp();
+          });
+        }).catch(function () {
+          setAuthLoading('signup-submit', false);
+          showAuth('auth-login');
+        });
       }).catch(function (err) {
         showAuthError('signup-error', err.body?.error || err.message || 'Sign up failed.');
         setAuthLoading('signup-submit', false);

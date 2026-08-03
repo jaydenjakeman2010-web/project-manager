@@ -17,7 +17,7 @@ router.use(requireAuth);
 router.get('/', async (req, res) => {
   try {
     const { rows } = await db.query(
-      'SELECT id, name, email, photo_url, created_at FROM users WHERE id = $1 LIMIT 1',
+      'SELECT id, name, username, email, photo_url, created_at FROM users WHERE id = $1 LIMIT 1',
       [req.userId]
     );
     if (rows.length === 0) {
@@ -49,7 +49,7 @@ router.patch('/', validate(updateSchema), async (req, res) => {
     params.push(req.userId);
 
     const { rows } = await db.query(
-      `UPDATE users SET ${setClauses.join(', ')} WHERE id = $${idx} RETURNING id, name, email, photo_url, created_at`,
+      `UPDATE users SET ${setClauses.join(', ')} WHERE id = $${idx} RETURNING id, name, username, email, photo_url, created_at`,
       params
     );
 

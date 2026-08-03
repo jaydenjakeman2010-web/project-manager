@@ -19,12 +19,12 @@
     });
   }
 
-  function signup(name, email, password) {
-    return API.post('/auth/signup', { name: name, email: email, password: password });
+  function signup(username, password, name) {
+    return API.post('/auth/signup', { username: username, password: password, name: name });
   }
 
-  function login(email, password, rememberMe) {
-    return API.post('/auth/login', { email: email, password: password, rememberMe: rememberMe }).then(function (res) {
+  function login(username, password, rememberMe) {
+    return API.post('/auth/login', { username: username, password: password, rememberMe: rememberMe }).then(function (res) {
       API.setToken(res.token, rememberMe);
       return fetchCurrentUser();
     });
