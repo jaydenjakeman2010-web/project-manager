@@ -9042,17 +9042,25 @@ mark.search-match {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  
+  .glow-orb,
+  .ambient-glow,
+  .sidebar-badge-new,
+  .loading-bar,
   .skeleton {
     animation: none !important;
+  }
+
+  .skeleton {
     background: var(--bg-tertiary) !important;
+  }
+
+  .stat-card:hover,
+  .project-card:hover,
+  .project-card-large:hover,
+  .btn-primary:hover:not(:disabled),
+  .onboarding-btn:hover:not(:disabled),
+  .top-nav-quick-create:hover:not(:disabled) {
+    transform: none;
   }
 }
 
