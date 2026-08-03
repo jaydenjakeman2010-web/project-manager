@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
   const COLORS = ['#DA5427', '#F26B42', '#B04315', '#4ADE80', '#2FA85A', '#FFB295', '#C74A1F', '#64C98C'];
   const PRIORITY_COLORS = { low: '#2E9E58', medium: '#B0703A', high: '#D6453D' };
 
@@ -757,7 +757,7 @@
       if (!logs || logs.length === 0) { feed.innerHTML = '<p style="font-size:var(--text-sm);color:var(--text-tertiary);padding:var(--space-3) 0;text-align:center;">No activity yet</p>'; return; }
       feed.innerHTML = '<div class="activity-feed">' + logs.map(function (a) {
         var d = new Date(a.createdAt);
-        return '<div class="activity-item"><div class="activity-icon" style="background:var(--bg-tertiary);color:var(--text-secondary);font-size:12px;">' + (a.type === 'task-completed' ? 'âœ“' : a.type === 'task-created' ? '+' : a.type === 'task-deleted' ? 'âœ•' : 'â€¢') + '</div><div class="activity-content"><div class="activity-text">' + a.description + '</div><div class="activity-time">' + formatActivityTime(d) + '</div></div></div>';
+        return '<div class="activity-item"><div class="activity-icon" style="background:var(--bg-tertiary);color:var(--text-secondary);font-size:12px;">' + (a.type === 'task-completed' ? '✓' : a.type === 'task-created' ? '+' : a.type === 'task-deleted' ? '✕' : '•') + '</div><div class="activity-content"><div class="activity-text">' + a.description + '</div><div class="activity-time">' + formatActivityTime(d) + '</div></div></div>';
       }).join('') + '</div>';
     }).catch(function () {});
   }
@@ -4126,7 +4126,7 @@
     }
 
     function initPremiumInteractions() {
-      // ponytail: magnetic-hover mousemove removed â€” getBoundingClientRect on every
+      // ponytail: magnetic-hover mousemove removed — getBoundingClientRect on every
       // card per mousemove frame = layout thrash. Re-add behind pointer:fine only if missed.
       document.addEventListener('mousedown', function(e) {
         var target = e.target.closest('.btn, .onboarding-btn');
@@ -4847,3 +4847,4 @@
     document.getElementById('forgot-email')?.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('forgot-submit')?.click(); });
   });
 })();
+

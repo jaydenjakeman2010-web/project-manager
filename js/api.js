@@ -1,4 +1,4 @@
-﻿var API_BASE = (function () {
+var API_BASE = (function () {
   var server = localStorage.getItem('pm-server') || '';
   return server.replace(/\/+$/, '') + '/api';
 })();
@@ -29,7 +29,7 @@ function camelizeKeys(obj) {
   return obj;
 }
 
-// â”€â”€ Client-Side Mock Database â”€â”€
+// ── Client-Side Mock Database ──
 function mockFetch(path, options) {
   return new Promise(function (resolve, reject) {
     var body = null;

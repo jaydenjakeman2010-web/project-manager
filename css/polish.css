@@ -1,5 +1,5 @@
-﻿/* ============================================================
-   POLISH LAYER â€” loaded after styles.css, wins cascade ties.
+/* ============================================================
+   POLISH LAYER — loaded after styles.css, wins cascade ties.
    Visual upgrade only; layout structure untouched.
    ============================================================ */
 
@@ -41,7 +41,7 @@ input[type="checkbox"], input[type="radio"] {
   accent-color: var(--primary);
 }
 
-/* Static ambient â€” replaces animated orbs, zero repaint cost */
+/* Static ambient — replaces animated orbs, zero repaint cost */
 .ambient-glow {
   opacity: 1;
 }
@@ -438,7 +438,7 @@ input[type="checkbox"], input[type="radio"] {
 }
 
 /* ============================================================
-   SIGNAL PALETTE â€” BridgeMind scheme: near-black canvas,
+   SIGNAL PALETTE — BridgeMind scheme: near-black canvas,
    burnt-orange signal, green secondary, peach text accents
    ============================================================ */
 
@@ -614,7 +614,7 @@ body::before {
 .tag-design { background: rgba(199, 74, 31, 0.12); color: var(--accent-dark); }
 
 /* ============================================================
-    SIGNAL THEME â€” indigo focus, coral energy
+    SIGNAL THEME — indigo focus, coral energy
    ============================================================ */
 
 ::selection {
@@ -631,14 +631,14 @@ body::before {
   background: rgba(199, 74, 31, 0.4);
 }
 
-/* Project cards â€” mint glow lift */
+/* Project cards — mint glow lift */
 .project-card:hover,
 .project-card-large:hover {
   border-color: rgba(74, 222, 128, 0.55);
   box-shadow: var(--shadow-lg), 0 0 0 1px rgba(199, 74, 31, 0.08);
 }
 
-/* Section header organisation â€” tighter, aligned rhythm */
+/* Section header organisation — tighter, aligned rhythm */
 .section-header {
   margin-bottom: var(--space-4);
 }
@@ -747,7 +747,7 @@ body::before {
 }
 
 /* ============================================================
-   FINAL REFINEMENT â€” clear hierarchy, quiet surfaces, fast scan
+   FINAL REFINEMENT — clear hierarchy, quiet surfaces, fast scan
    ============================================================ */
 
 :root {
@@ -1685,7 +1685,7 @@ body::after {
 }
 
 /* ============================================================
-   DAILY GOALS â€” first-load-of-day planning overlay
+   DAILY GOALS — first-load-of-day planning overlay
    ============================================================ */
 .goals-overlay {
   position: fixed;
@@ -1983,7 +1983,7 @@ body::after {
   .goals-delete { opacity: 1; }
 }
 /* ============================================================
-   DAILY GOALS PAGE â€” full-page planner + QoL controls
+   DAILY GOALS PAGE — full-page planner + QoL controls
    ============================================================ */
 
 /* ---- Item chrome shared with overlay ---- */
@@ -2260,7 +2260,7 @@ body::after {
 }
 
 /* ============================================================
-   SETUP GUIDE â€” first-project onboarding after signup
+   SETUP GUIDE — first-project onboarding after signup
    ============================================================ */
 
 .setup-guide-overlay {
