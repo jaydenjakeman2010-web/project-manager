@@ -4752,7 +4752,10 @@
     var onboarding = document.getElementById('onboarding');
     if (Auth.isAuthenticated()) {
       showAuth('auth-loading');
+      var minSignInTime = new Promise(function (resolve) { setTimeout(resolve, 2000); });
       loadAllData().then(function () {
+        return minSignInTime;
+      }).then(function () {
         onboarding?.classList.add('hidden');
         bootApp();
       }).catch(function () {
